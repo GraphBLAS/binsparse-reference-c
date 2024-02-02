@@ -44,7 +44,7 @@ size_t bsp_type_size(bsp_type_t type) {
   }
 }
 
-hid_t bsp_hdf5_standard_type(bsp_type_t type) {
+hid_t bsp_get_hdf5_standard_type(bsp_type_t type) {
   if (type == BSP_UINT8) {
     return H5T_STD_U8LE;
   } else if (type == BSP_UINT16) {
@@ -77,7 +77,7 @@ hid_t bsp_hdf5_standard_type(bsp_type_t type) {
 // HDF5 doesn't have a way (as far as I can tell) to get the
 // native `int64`, `int32`, etc. type on the system.  Just the
 // `int`, `long`, etc. type.  Will need to work around this.
-hid_t bsp_hdf5_native_type(bsp_type_t type) {
+hid_t bsp_get_hdf5_native_type(bsp_type_t type) {
   if (type == BSP_UINT8) {
     return H5T_STD_U8LE;
   } else if (type == BSP_UINT16) {
@@ -95,12 +95,56 @@ hid_t bsp_hdf5_native_type(bsp_type_t type) {
   } else if (type == BSP_INT64) {
     return H5T_STD_I64LE;
   } else if (type == BSP_FLOAT32) {
-    return sizeof(float);
     return H5T_IEEE_F32LE;
   } else if (type == BSP_FLOAT64) {
     return H5T_IEEE_F64LE;
   } else if (type == BSP_BINT8) {
     return H5T_STD_I8LE;
+  } else {
+    return H5I_INVALID_HID;
+  }
+}
+
+bsp_type_t bsp_get_bsp_type(hid_t type) {
+  H5T_class_t cl = H5Tget_class(type);
+  H5T_order_t order = H5Tget_order(type);
+  H5T_sign_t sign = H5Tget_sign(type);
+  size_t size = H5Tget_size(type);
+
+  if (cl == H5T_INTEGER) {
+    if (sign == H5T_SGN_NONE) {
+      if (size == 1) {
+        return BSP_UINT8;
+      } else if (size == 2) {
+        return BSP_UINT16;
+      } else if (size == 4) {
+        return BSP_UINT32;
+      } else if (size == 8) {
+        return BSP_UINT64;
+      } else {
+        return H5I_INVALID_HID;
+      }
+    } else /* if (sign == H5T_SGN_2) */ {
+      if (size == 1) {
+        return BSP_INT8;
+      } else if (size == 2) {
+        return BSP_INT16;
+      } else if (size == 4) {
+        return BSP_INT32;
+      } else if (size == 8) {
+        return BSP_INT64;
+      } else {
+        return H5I_INVALID_HID;
+      }
+    }
+  } else if (cl == H5T_FLOAT) {
+    if (size == 4) {
+      return BSP_FLOAT32;
+    } else if (size == 8) {
+      return BSP_FLOAT64;
+    } else {
+      return H5I_INVALID_HID;
+    }
   } else {
     return H5I_INVALID_HID;
   }

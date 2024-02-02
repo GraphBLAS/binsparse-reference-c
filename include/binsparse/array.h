@@ -9,6 +9,13 @@ typedef struct bsp_array_t {
   bsp_type_t type;
 } bsp_array_t;
 
+bsp_array_t bsp_construct_default_array_t() {
+  bsp_array_t array;
+  array.data = NULL;
+  array.size = 0;
+  return array;
+}
+
 bsp_array_t bsp_construct_array_t(size_t size, bsp_type_t type) {
   size_t byte_size = size * bsp_type_size(type);
 
