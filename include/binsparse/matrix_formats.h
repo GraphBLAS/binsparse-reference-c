@@ -1,6 +1,6 @@
 #pragma once
 
-enum bsp_matrix_format_t {
+typedef enum bsp_matrix_format_t {
   BSP_DVEC = 11,
   BSP_DMAT = 12,
   BSP_DMATR = 12,
@@ -13,4 +13,4 @@ enum bsp_matrix_format_t {
   BSP_COO = 19,
   BSP_COOR = 19,
   BSP_COOC = 20
-};
+} bsp_matrix_format_t;
