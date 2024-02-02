@@ -1,14 +1,14 @@
 #pragma once
 
-#include <H5.h>
-#include <array.h>
+#include <hdf5.h>
+#include <binsparse/array.h>
 
 // Write an array to a dataset / file
 // Returns 0 on success, nonzero on error.
 int bsp_write_array(hid_t f, char* label, bsp_array_t array) {
 
   hid_t hdf5_standard_type = bsp_hdf5_standard_type(array.type);
-  hid_t fspace = H5Screate_simple(1, (hsize_t[]){array.size}, NULL)
+  hid_t fspace = H5Screate_simple(1, (hsize_t[]){array.size}, NULL);
   hid_t lcpl = H5Pcreate(H5P_LINK_CREATE);
 
   hid_t dset = H5Dcreate2(f, label, hdf5_standard_type, fspace, lcpl,

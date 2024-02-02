@@ -1,8 +1,8 @@
 #pragma once
 
-#include <H5.h>
+#include <hdf5.h>
 
-enum bsp_type_t {
+typedef enum bsp_type_t {
   BSP_UINT8 = 0,
   BSP_UINT16 = 1,
   BSP_UINT32 = 2,
@@ -14,7 +14,7 @@ enum bsp_type_t {
   BSP_FLOAT32 = 8,
   BSP_FLOAT64 = 9,
   BSP_BINT8 = 10
-};
+} bsp_type_t;
 
 size_t bsp_type_size(bsp_type_t type) {
   if (type == BSP_UINT8) {
