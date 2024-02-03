@@ -17,9 +17,5 @@ int main(int argc, char** argv) {
 
   bsp_write_matrix("test.hdf5", mat);
 
-  char* str = bsp_generate_json(mat);
-
-  printf("%s\n", str);
-
   return 0;
 }

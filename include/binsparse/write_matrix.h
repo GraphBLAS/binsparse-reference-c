@@ -59,24 +59,36 @@ char* bsp_generate_json(bsp_matrix_t matrix) {
 int bsp_write_matrix(char* file_name, bsp_matrix_t matrix) {
   hid_t f = H5Fcreate(file_name, H5F_ACC_TRUNC, H5P_DEFAULT, H5P_DEFAULT);
 
-  if (matrix.format == BSP_COOR || matrix.format == BSP_COOC) {
-    int result = bsp_write_array(f, "values", matrix.values);
+  int result = bsp_write_array(f, "values", matrix.values);
 
-    if (result != 0)
-      return result;
+  if (result != 0)
+    return result;
 
+  if (matrix.indices_0.size > 0) {
     result = bsp_write_array(f, "indices_0", matrix.indices_0);
-
-    if (result != 0)
+    if (result != 0) {
       return result;
-
-    result = bsp_write_array(f, "indices_1", matrix.indices_1);
-
-    if (result != 0)
-      return result;
-  } else {
-    return -1;
+    }
   }
+
+  if (matrix.indices_1.size > 0) {
+    result = bsp_write_array(f, "indices_1", matrix.indices_1);
+    if (result != 0) {
+      return result;
+    }
+  }
+
+  if (matrix.pointers_to_1.size > 0) {
+    result = bsp_write_array(f, "pointers_to_1", matrix.pointers_to_1);
+    if (result != 0) {
+      return result;
+    }
+  }
+
+  char* json_string = bsp_generate_json(matrix);
+
+  bsp_write_attribute(f, "binsparse", json_string);
+  free(json_string);
 
   H5Fclose(f);
   return 0;
