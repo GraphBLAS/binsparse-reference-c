@@ -54,8 +54,7 @@ hid_t bsp_get_hdf5_standard_type(bsp_type_t type) {
     return H5T_STD_U32LE;
   } else if (type == BSP_UINT64) {
     return H5T_STD_U64LE;
-  }
-  if (type == BSP_INT8) {
+  } else if (type == BSP_INT8) {
     return H5T_STD_I8LE;
   } else if (type == BSP_INT16) {
     return H5T_STD_I16LE;
@@ -64,7 +63,6 @@ hid_t bsp_get_hdf5_standard_type(bsp_type_t type) {
   } else if (type == BSP_INT64) {
     return H5T_STD_I64LE;
   } else if (type == BSP_FLOAT32) {
-    return sizeof(float);
     return H5T_IEEE_F32LE;
   } else if (type == BSP_FLOAT64) {
     return H5T_IEEE_F64LE;
