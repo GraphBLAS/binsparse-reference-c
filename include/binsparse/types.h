@@ -16,6 +16,34 @@ typedef enum bsp_type_t {
   BSP_BINT8 = 10
 } bsp_type_t;
 
+char* bsp_get_type_string(bsp_type_t type) {
+  if (type == BSP_UINT8) {
+    return "uint8";
+  } else if (type == BSP_UINT16) {
+    return "uint16";
+  } else if (type == BSP_UINT32) {
+    return "uint32";
+  } else if (type == BSP_UINT64) {
+    return "uint64";
+  } else if (type == BSP_INT8) {
+    return "int8";
+  } else if (type == BSP_INT16) {
+    return "int16";
+  } else if (type == BSP_INT32) {
+    return "int32";
+  } else if (type == BSP_INT64) {
+    return "int64";
+  } else if (type == BSP_FLOAT32) {
+    return "float32";
+  } else if (type == BSP_FLOAT64) {
+    return "float64";
+  } else if (type == BSP_BINT8) {
+    return "bint8";
+  } else {
+    return "";
+  }
+}
+
 size_t bsp_type_size(bsp_type_t type) {
   if (type == BSP_UINT8) {
     return sizeof(uint8_t);
@@ -25,8 +53,7 @@ size_t bsp_type_size(bsp_type_t type) {
     return sizeof(uint32_t);
   } else if (type == BSP_UINT64) {
     return sizeof(uint64_t);
-  }
-  if (type == BSP_INT8) {
+  } else if (type == BSP_INT8) {
     return sizeof(int8_t);
   } else if (type == BSP_INT16) {
     return sizeof(int16_t);

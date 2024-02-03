@@ -15,3 +15,20 @@ typedef struct bsp_matrix_t {
 
   bsp_matrix_format_t format;
 } bsp_matrix_t;
+
+bsp_matrix_t bsp_construct_default_matrix_t() {
+  bsp_matrix_t mat;
+  mat.values = bsp_construct_default_array_t();
+  mat.indices_0 = bsp_construct_default_array_t();
+  mat.indices_1 = bsp_construct_default_array_t();
+  mat.pointers_to_1 = bsp_construct_default_array_t();
+  mat.nrows = mat.ncols = mat.nnz = 0;
+  return mat;
+}
+
+void bsp_destroy_matrix_t(bsp_matrix_t matrix) {
+  bsp_destroy_array_t(matrix.values);
+  bsp_destroy_array_t(matrix.indices_0);
+  bsp_destroy_array_t(matrix.indices_1);
+  bsp_destroy_array_t(matrix.pointers_to_1);
+}

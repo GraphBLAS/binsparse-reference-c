@@ -1,5 +1,7 @@
 #pragma once
 
+#define BINSPARSE_VERSION 1.0
+
 #include <binsparse/array.h>
 #include <binsparse/generate.h>
 #include <binsparse/hdf5_wrapper.h>

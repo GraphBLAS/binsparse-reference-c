@@ -63,7 +63,7 @@ void bsp_array_fill_random(bsp_array_t array, size_t bound) {
 
 bsp_matrix_t bsp_generate_coo(size_t m, size_t n, size_t nnz,
                               bsp_type_t value_type, bsp_type_t index_type) {
-  bsp_matrix_t matrix;
+  bsp_matrix_t matrix = bsp_construct_default_matrix_t();
   matrix.nrows = m;
   matrix.ncols = n;
   matrix.nnz = nnz;
