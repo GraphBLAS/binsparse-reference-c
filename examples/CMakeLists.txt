@@ -1,0 +1,8 @@
+function(add_example example_name)
+  add_executable(${example_name} ${example_name}.c)
+  target_link_libraries(${example_name} binsparse-rc)
+endfunction()
+
+add_example(simple_matrix_write)
+add_example(simple_read)
+add_example(simple_write)

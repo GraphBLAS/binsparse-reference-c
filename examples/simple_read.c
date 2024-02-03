@@ -10,7 +10,7 @@ int main(int argc, char** argv) {
   int* values = array.data;
 
   for (size_t i = 0; i < array.size; i++) {
-    printf("%d: %d\n", i, values[i]);
+    printf("%lu: %d\n", i, values[i]);
   }
 
   bsp_destroy_array_t(array);
