@@ -1,7 +1,7 @@
 #pragma once
 
-#include <hdf5.h>
 #include <binsparse/array.h>
+#include <hdf5.h>
 
 // Write an array to a dataset / file
 // Returns 0 on success, nonzero on error.
@@ -19,7 +19,8 @@ int bsp_write_array(hid_t f, char* label, bsp_array_t array) {
 
   hid_t hdf5_native_type = bsp_get_hdf5_native_type(array.type);
 
-  hid_t r = H5Dwrite(dset, hdf5_native_type, H5S_ALL, fspace, H5P_DEFAULT, array.data);
+  hid_t r = H5Dwrite(dset, hdf5_native_type, H5S_ALL, fspace, H5P_DEFAULT,
+                     array.data);
 
   if (r == H5I_INVALID_HID) {
     return -2;
@@ -58,8 +59,8 @@ bsp_array_t bsp_read_array(hid_t f, char* label) {
 
   bsp_array_t array = bsp_construct_array_t(dims[0], type);
 
-  herr_t status = H5Dread(dset, H5T_NATIVE_INT, H5S_ALL, H5S_ALL,
-                          H5P_DEFAULT, array.data);
+  herr_t status =
+      H5Dread(dset, H5T_NATIVE_INT, H5S_ALL, H5S_ALL, H5P_DEFAULT, array.data);
 
   if (status < 0) {
     return bsp_construct_default_array_t();
