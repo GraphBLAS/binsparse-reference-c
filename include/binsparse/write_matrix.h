@@ -49,6 +49,11 @@ char* bsp_generate_json(bsp_matrix_t matrix) {
                             bsp_get_type_string(matrix.pointers_to_1.type));
   }
 
+  if (matrix.structure != BSP_GENERAL) {
+    cJSON_AddStringToObject(binsparse, "structure",
+                            bsp_get_structure_string(matrix.structure));
+  }
+
   char* string = cJSON_Print(j);
 
   cJSON_Delete(j);

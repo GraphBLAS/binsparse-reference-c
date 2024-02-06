@@ -2,6 +2,7 @@
 
 #include <binsparse/array.h>
 #include <binsparse/matrix_formats.h>
+#include <binsparse/structure.h>
 
 typedef struct bsp_matrix_t {
   bsp_array_t values;
@@ -14,6 +15,7 @@ typedef struct bsp_matrix_t {
   size_t nnz;
 
   bsp_matrix_format_t format;
+  bsp_structure_t structure;
 } bsp_matrix_t;
 
 bsp_matrix_t bsp_construct_default_matrix_t() {
@@ -23,6 +25,7 @@ bsp_matrix_t bsp_construct_default_matrix_t() {
   mat.indices_1 = bsp_construct_default_array_t();
   mat.pointers_to_1 = bsp_construct_default_array_t();
   mat.nrows = mat.ncols = mat.nnz = 0;
+  mat.structure = BSP_GENERAL;
   return mat;
 }
 

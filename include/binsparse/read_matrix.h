@@ -82,6 +82,13 @@ bsp_matrix_t bsp_read_matrix(char* file_name) {
     matrix.pointers_to_1 = bsp_read_array(f, "pointers_to_1");
   }
 
+  if (cJSON_HasObjectItem(binsparse, "structure")) {
+    cJSON* structure_ =
+        cJSON_GetObjectItemCaseSensitive(binsparse, "structure");
+    char* structure = cJSON_GetStringValue(structure_);
+    matrix.structure = bsp_get_structure(structure);
+  }
+
   cJSON_Delete(j);
   free(json_string);
 
