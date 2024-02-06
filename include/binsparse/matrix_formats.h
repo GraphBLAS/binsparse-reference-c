@@ -1,5 +1,7 @@
 #pragma once
 
+#include <string.h>
+
 typedef enum bsp_matrix_format_t {
   BSP_DVEC = 11,
   BSP_DMAT = 12,
@@ -36,5 +38,35 @@ char* bsp_get_matrix_format_string(bsp_matrix_format_t format) {
     return "COOC";
   } else {
     return "";
+  }
+}
+
+bsp_matrix_format_t bsp_get_matrix_format(char* format) {
+  if (strcmp("DVEC", format) == 0) {
+    return BSP_DVEC;
+  } else if (strcmp("DMAT", format) == 0) {
+    return BSP_DMAT;
+  } else if (strcmp("DMATR", format) == 0) {
+    return BSP_DMATR;
+  } else if (strcmp("DMATC", format) == 0) {
+    return BSP_DMATC;
+  } else if (strcmp("CVEC", format) == 0) {
+    return BSP_CVEC;
+  } else if (strcmp("CSR", format) == 0) {
+    return BSP_CSR;
+  } else if (strcmp("CSC", format) == 0) {
+    return BSP_CSC;
+  } else if (strcmp("DCSR", format) == 0) {
+    return BSP_DCSR;
+  } else if (strcmp("DCSC", format) == 0) {
+    return BSP_DCSC;
+  } else if (strcmp("COO", format) == 0) {
+    return BSP_COO;
+  } else if (strcmp("COOR", format) == 0) {
+    return BSP_COOR;
+  } else if (strcmp("COOC", format) == 0) {
+    return BSP_COOC;
+  } else {
+    return 0;
   }
 }

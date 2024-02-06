@@ -1,5 +1,6 @@
 #pragma once
 
+#include <assert.h>
 #include <hdf5.h>
 
 typedef enum bsp_type_t {
@@ -100,39 +101,6 @@ hid_t bsp_get_hdf5_standard_type(bsp_type_t type) {
   }
 }
 
-// TODO: fix this somehow.
-// HDF5 doesn't have a way (as far as I can tell) to get the
-// native `int64`, `int32`, etc. type on the system.  Just the
-// `int`, `long`, etc. type.  Will need to work around this.
-hid_t bsp_get_hdf5_native_type(bsp_type_t type) {
-  if (type == BSP_UINT8) {
-    return H5T_STD_U8LE;
-  } else if (type == BSP_UINT16) {
-    return H5T_STD_U16LE;
-  } else if (type == BSP_UINT32) {
-    return H5T_STD_U32LE;
-  } else if (type == BSP_UINT64) {
-    return H5T_STD_U64LE;
-  }
-  if (type == BSP_INT8) {
-    return H5T_STD_I8LE;
-  } else if (type == BSP_INT16) {
-    return H5T_STD_I16LE;
-  } else if (type == BSP_INT32) {
-    return H5T_STD_I32LE;
-  } else if (type == BSP_INT64) {
-    return H5T_STD_I64LE;
-  } else if (type == BSP_FLOAT32) {
-    return H5T_IEEE_F32LE;
-  } else if (type == BSP_FLOAT64) {
-    return H5T_IEEE_F64LE;
-  } else if (type == BSP_BINT8) {
-    return H5T_STD_I8LE;
-  } else {
-    return H5I_INVALID_HID;
-  }
-}
-
 bsp_type_t bsp_get_bsp_type(hid_t type) {
   H5T_class_t cl = H5Tget_class(type);
   H5T_order_t order = H5Tget_order(type);
@@ -173,6 +141,131 @@ bsp_type_t bsp_get_bsp_type(hid_t type) {
     } else {
       return H5I_INVALID_HID;
     }
+  } else {
+    return H5I_INVALID_HID;
+  }
+}
+
+// NOTE: This code is a bit silly, but it seems to be the only
+//       way to generically determine the HDF5 native types for
+//       stdint's fixed width integer types.
+hid_t bsp_get_hdf5_native_type(bsp_type_t type) {
+  if (type == BSP_INT8 || type == BSP_BINT8) {
+    if (sizeof(int8_t) == sizeof(char)) {
+      return H5T_NATIVE_CHAR;
+    } else if (sizeof(int8_t) == sizeof(short)) {
+      return H5T_NATIVE_SHORT;
+    } else if (sizeof(int8_t) == sizeof(int)) {
+      return H5T_NATIVE_INT;
+    } else if (sizeof(int8_t) == sizeof(long)) {
+      return H5T_NATIVE_LONG;
+    } else if (sizeof(int8_t) == sizeof(long long)) {
+      return H5T_NATIVE_LLONG;
+    } else {
+      assert(false);
+    }
+  } else if (type == BSP_INT16) {
+    if (sizeof(int16_t) == sizeof(char)) {
+      return H5T_NATIVE_CHAR;
+    } else if (sizeof(int16_t) == sizeof(short)) {
+      return H5T_NATIVE_SHORT;
+    } else if (sizeof(int16_t) == sizeof(int)) {
+      return H5T_NATIVE_INT;
+    } else if (sizeof(int32_t) == sizeof(long)) {
+      return H5T_NATIVE_LONG;
+    } else if (sizeof(int64_t) == sizeof(long long)) {
+      return H5T_NATIVE_LLONG;
+    } else {
+      assert(false);
+    }
+  } else if (type == BSP_INT32) {
+    if (sizeof(int32_t) == sizeof(char)) {
+      return H5T_NATIVE_CHAR;
+    } else if (sizeof(int32_t) == sizeof(short)) {
+      return H5T_NATIVE_SHORT;
+    } else if (sizeof(int32_t) == sizeof(int)) {
+      return H5T_NATIVE_INT;
+    } else if (sizeof(int32_t) == sizeof(long)) {
+      return H5T_NATIVE_LONG;
+    } else if (sizeof(int32_t) == sizeof(long long)) {
+      return H5T_NATIVE_LLONG;
+    } else {
+      assert(false);
+    }
+  } else if (type == BSP_INT64) {
+    if (sizeof(int64_t) == sizeof(char)) {
+      return H5T_NATIVE_CHAR;
+    } else if (sizeof(int64_t) == sizeof(short)) {
+      return H5T_NATIVE_SHORT;
+    } else if (sizeof(int64_t) == sizeof(int)) {
+      return H5T_NATIVE_INT;
+    } else if (sizeof(int64_t) == sizeof(long)) {
+      return H5T_NATIVE_LONG;
+    } else if (sizeof(int64_t) == sizeof(long long)) {
+      return H5T_NATIVE_LLONG;
+    } else {
+      assert(false);
+    }
+  } else if (type == BSP_UINT8) {
+    if (sizeof(uint8_t) == sizeof(unsigned char)) {
+      return H5T_NATIVE_UCHAR;
+    } else if (sizeof(uint8_t) == sizeof(unsigned short)) {
+      return H5T_NATIVE_USHORT;
+    } else if (sizeof(uint8_t) == sizeof(unsigned int)) {
+      return H5T_NATIVE_UINT;
+    } else if (sizeof(uint8_t) == sizeof(unsigned long)) {
+      return H5T_NATIVE_ULONG;
+    } else if (sizeof(uint8_t) == sizeof(unsigned long long)) {
+      return H5T_NATIVE_ULLONG;
+    } else {
+      assert(false);
+    }
+  } else if (type == BSP_UINT16) {
+    if (sizeof(uint16_t) == sizeof(unsigned char)) {
+      return H5T_NATIVE_UCHAR;
+    } else if (sizeof(uint16_t) == sizeof(unsigned short)) {
+      return H5T_NATIVE_USHORT;
+    } else if (sizeof(uint16_t) == sizeof(unsigned int)) {
+      return H5T_NATIVE_UINT;
+    } else if (sizeof(uint16_t) == sizeof(unsigned long)) {
+      return H5T_NATIVE_ULONG;
+    } else if (sizeof(uint16_t) == sizeof(unsigned long long)) {
+      return H5T_NATIVE_ULLONG;
+    } else {
+      assert(false);
+    }
+  } else if (type == BSP_UINT32) {
+    if (sizeof(uint32_t) == sizeof(unsigned char)) {
+      return H5T_NATIVE_UCHAR;
+    } else if (sizeof(uint32_t) == sizeof(unsigned short)) {
+      return H5T_NATIVE_USHORT;
+    } else if (sizeof(uint32_t) == sizeof(unsigned int)) {
+      return H5T_NATIVE_UINT;
+    } else if (sizeof(uint32_t) == sizeof(unsigned long)) {
+      return H5T_NATIVE_ULONG;
+    } else if (sizeof(uint32_t) == sizeof(unsigned long long)) {
+      return H5T_NATIVE_ULLONG;
+    } else {
+      assert(false);
+    }
+  } else if (type == BSP_UINT64) {
+    if (sizeof(uint64_t) == sizeof(unsigned char)) {
+      return H5T_NATIVE_UCHAR;
+    } else if (sizeof(uint64_t) == sizeof(unsigned short)) {
+      return H5T_NATIVE_USHORT;
+    } else if (sizeof(uint64_t) == sizeof(unsigned int)) {
+      return H5T_NATIVE_UINT;
+    } else if (sizeof(uint64_t) == sizeof(unsigned long)) {
+      return H5T_NATIVE_ULONG;
+    } else if (sizeof(uint64_t) == sizeof(unsigned long long)) {
+      return H5T_NATIVE_ULLONG;
+    } else {
+      assert(false);
+    }
+  } else if (type == BSP_FLOAT32) {
+    return H5T_NATIVE_FLOAT;
+  } else if (type == BSP_FLOAT64) {
+    return H5T_NATIVE_DOUBLE;
   } else {
     return H5I_INVALID_HID;
   }

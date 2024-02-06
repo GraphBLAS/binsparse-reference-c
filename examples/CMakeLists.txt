@@ -4,5 +4,6 @@ function(add_example example_name)
 endfunction()
 
 add_example(simple_matrix_write)
+add_example(simple_matrix_read)
 add_example(simple_read)
 add_example(simple_write)
