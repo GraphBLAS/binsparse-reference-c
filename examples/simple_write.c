@@ -10,7 +10,7 @@ int main(int argc, char** argv) {
   int* values = array.data;
 
   for (size_t i = 0; i < array.size; i++) {
-    values[i] = i;
+    bsp_array_write(array, i, i);
   }
 
   bsp_write_array(f, "test", array);

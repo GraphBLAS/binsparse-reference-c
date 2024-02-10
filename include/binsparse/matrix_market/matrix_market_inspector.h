@@ -1,6 +1,7 @@
 #pragma once
 
 #include <assert.h>
+#include <ctype.h>
 #include <stdio.h>
 
 #include <binsparse/structure.h>
@@ -34,6 +35,10 @@ bsp_mm_metadata bsp_mmread_metadata(char* file_path) {
 
   fscanf(f, "%%%%MatrixMarket matrix %s %s %s\n", metadata.format,
          metadata.type, metadata.structure);
+
+  for (size_t i = 0; i < strlen(metadata.structure); i++) {
+    metadata.structure[i] = tolower(metadata.structure[i]);
+  }
 
   char buf[2048];
   int outOfComments = 0;
@@ -80,6 +85,8 @@ bsp_mm_metadata bsp_mmread_metadata(char* file_path) {
   metadata.nrows = nrows;
   metadata.ncols = ncols;
   metadata.nnz = nnz;
+
+  fclose(f);
 
   return metadata;
 }
