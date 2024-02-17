@@ -1,5 +1,8 @@
 #pragma once
 
+#include <stdlib.h>
+
+#include <binsparse/matrix_market/coo_sort_tools.h>
 #include <binsparse/matrix_market/matrix_market_inspector.h>
 #include <binsparse/matrix_market/matrix_market_type_t.h>
 
@@ -104,6 +107,36 @@ bsp_matrix_t bsp_mmread(char* file_path, bsp_type_t value_type,
     count++;
   }
 
+  size_t* indices = malloc(sizeof(size_t) * matrix.nnz);
+
+  for (size_t i = 0; i < matrix.nnz; i++) {
+    indices[i] = i;
+  }
+
+  bsp_coo_indices_.rowind = matrix.indices_0;
+  bsp_coo_indices_.colind = matrix.indices_1;
+
+  qsort(indices, matrix.nnz, sizeof(size_t),
+        bsp_coo_comparison_row_sort_operator_impl_);
+
+  bsp_array_t rowind = bsp_copy_construct_array_t(matrix.indices_0);
+  bsp_array_t colind = bsp_copy_construct_array_t(matrix.indices_1);
+  bsp_array_t values = bsp_copy_construct_array_t(matrix.values);
+
+  for (size_t i = 0; i < matrix.nnz; i++) {
+    bsp_array_awrite(rowind, i, matrix.indices_0, indices[i]);
+    bsp_array_awrite(colind, i, matrix.indices_1, indices[i]);
+    bsp_array_awrite(values, i, matrix.values, indices[i]);
+  }
+
+  bsp_destroy_array_t(matrix.indices_0);
+  bsp_destroy_array_t(matrix.indices_1);
+  bsp_destroy_array_t(matrix.values);
+  matrix.indices_0 = rowind;
+  matrix.indices_1 = colind;
+  matrix.values = values;
+
+  free(indices);
   fclose(f);
 
   return matrix;
