@@ -7,9 +7,9 @@ typedef struct bsp_coo_indices_impl_ {
   bsp_array_t colind;
 } bsp_coo_indices_impl_;
 
-bsp_coo_indices_impl_ bsp_coo_indices_;
+static bsp_coo_indices_impl_ bsp_coo_indices_;
 
-int bsp_compare_int_impl_(size_t x, size_t y) {
+static int bsp_compare_int_impl_(size_t x, size_t y) {
   if (x < y) {
     return -1;
   } else if (x == y) {
@@ -19,7 +19,8 @@ int bsp_compare_int_impl_(size_t x, size_t y) {
   }
 }
 
-int bsp_coo_comparison_row_sort_operator_impl_(const void* x, const void* y) {
+static int bsp_coo_comparison_row_sort_operator_impl_(const void* x,
+                                                      const void* y) {
   size_t x_index = *((const size_t*)x);
   size_t y_index = *((const size_t*)y);
 
