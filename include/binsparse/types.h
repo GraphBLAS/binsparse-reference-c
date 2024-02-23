@@ -14,7 +14,9 @@ typedef enum bsp_type_t {
   BSP_INT64 = 7,
   BSP_FLOAT32 = 8,
   BSP_FLOAT64 = 9,
-  BSP_BINT8 = 10
+  BSP_BINT8 = 10,
+  BSP_COMPLEX_FLOAT32 = 11,
+  BSP_COMPLEX_FLOAT64 = 12
 } bsp_type_t;
 
 char* bsp_get_type_string(bsp_type_t type) {

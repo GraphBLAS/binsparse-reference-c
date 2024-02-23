@@ -35,3 +35,30 @@ void bsp_destroy_matrix_t(bsp_matrix_t matrix) {
   bsp_destroy_array_t(matrix.indices_1);
   bsp_destroy_array_t(matrix.pointers_to_1);
 }
+
+void bsp_print_matrix_info(bsp_matrix_t matrix) {
+  printf("%lu x %lu matrix with %lu nnz.\n", matrix.nrows, matrix.ncols,
+         matrix.nnz);
+  printf("%s format with %s structure\n",
+         bsp_get_matrix_format_string(matrix.format),
+         bsp_get_structure_string(matrix.structure));
+  if (matrix.values.data != NULL) {
+    printf("%lu values of type %s\n", matrix.values.size,
+           bsp_get_type_string(matrix.values.type));
+  }
+
+  if (matrix.indices_0.data != NULL) {
+    printf("%lu indices_0 of type %s\n", matrix.indices_0.size,
+           bsp_get_type_string(matrix.indices_0.type));
+  }
+
+  if (matrix.indices_1.data != NULL) {
+    printf("%lu indices_1 of type %s\n", matrix.indices_1.size,
+           bsp_get_type_string(matrix.indices_1.type));
+  }
+
+  if (matrix.pointers_to_1.data != NULL) {
+    printf("%lu pointers_to_1 of type %s\n", matrix.pointers_to_1.size,
+           bsp_get_type_string(matrix.pointers_to_1.type));
+  }
+}

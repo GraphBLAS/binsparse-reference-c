@@ -1,13 +1,16 @@
 #pragma once
 
+#include <assert.h>
+#include <limits.h>
+#include <stdint.h>
 #include <stdlib.h>
 
 #include <binsparse/matrix_market/coo_sort_tools.h>
 #include <binsparse/matrix_market/matrix_market_inspector.h>
 #include <binsparse/matrix_market/matrix_market_type_t.h>
 
-bsp_matrix_t bsp_mmread(char* file_path, bsp_type_t value_type,
-                        bsp_type_t index_type) {
+bsp_matrix_t bsp_mmread_explicit(char* file_path, bsp_type_t value_type,
+                                 bsp_type_t index_type) {
   bsp_mm_metadata metadata = bsp_mmread_metadata(file_path);
 
   assert(strcmp(metadata.format, "coordinate") == 0);
@@ -140,4 +143,39 @@ bsp_matrix_t bsp_mmread(char* file_path, bsp_type_t value_type,
   fclose(f);
 
   return matrix;
+}
+
+bsp_matrix_t bsp_mmread(char* file_path) {
+  bsp_mm_metadata metadata = bsp_mmread_metadata(file_path);
+
+  bsp_type_t value_type;
+
+  if (strcmp(metadata.type, "real") == 0) {
+    value_type = BSP_FLOAT64;
+  } else if (strcmp(metadata.type, "integer") == 0) {
+    value_type = BSP_INT64;
+  } else if (strcmp(metadata.type, "complex") == 0) {
+    value_type = BSP_COMPLEX_FLOAT64;
+  } else if (strcmp(metadata.type, "pattern") == 0) {
+    value_type = BSP_BINT8;
+  } else {
+    assert(false);
+  }
+
+  bsp_type_t index_type;
+
+  size_t max_dim =
+      (metadata.nrows > metadata.ncols) ? metadata.nrows : metadata.ncols;
+
+  if (max_dim < (size_t)UINT8_MAX) {
+    index_type = BSP_UINT8;
+  } else if (max_dim < (size_t)UINT16_MAX) {
+    index_type = BSP_UINT16;
+  } else if (max_dim < (size_t)UINT32_MAX) {
+    index_type = BSP_UINT32;
+  } else {
+    index_type = BSP_UINT64;
+  }
+
+  return bsp_mmread_explicit(file_path, value_type, index_type);
 }
