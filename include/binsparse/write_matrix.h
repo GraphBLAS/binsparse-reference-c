@@ -14,7 +14,7 @@ char* bsp_generate_json(bsp_matrix_t matrix) {
 
   cJSON_AddItemToObject(j, "binsparse", binsparse);
 
-  cJSON_AddNumberToObject(binsparse, "version", BINSPARSE_VERSION);
+  cJSON_AddStringToObject(binsparse, "version", BINSPARSE_VERSION);
 
   cJSON_AddStringToObject(binsparse, "format",
                           bsp_get_matrix_format_string(matrix.format));
@@ -31,8 +31,22 @@ char* bsp_generate_json(bsp_matrix_t matrix) {
 
   cJSON* data_types = cJSON_AddObjectToObject(binsparse, "data_types");
 
-  cJSON_AddStringToObject(data_types, "values",
-                          bsp_get_type_string(matrix.values.type));
+  if (!matrix.is_iso) {
+    cJSON_AddStringToObject(data_types, "values",
+                            bsp_get_type_string(matrix.values.type));
+  } else {
+    char* base_type_string = bsp_get_type_string(matrix.values.type);
+    size_t len = strlen(base_type_string) + 6;
+    char* type_string = (char*)malloc(sizeof(char) * len);
+
+    strncpy(type_string, "iso[", len);
+    strncpy(type_string + 4, base_type_string, len - 4);
+    strncpy(type_string + len - 2, "]", 2);
+
+    cJSON_AddStringToObject(data_types, "values", type_string);
+
+    free(type_string);
+  }
 
   if (matrix.indices_0.data != NULL) {
     cJSON_AddStringToObject(data_types, "indices_0",

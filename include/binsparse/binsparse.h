@@ -1,6 +1,6 @@
 #pragma once
 
-#define BINSPARSE_VERSION 1.0
+#define BINSPARSE_VERSION "0.1"
 
 #include <binsparse/array.h>
 #include <binsparse/generate.h>
