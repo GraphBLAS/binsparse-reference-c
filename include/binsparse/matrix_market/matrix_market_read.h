@@ -30,6 +30,10 @@ bsp_matrix_t bsp_mmread_explicit(char* file_path, bsp_type_t value_type,
 
   bsp_matrix_t matrix = bsp_construct_default_matrix_t();
 
+  if (mm_type == BSP_MM_PATTERN) {
+    matrix.is_iso = true;
+  }
+
   matrix.nrows = metadata.nrows;
   matrix.ncols = metadata.ncols;
   matrix.nnz = metadata.nnz;
@@ -38,7 +42,12 @@ bsp_matrix_t bsp_mmread_explicit(char* file_path, bsp_type_t value_type,
   matrix.indices_1 = bsp_construct_array_t(matrix.nnz, index_type);
 
   if (mm_type != BSP_MM_COMPLEX) {
-    matrix.values = bsp_construct_array_t(matrix.nnz, value_type);
+    if (mm_type == BSP_MM_PATTERN) {
+      matrix.values = bsp_construct_array_t(1, value_type);
+      bsp_array_write(matrix.values, 0, true);
+    } else {
+      matrix.values = bsp_construct_array_t(matrix.nnz, value_type);
+    }
   } else {
     matrix.values = bsp_construct_array_t(matrix.nnz * 2, value_type);
   }
@@ -80,7 +89,6 @@ bsp_matrix_t bsp_mmread_explicit(char* file_path, bsp_type_t value_type,
       i--;
       j--;
 
-      bsp_array_write(matrix.values, count, 1);
       bsp_array_write(matrix.indices_0, count, i);
       bsp_array_write(matrix.indices_1, count, j);
     } else if (mm_type == BSP_MM_REAL) {
@@ -89,6 +97,8 @@ bsp_matrix_t bsp_mmread_explicit(char* file_path, bsp_type_t value_type,
       sscanf(buf, "%llu %llu %lf", &i, &j, &value);
       i--;
       j--;
+
+      printf("Reading in %lf\n", value);
 
       bsp_array_write(matrix.values, count, value);
       bsp_array_write(matrix.indices_0, count, i);
@@ -124,20 +134,30 @@ bsp_matrix_t bsp_mmread_explicit(char* file_path, bsp_type_t value_type,
 
   bsp_array_t rowind = bsp_copy_construct_array_t(matrix.indices_0);
   bsp_array_t colind = bsp_copy_construct_array_t(matrix.indices_1);
-  bsp_array_t values = bsp_copy_construct_array_t(matrix.values);
+
+  bsp_array_t values;
+
+  if (!matrix.is_iso) {
+    values = bsp_copy_construct_array_t(matrix.values);
+  }
 
   for (size_t i = 0; i < matrix.nnz; i++) {
     bsp_array_awrite(rowind, i, matrix.indices_0, indices[i]);
     bsp_array_awrite(colind, i, matrix.indices_1, indices[i]);
-    bsp_array_awrite(values, i, matrix.values, indices[i]);
+    if (!matrix.is_iso) {
+      bsp_array_awrite(values, i, matrix.values, indices[i]);
+    }
   }
 
   bsp_destroy_array_t(matrix.indices_0);
   bsp_destroy_array_t(matrix.indices_1);
-  bsp_destroy_array_t(matrix.values);
   matrix.indices_0 = rowind;
   matrix.indices_1 = colind;
-  matrix.values = values;
+
+  if (!matrix.is_iso) {
+    bsp_destroy_array_t(matrix.values);
+    matrix.values = values;
+  }
 
   free(indices);
   fclose(f);

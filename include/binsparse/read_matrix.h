@@ -23,10 +23,9 @@ bsp_matrix_t bsp_read_matrix(char* file_name) {
 
   assert(version_ != NULL);
 
-  assert(cJSON_IsNumber(version_));
+  assert(cJSON_IsString(version_));
 
-  double version = cJSON_GetNumberValue(version_);
-  assert(version >= 1.0);
+  // TODO: check version.
 
   cJSON* format_ = cJSON_GetObjectItemCaseSensitive(binsparse, "format");
   assert(format_ != NULL);
@@ -68,6 +67,13 @@ bsp_matrix_t bsp_read_matrix(char* file_name) {
 
   if (cJSON_HasObjectItem(data_types_, "values")) {
     matrix.values = bsp_read_array(f, "values");
+
+    cJSON* value_type = cJSON_GetObjectItemCaseSensitive(data_types_, "values");
+    char* type_string = cJSON_GetStringValue(value_type);
+
+    if (strlen(type_string) >= 3 && strncmp(type_string, "iso", 3) == 0) {
+      matrix.is_iso = true;
+    }
   }
 
   if (cJSON_HasObjectItem(data_types_, "indices_0")) {
