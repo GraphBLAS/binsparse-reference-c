@@ -4,13 +4,19 @@
 int main(int argc, char** argv) {
 
   if (argc < 3) {
-    printf(
-        "usage: ./mtx2bsp [inputfile_name.mtx] [outputfile_name.bsp.hdf5]\n");
+    printf("usage: ./mtx2bsp [inputfile_name.mtx] [outputfile_name.bsp.hdf5] "
+           "[optional: dataset]\n");
     return 1;
   }
 
   char* input_fname = argv[1];
   char* output_fname = argv[2];
+
+  char* group_name = NULL;
+
+  if (argc >= 4) {
+    group_name = argv[3];
+  }
 
   bsp_mm_metadata m = bsp_mmread_metadata(input_fname);
 
@@ -32,7 +38,7 @@ int main(int argc, char** argv) {
   bsp_print_matrix_info(matrix);
 
   printf(" === Writing to %s... ===\n", output_fname);
-  bsp_write_matrix(output_fname, matrix);
+  bsp_write_matrix(output_fname, matrix, group_name);
   printf(" === Done writing. ===\n");
 
   bsp_destroy_matrix_t(matrix);

@@ -3,6 +3,7 @@
 #include <assert.h>
 #include <binsparse/matrix.h>
 #include <cJSON/cJSON.h>
+#include <unistd.h>
 
 char* bsp_generate_json(bsp_matrix_t matrix) {
   cJSON* j = cJSON_CreateObject();
@@ -75,9 +76,7 @@ char* bsp_generate_json(bsp_matrix_t matrix) {
   return string;
 }
 
-int bsp_write_matrix(char* file_name, bsp_matrix_t matrix) {
-  hid_t f = H5Fcreate(file_name, H5F_ACC_TRUNC, H5P_DEFAULT, H5P_DEFAULT);
-
+int bsp_write_matrix_to_group(hid_t f, bsp_matrix_t matrix) {
   int result = bsp_write_array(f, "values", matrix.values);
 
   if (result != 0)
@@ -109,6 +108,25 @@ int bsp_write_matrix(char* file_name, bsp_matrix_t matrix) {
   bsp_write_attribute(f, "binsparse", json_string);
   free(json_string);
 
-  H5Fclose(f);
+  return 0;
+}
+
+int bsp_write_matrix(char* fname, bsp_matrix_t matrix, char* group) {
+  if (group == NULL) {
+    hid_t f = H5Fcreate(fname, H5F_ACC_TRUNC, H5P_DEFAULT, H5P_DEFAULT);
+    bsp_write_matrix_to_group(f, matrix);
+    H5Fclose(f);
+  } else {
+    hid_t f;
+    if (access(fname, F_OK) == 0) {
+      f = H5Fopen(fname, H5F_ACC_RDWR, H5P_DEFAULT);
+    } else {
+      f = H5Fcreate(fname, H5F_ACC_TRUNC, H5P_DEFAULT, H5P_DEFAULT);
+    }
+    hid_t g = H5Gcreate1(f, group, H5P_DEFAULT);
+    bsp_write_matrix_to_group(g, matrix);
+    H5Gclose(g);
+    H5Fclose(f);
+  }
   return 0;
 }
