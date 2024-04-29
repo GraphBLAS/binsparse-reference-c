@@ -39,8 +39,6 @@ bsp_matrix_t bsp_read_matrix(char* file_name) {
   assert(nnz_ != NULL);
   size_t nnz = cJSON_GetNumberValue(nnz_);
 
-  matrix.nnz = nnz;
-
   cJSON* shape_ = cJSON_GetObjectItemCaseSensitive(binsparse, "shape");
   assert(shape_ != NULL);
 
@@ -71,8 +69,13 @@ bsp_matrix_t bsp_read_matrix(char* file_name) {
     cJSON* value_type = cJSON_GetObjectItemCaseSensitive(data_types_, "values");
     char* type_string = cJSON_GetStringValue(value_type);
 
-    if (strlen(type_string) >= 3 && strncmp(type_string, "iso", 3) == 0) {
+    if (strlen(type_string) >= 4 && strncmp(type_string, "iso[", 4) == 0) {
       matrix.is_iso = true;
+      type_string += 4;
+    }
+
+    if (strlen(type_string) >= 8 && strncmp(type_string, "complex[", 8) == 0) {
+      matrix.values = bsp_fp_array_to_complex(matrix.values);
     }
   }
 

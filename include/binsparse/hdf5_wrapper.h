@@ -8,6 +8,10 @@
 // Write an array to a dataset / file
 // Returns 0 on success, nonzero on error.
 int bsp_write_array(hid_t f, char* label, bsp_array_t array) {
+  if (array.type == BSP_COMPLEX_FLOAT32 || array.type == BSP_COMPLEX_FLOAT64) {
+    array = bsp_complex_array_to_fp(array);
+  }
+
   hid_t hdf5_standard_type = bsp_get_hdf5_standard_type(array.type);
   hid_t fspace = H5Screate_simple(1, (hsize_t[]){array.size}, NULL);
   hid_t lcpl = H5Pcreate(H5P_LINK_CREATE);

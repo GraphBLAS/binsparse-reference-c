@@ -23,9 +23,7 @@ bsp_matrix_t bsp_mmread_explicit(char* file_path, bsp_type_t value_type,
   } else if (strcmp(metadata.type, "integer") == 0) {
     mm_type = BSP_MM_INTEGER;
   } else if (strcmp(metadata.type, "complex") == 0) {
-    // Don't handle complex yet.
     mm_type = BSP_MM_COMPLEX;
-    assert(false);
   }
 
   bsp_matrix_t matrix = bsp_construct_default_matrix_t();
@@ -41,15 +39,11 @@ bsp_matrix_t bsp_mmread_explicit(char* file_path, bsp_type_t value_type,
   matrix.indices_0 = bsp_construct_array_t(matrix.nnz, index_type);
   matrix.indices_1 = bsp_construct_array_t(matrix.nnz, index_type);
 
-  if (mm_type != BSP_MM_COMPLEX) {
-    if (mm_type == BSP_MM_PATTERN) {
-      matrix.values = bsp_construct_array_t(1, value_type);
-      bsp_array_write(matrix.values, 0, true);
-    } else {
-      matrix.values = bsp_construct_array_t(matrix.nnz, value_type);
-    }
+  if (mm_type == BSP_MM_PATTERN) {
+    matrix.values = bsp_construct_array_t(1, value_type);
+    bsp_array_write(matrix.values, 0, true);
   } else {
-    matrix.values = bsp_construct_array_t(matrix.nnz * 2, value_type);
+    matrix.values = bsp_construct_array_t(matrix.nnz, value_type);
   }
 
   matrix.format = BSP_COO;
@@ -98,8 +92,6 @@ bsp_matrix_t bsp_mmread_explicit(char* file_path, bsp_type_t value_type,
       i--;
       j--;
 
-      printf("Reading in %lf\n", value);
-
       bsp_array_write(matrix.values, count, value);
       bsp_array_write(matrix.indices_0, count, i);
       bsp_array_write(matrix.indices_1, count, j);
@@ -114,8 +106,17 @@ bsp_matrix_t bsp_mmread_explicit(char* file_path, bsp_type_t value_type,
       bsp_array_write(matrix.indices_0, count, i);
       bsp_array_write(matrix.indices_1, count, j);
     } else if (mm_type == BSP_MM_COMPLEX) {
-      // Don't handle complex yet.
-      assert(false);
+      unsigned long long i, j;
+      double real_value, complex_value;
+      sscanf(buf, "%llu %llu %lf %lf", &i, &j, &real_value, &complex_value);
+      i--;
+      j--;
+
+      double _Complex value = real_value + 1j * complex_value;
+
+      bsp_array_write(matrix.values, count, value);
+      bsp_array_write(matrix.indices_0, count, i);
+      bsp_array_write(matrix.indices_1, count, j);
     }
     count++;
   }
