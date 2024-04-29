@@ -16,7 +16,9 @@ typedef enum bsp_structure_t {
 } bsp_structure_t;
 
 char* bsp_get_structure_string(bsp_structure_t structure) {
-  if (structure == BSP_SYMMETRIC_LOWER) {
+  if (structure == BSP_GENERAL) {
+    return "general";
+  } else if (structure == BSP_SYMMETRIC_LOWER) {
     return "symmetric_lower";
   } else if (structure == BSP_SYMMETRIC_UPPER) {
     return "symmetric_upper";
