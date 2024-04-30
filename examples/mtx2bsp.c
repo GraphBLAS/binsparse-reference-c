@@ -31,6 +31,12 @@ int main(int argc, char** argv) {
     printf("File has very long comments, not printing.\n");
   }
 
+  cJSON* user_json = cJSON_CreateObject();
+
+  assert(user_json != NULL);
+
+  cJSON_AddStringToObject(user_json, "comment", m.comments);
+
   printf(" === Reading file... ===\n");
   bsp_matrix_t matrix = bsp_mmread(input_fname);
   printf(" === Done reading. ===\n");
@@ -38,7 +44,7 @@ int main(int argc, char** argv) {
   bsp_print_matrix_info(matrix);
 
   printf(" === Writing to %s... ===\n", output_fname);
-  bsp_write_matrix(output_fname, matrix, group_name);
+  bsp_write_matrix(output_fname, matrix, group_name, user_json);
   printf(" === Done writing. ===\n");
 
   bsp_destroy_matrix_t(matrix);
