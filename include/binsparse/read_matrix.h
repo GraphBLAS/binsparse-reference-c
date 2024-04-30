@@ -4,9 +4,7 @@
 #include <binsparse/matrix.h>
 #include <cJSON/cJSON.h>
 
-bsp_matrix_t bsp_read_matrix(char* file_name) {
-  hid_t f = H5Fopen(file_name, H5F_ACC_RDWR, H5P_DEFAULT);
-
+bsp_matrix_t bsp_read_matrix_from_group(hid_t f) {
   bsp_matrix_t matrix = bsp_construct_default_matrix_t();
 
   char* json_string = bsp_read_attribute(f, "binsparse");
@@ -101,6 +99,39 @@ bsp_matrix_t bsp_read_matrix(char* file_name) {
   cJSON_Delete(j);
   free(json_string);
 
-  H5Fclose(f);
   return matrix;
+}
+
+size_t bsp_final_dot(char* str) {
+  size_t dot_idx = 0;
+  for (size_t i = 0; str[i] != '\0'; i++) {
+    if (str[i] == '.') {
+      dot_idx = i;
+    }
+  }
+  return dot_idx;
+}
+
+bsp_matrix_t bsp_read_matrix(char* file_name, char* group) {
+  if (group == NULL) {
+    size_t idx = bsp_final_dot(file_name);
+    if (strcmp(file_name + idx, ".hdf5") == 0 ||
+        strcmp(file_name + idx, ".h5") == 0) {
+      hid_t f = H5Fopen(file_name, H5F_ACC_RDONLY, H5P_DEFAULT);
+      bsp_matrix_t matrix = bsp_read_matrix_from_group(f);
+      H5Fclose(f);
+      return matrix;
+    } else if (strcmp(file_name + idx, ".mtx") == 0) {
+      return bsp_mmread(file_name);
+    } else {
+      assert(false);
+    }
+  } else {
+    hid_t f = H5Fopen(file_name, H5F_ACC_RDONLY, H5P_DEFAULT);
+    hid_t g = H5Gopen1(f, group);
+    bsp_matrix_t matrix = bsp_read_matrix_from_group(g);
+    H5Gclose(g);
+    H5Fclose(f);
+    return matrix;
+  }
 }

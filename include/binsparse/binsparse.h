@@ -10,5 +10,4 @@
 #include <binsparse/matrix_market/matrix_market_read.h>
 #include <binsparse/matrix_market/matrix_market_write.h>
 #include <binsparse/read_matrix.h>
-#include <binsparse/read_matrix_generic.h>
 #include <binsparse/write_matrix.h>

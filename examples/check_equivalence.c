@@ -80,6 +80,39 @@ int check_array_equivalence(bsp_array_t array1, bsp_array_t array2) {
   return 0;
 }
 
+typedef struct {
+  char* fname;
+  char* dataset;
+} bsp_fdataset_info_t;
+
+bsp_fdataset_info_t bsp_parse_fdataset_string(char* str) {
+  size_t len = strlen(str);
+
+  int split = -1;
+  for (int i = len - 1; i >= 0; i--) {
+    if (str[i] == ':') {
+      split = i;
+      break;
+    }
+  }
+
+  if (split == -1) {
+    bsp_fdataset_info_t info;
+    info.fname = (char*)malloc(sizeof(char) * len);
+    strcpy(info.fname, str);
+    info.dataset = NULL;
+    return info;
+  } else {
+    bsp_fdataset_info_t info;
+    info.fname = (char*)malloc(sizeof(char) * (split + 1));
+    strncpy(info.fname, str, split);
+    info.fname[split] = '\0';
+    info.dataset = (char*)malloc(sizeof(char) * (len - split));
+    strcpy(info.dataset, &str[split + 1]);
+    return info;
+  }
+}
+
 int main(int argc, char** argv) {
   if (argc < 3) {
     printf(
@@ -90,8 +123,16 @@ int main(int argc, char** argv) {
   char* file1 = argv[1];
   char* file2 = argv[2];
 
-  bsp_matrix_t matrix1 = bsp_read_matrix_generic(file1);
-  bsp_matrix_t matrix2 = bsp_read_matrix_generic(file2);
+  bsp_fdataset_info_t info1 = bsp_parse_fdataset_string(argv[1]);
+  bsp_fdataset_info_t info2 = bsp_parse_fdataset_string(argv[2]);
+
+  printf("Matrix 1: %s and %s\n", info1.fname,
+         (info1.dataset == NULL) ? "root" : info1.dataset);
+  printf("Matrix 2: %s and %s\n", info2.fname,
+         (info2.dataset == NULL) ? "root" : info2.dataset);
+
+  bsp_matrix_t matrix1 = bsp_read_matrix(info1.fname, info1.dataset);
+  bsp_matrix_t matrix2 = bsp_read_matrix(info2.fname, info2.dataset);
 
   if (matrix1.format != matrix2.format) {
     fprintf(stderr, "Formats do not match. (%s != %s)\n",
