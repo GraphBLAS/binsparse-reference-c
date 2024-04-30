@@ -13,7 +13,7 @@ int main(int argc, char** argv) {
   char* output_fname = argv[2];
 
   printf(" === Reading file... ===\n");
-  bsp_matrix_t matrix = bsp_read_matrix(input_fname);
+  bsp_matrix_t matrix = bsp_read_matrix(input_fname, NULL);
   printf(" === Done writing. ===\n");
 
   printf(" === Writing to %s... ===\n", output_fname);

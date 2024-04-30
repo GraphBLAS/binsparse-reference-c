@@ -43,6 +43,10 @@ void bsp_mmwrite(char* file_path, bsp_matrix_t matrix) {
              matrix.values.type <= BSP_FLOAT64) {
     mm_type = BSP_MM_REAL;
     type = "real";
+  } else if (matrix.values.type == BSP_COMPLEX_FLOAT32 ||
+             matrix.values.type == BSP_COMPLEX_FLOAT64) {
+    mm_type = BSP_MM_COMPLEX;
+    type = "complex";
   } else {
     assert(false);
   }
@@ -58,20 +62,30 @@ void bsp_mmwrite(char* file_path, bsp_matrix_t matrix) {
         size_t i, j;
         bsp_array_read(matrix.indices_0, count, i);
         bsp_array_read(matrix.indices_1, count, j);
-        fprintf(f, "%zu %zu\n", i, j);
+        fprintf(f, "%zu %zu\n", i + 1, j + 1);
       } else if (mm_type == BSP_MM_INTEGER) {
         size_t i, j, value;
         bsp_array_read(matrix.indices_0, count, i);
         bsp_array_read(matrix.indices_1, count, j);
         bsp_array_read(matrix.values, count, value);
-        fprintf(f, "%zu %zu %zu\n", i, j, value);
+        fprintf(f, "%zu %zu %zu\n", i + 1, j + 1, value);
       } else if (mm_type == BSP_MM_REAL) {
         size_t i, j;
         double value;
         bsp_array_read(matrix.indices_0, count, i);
         bsp_array_read(matrix.indices_1, count, j);
         bsp_array_read(matrix.values, count, value);
-        fprintf(f, "%zu %zu %lf\n", i, j, value);
+        fprintf(f, "%zu %zu %lf\n", i + 1, j + 1, value);
+      } else if (mm_type == BSP_MM_COMPLEX) {
+        size_t i, j;
+        double _Complex value;
+        bsp_array_read(matrix.indices_0, count, i);
+        bsp_array_read(matrix.indices_1, count, j);
+        bsp_array_read(matrix.values, count, value);
+        double real_value = 1.0 * value;
+        double complex_value = 1j * value;
+        fprintf(f, "%zu %zu %lf %lf\n", i + 1, j + 1, real_value,
+                complex_value);
       } else {
         assert(false);
       }

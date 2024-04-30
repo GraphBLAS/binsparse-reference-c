@@ -3,7 +3,7 @@
 int main(int argc, char** argv) {
   char* file_name = "test.hdf5";
 
-  bsp_matrix_t mat = bsp_read_matrix(file_name);
+  bsp_matrix_t mat = bsp_read_matrix(file_name, NULL);
 
   if (mat.format == BSP_COO) {
     float* values = mat.values.data;

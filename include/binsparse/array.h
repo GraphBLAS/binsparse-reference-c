@@ -36,6 +36,39 @@ bsp_array_t bsp_copy_construct_array_t(bsp_array_t other) {
   return array;
 }
 
+bsp_array_t bsp_complex_array_to_fp(bsp_array_t other) {
+  assert(other.type == BSP_COMPLEX_FLOAT32 ||
+         other.type == BSP_COMPLEX_FLOAT64);
+
+  bsp_array_t array;
+  array.data = other.data;
+  array.size = other.size * 2;
+
+  if (other.type == BSP_COMPLEX_FLOAT32) {
+    array.type = BSP_FLOAT32;
+  } else {
+    array.type = BSP_FLOAT64;
+  }
+
+  return array;
+}
+
+bsp_array_t bsp_fp_array_to_complex(bsp_array_t other) {
+  assert(other.type == BSP_FLOAT32 || other.type == BSP_FLOAT64);
+
+  bsp_array_t array;
+  array.data = other.data;
+  array.size = other.size / 2;
+
+  if (other.type == BSP_FLOAT32) {
+    array.type = BSP_COMPLEX_FLOAT32;
+  } else {
+    array.type = BSP_COMPLEX_FLOAT64;
+  }
+
+  return array;
+}
+
 void bsp_destroy_array_t(bsp_array_t array) {
   free(array.data);
 }
@@ -76,6 +109,12 @@ void bsp_destroy_array_t(bsp_array_t array) {
     } else if (array.type == BSP_BINT8) {                                      \
       int8_t* data = array.data;                                               \
       data[index] = ((size_t)value) % 2;                                       \
+    } else if (array.type == BSP_COMPLEX_FLOAT32) {                            \
+      float _Complex* data = array.data;                                       \
+      data[index] = value;                                                     \
+    } else if (array.type == BSP_COMPLEX_FLOAT64) {                            \
+      double _Complex* data = array.data;                                      \
+      data[index] = value;                                                     \
     }                                                                          \
   }
 
@@ -126,6 +165,14 @@ void bsp_destroy_array_t(bsp_array_t array) {
       int8_t* data0 = array_0.data;                                            \
       int8_t* data1 = array_1.data;                                            \
       data0[index_0] = data1[index_1];                                         \
+    } else if (array_0.type == BSP_COMPLEX_FLOAT32) {                          \
+      float _Complex* data0 = array_0.data;                                    \
+      float _Complex* data1 = array_1.data;                                    \
+      data0[index_0] = data1[index_1];                                         \
+    } else if (array_0.type == BSP_COMPLEX_FLOAT64) {                          \
+      double _Complex* data0 = array_0.data;                                   \
+      double _Complex* data1 = array_1.data;                                   \
+      data0[index_0] = data1[index_1];                                         \
     }                                                                          \
   }
 
@@ -164,6 +211,12 @@ void bsp_destroy_array_t(bsp_array_t array) {
       value = data[index];                                                     \
     } else if (array.type == BSP_BINT8) {                                      \
       int8_t* data = array.data;                                               \
+      value = data[index];                                                     \
+    } else if (array.type == BSP_COMPLEX_FLOAT32) {                            \
+      float _Complex* data = array.data;                                       \
+      value = data[index];                                                     \
+    } else if (array.type == BSP_COMPLEX_FLOAT64) {                            \
+      double _Complex* data = array.data;                                      \
       value = data[index];                                                     \
     }                                                                          \
   }
@@ -224,6 +277,16 @@ void bsp_destroy_array_t(bsp_array_t array) {
     } else if (array.type == BSP_BINT8) {                                      \
       int8_t* data = array.data;                                               \
       int8_t v = data[i];                                                      \
+      data[i] = data[j];                                                       \
+      data[j] = v;                                                             \
+    } else if (array.type == BSP_COMPLEX_FLOAT32) {                            \
+      float _Complex* data = array.data;                                       \
+      float _Complex v = data[i];                                              \
+      data[i] = data[j];                                                       \
+      data[j] = v;                                                             \
+    } else if (array.type == BSP_COMPLEX_FLOAT64) {                            \
+      double _Complex* data = array.data;                                      \
+      double _Complex v = data[i];                                             \
       data[i] = data[j];                                                       \
       data[j] = v;                                                             \
     }                                                                          \

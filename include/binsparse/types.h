@@ -42,6 +42,10 @@ char* bsp_get_type_string(bsp_type_t type) {
     return "float64";
   } else if (type == BSP_BINT8) {
     return "bint8";
+  } else if (type == BSP_COMPLEX_FLOAT32) {
+    return "complex[float32]";
+  } else if (type == BSP_COMPLEX_FLOAT64) {
+    return "complex[float64]";
   } else {
     return "";
   }
@@ -70,8 +74,12 @@ size_t bsp_type_size(bsp_type_t type) {
     return sizeof(double);
   } else if (type == BSP_BINT8) {
     return sizeof(int8_t);
+  } else if (type == BSP_COMPLEX_FLOAT32) {
+    return sizeof(float _Complex);
+  } else if (type == BSP_COMPLEX_FLOAT64) {
+    return sizeof(double _Complex);
   } else {
-    return 0;
+    assert(false);
   }
 }
 
