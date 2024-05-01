@@ -138,6 +138,7 @@ int main(int argc, char** argv) {
     fprintf(stderr, "Formats do not match. (%s != %s)\n",
             bsp_get_matrix_format_string(matrix1.format),
             bsp_get_matrix_format_string(matrix2.format));
+    fprintf(stderr, "FAIL!\n");
     return 1;
   }
 
@@ -145,18 +146,21 @@ int main(int argc, char** argv) {
     fprintf(stderr, "Structures do not match. (%s != %s)\n",
             bsp_get_structure_string(matrix1.structure),
             bsp_get_structure_string(matrix2.structure));
+    fprintf(stderr, "FAIL!\n");
     return 2;
   }
 
   if (matrix1.nrows != matrix2.nrows || matrix1.ncols != matrix2.ncols) {
     fprintf(stderr, "Dimensions do not match. (%zu, %zu) != (%zu, %zu)\n",
             matrix1.nrows, matrix1.ncols, matrix2.nrows, matrix2.ncols);
+    fprintf(stderr, "FAIL!\n");
     return 3;
   }
 
   if (matrix1.nnz != matrix2.nnz) {
     fprintf(stderr, "Number of stored values does not match. %zu != %zu\n",
             matrix1.nnz, matrix2.nnz);
+    fprintf(stderr, "FAIL!\n");
     return 4;
   }
 
@@ -164,27 +168,32 @@ int main(int argc, char** argv) {
     fprintf(stderr, "ISO-ness does not match. %s != %s\n",
             (matrix1.is_iso) ? "true" : "false",
             (matrix2.is_iso) ? "true" : "false");
+    fprintf(stderr, "FAIL!\n");
     return 5;
   }
 
   if (check_array_equivalence(matrix1.values, matrix2.values) != 0) {
     fprintf(stderr, "Value arrays not equivalent.\n");
+    fprintf(stderr, "FAIL!\n");
     return 6;
   }
 
   if (check_array_equivalence(matrix1.indices_0, matrix2.indices_0) != 0) {
     fprintf(stderr, "Indices_0 arrays not equivalent.\n");
+    fprintf(stderr, "FAIL!\n");
     return 7;
   }
 
   if (check_array_equivalence(matrix1.indices_1, matrix2.indices_1) != 0) {
     fprintf(stderr, "Indices_1 arrays not equivalent.\n");
+    fprintf(stderr, "FAIL!\n");
     return 8;
   }
 
   if (check_array_equivalence(matrix1.pointers_to_1, matrix2.pointers_to_1) !=
       0) {
     fprintf(stderr, "Pointers_to_1 arrays not equivalent.\n");
+    fprintf(stderr, "FAIL!\n");
     return 9;
   }
 
