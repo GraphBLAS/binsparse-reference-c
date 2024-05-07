@@ -33,7 +33,7 @@ char* bsp_generate_json(bsp_matrix_t matrix, cJSON* user_json) {
   cJSON_AddItemToArray(shape, nrows);
   cJSON_AddItemToArray(shape, ncols);
 
-  cJSON_AddNumberToObject(binsparse, "nnz", matrix.nnz);
+  cJSON_AddNumberToObject(binsparse, "number_of_stored_values", matrix.nnz);
 
   cJSON* data_types = cJSON_AddObjectToObject(binsparse, "data_types");
 

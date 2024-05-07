@@ -35,7 +35,8 @@ bsp_matrix_t bsp_read_matrix_from_group(hid_t f) {
 
   matrix.format = format;
 
-  cJSON* nnz_ = cJSON_GetObjectItemCaseSensitive(binsparse, "nnz");
+  cJSON* nnz_ =
+      cJSON_GetObjectItemCaseSensitive(binsparse, "number_of_stored_values");
   assert(nnz_ != NULL);
   size_t nnz = cJSON_GetNumberValue(nnz_);
 
