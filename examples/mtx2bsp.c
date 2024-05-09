@@ -41,6 +41,8 @@ int main(int argc, char** argv) {
   bsp_matrix_t matrix = bsp_mmread(input_fname);
   printf(" === Done reading. ===\n");
 
+  matrix = bsp_matrix_minimize_values(matrix);
+
   bsp_print_matrix_info(matrix);
 
   printf(" === Writing to %s... ===\n", output_fname);
