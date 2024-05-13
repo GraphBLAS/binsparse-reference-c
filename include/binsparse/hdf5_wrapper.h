@@ -16,8 +16,22 @@ int bsp_write_array(hid_t f, char* label, bsp_array_t array) {
   hid_t fspace = H5Screate_simple(1, (hsize_t[]){array.size}, NULL);
   hid_t lcpl = H5Pcreate(H5P_LINK_CREATE);
 
-  hid_t dset = H5Dcreate2(f, label, hdf5_standard_type, fspace, lcpl,
-                          H5P_DEFAULT, H5P_DEFAULT);
+  hid_t dcpl = H5Pcreate(H5P_DATASET_CREATE);
+
+  // Choose 1 MiB, the default chunk cache size, as our chunk size.
+  size_t chunk_size = 1024 * 1024 / bsp_type_size(array.type);
+
+  // If the dataset is smaller than the chunk size, cap the chunk size.
+  if (array.size < chunk_size) {
+    chunk_size = array.size;
+  }
+
+  H5Pset_chunk(dcpl, 1, (hsize_t[]){chunk_size});
+
+  H5Pset_deflate(dcpl, 9);
+
+  hid_t dset =
+      H5Dcreate2(f, label, hdf5_standard_type, fspace, lcpl, dcpl, H5P_DEFAULT);
 
   if (dset == H5I_INVALID_HID) {
     return -1;
@@ -34,6 +48,7 @@ int bsp_write_array(hid_t f, char* label, bsp_array_t array) {
 
   H5Sclose(fspace);
   H5Pclose(lcpl);
+  H5Pclose(dcpl);
 
   return 0;
 }

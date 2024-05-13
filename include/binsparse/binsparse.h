@@ -9,5 +9,6 @@
 #include <binsparse/matrix_market/matrix_market_inspector.h>
 #include <binsparse/matrix_market/matrix_market_read.h>
 #include <binsparse/matrix_market/matrix_market_write.h>
+#include <binsparse/minimize_values.h>
 #include <binsparse/read_matrix.h>
 #include <binsparse/write_matrix.h>

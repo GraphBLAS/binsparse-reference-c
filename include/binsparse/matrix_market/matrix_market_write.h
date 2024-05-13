@@ -64,11 +64,12 @@ void bsp_mmwrite(char* file_path, bsp_matrix_t matrix) {
         bsp_array_read(matrix.indices_1, count, j);
         fprintf(f, "%zu %zu\n", i + 1, j + 1);
       } else if (mm_type == BSP_MM_INTEGER) {
-        size_t i, j, value;
+        size_t i, j;
+        int64_t value;
         bsp_array_read(matrix.indices_0, count, i);
         bsp_array_read(matrix.indices_1, count, j);
         bsp_array_read(matrix.values, count, value);
-        fprintf(f, "%zu %zu %zu\n", i + 1, j + 1, value);
+        fprintf(f, "%zu %zu %lld\n", i + 1, j + 1, (long long)value);
       } else if (mm_type == BSP_MM_REAL) {
         size_t i, j;
         double value;
