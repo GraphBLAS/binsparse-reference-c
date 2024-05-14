@@ -43,7 +43,7 @@ char* bsp_generate_json(bsp_matrix_t matrix, cJSON* user_json) {
   } else {
     char* base_type_string = bsp_get_type_string(matrix.values.type);
     size_t len = strlen(base_type_string) + 6;
-    char* type_string = (char*)malloc(sizeof(char) * len);
+    char* type_string = (char*) malloc(sizeof(char) * len);
 
     strncpy(type_string, "iso[", len);
     strncpy(type_string + 4, base_type_string, len - 4);

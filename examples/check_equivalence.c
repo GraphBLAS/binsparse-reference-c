@@ -98,16 +98,16 @@ bsp_fdataset_info_t bsp_parse_fdataset_string(char* str) {
 
   if (split == -1) {
     bsp_fdataset_info_t info;
-    info.fname = (char*)malloc(sizeof(char) * (len + 1));
+    info.fname = (char*) malloc(sizeof(char) * (len + 1));
     strcpy(info.fname, str);
     info.dataset = NULL;
     return info;
   } else {
     bsp_fdataset_info_t info;
-    info.fname = (char*)malloc(sizeof(char) * (split + 1));
+    info.fname = (char*) malloc(sizeof(char) * (split + 1));
     strncpy(info.fname, str, split);
     info.fname[split] = '\0';
-    info.dataset = (char*)malloc(sizeof(char) * (len - split));
+    info.dataset = (char*) malloc(sizeof(char) * (len - split));
     strcpy(info.dataset, &str[split + 1]);
     return info;
   }

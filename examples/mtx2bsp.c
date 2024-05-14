@@ -9,6 +9,11 @@ int main(int argc, char** argv) {
     return 1;
   }
 
+  // NOTE: this binary automatically performs "declamping" of floating point
+  //       values greater/less than 1e308/-1e308 in order to restore inf values
+  //       in SuiteSparse Matrix Collection matrices.
+  bool perform_suitesparse_declamping = true;
+
   char* input_fname = argv[1];
   char* output_fname = argv[2];
 
@@ -40,6 +45,10 @@ int main(int argc, char** argv) {
   printf(" === Reading file... ===\n");
   bsp_matrix_t matrix = bsp_mmread(input_fname);
   printf(" === Done reading. ===\n");
+
+  if (perform_suitesparse_declamping) {
+    bsp_matrix_declamp_values(matrix);
+  }
 
   matrix = bsp_matrix_minimize_values(matrix);
 

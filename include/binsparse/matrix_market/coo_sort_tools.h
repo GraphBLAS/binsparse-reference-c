@@ -21,8 +21,8 @@ static int bsp_compare_int_impl_(size_t x, size_t y) {
 
 static int bsp_coo_comparison_row_sort_operator_impl_(const void* x,
                                                       const void* y) {
-  size_t x_index = *((const size_t*)x);
-  size_t y_index = *((const size_t*)y);
+  size_t x_index = *((const size_t*) x);
+  size_t y_index = *((const size_t*) y);
 
   size_t x_i, x_j;
   size_t y_i, y_j;

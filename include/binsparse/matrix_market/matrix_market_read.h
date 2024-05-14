@@ -289,11 +289,11 @@ bsp_matrix_t bsp_mmread(char* file_path) {
   size_t max_dim =
       (metadata.nrows > metadata.ncols) ? metadata.nrows : metadata.ncols;
 
-  if (max_dim < (size_t)UINT8_MAX) {
+  if (max_dim < (size_t) UINT8_MAX) {
     index_type = BSP_UINT8;
-  } else if (max_dim < (size_t)UINT16_MAX) {
+  } else if (max_dim < (size_t) UINT16_MAX) {
     index_type = BSP_UINT16;
-  } else if (max_dim < (size_t)UINT32_MAX) {
+  } else if (max_dim < (size_t) UINT32_MAX) {
     index_type = BSP_UINT32;
   } else {
     index_type = BSP_UINT64;

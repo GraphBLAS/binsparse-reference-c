@@ -3,6 +3,7 @@
 #define BINSPARSE_VERSION "0.1"
 
 #include <binsparse/array.h>
+#include <binsparse/detail/detail.h>
 #include <binsparse/generate.h>
 #include <binsparse/hdf5_wrapper.h>
 #include <binsparse/matrix.h>

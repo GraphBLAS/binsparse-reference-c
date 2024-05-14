@@ -108,7 +108,7 @@ void bsp_destroy_array_t(bsp_array_t array) {
       data[index] = value;                                                     \
     } else if (array.type == BSP_BINT8) {                                      \
       int8_t* data = array.data;                                               \
-      data[index] = ((size_t)value) % 2;                                       \
+      data[index] = ((size_t) value) % 2;                                      \
     } else if (array.type == BSP_COMPLEX_FLOAT32) {                            \
       float _Complex* data = array.data;                                       \
       data[index] = value;                                                     \

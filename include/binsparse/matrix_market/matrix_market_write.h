@@ -69,7 +69,7 @@ void bsp_mmwrite(char* file_path, bsp_matrix_t matrix) {
         bsp_array_read(matrix.indices_0, count, i);
         bsp_array_read(matrix.indices_1, count, j);
         bsp_array_read(matrix.values, count, value);
-        fprintf(f, "%zu %zu %lld\n", i + 1, j + 1, (long long)value);
+        fprintf(f, "%zu %zu %lld\n", i + 1, j + 1, (long long) value);
       } else if (mm_type == BSP_MM_REAL) {
         size_t i, j;
         double value;
