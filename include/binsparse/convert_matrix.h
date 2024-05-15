@@ -5,9 +5,9 @@
 
 bsp_matrix_t bsp_convert_matrix(bsp_matrix_t matrix,
                                 bsp_matrix_format_t format) {
-  // If already in desired format, do nothing.
+  // Throw an error if matrix already in desired format.
   if (matrix.format == format) {
-    return matrix;
+    assert(false);
   }
 
   if (format == BSP_COOR) {
