@@ -35,7 +35,8 @@ void print_group_info(hid_t g, const char* name) {
     assert(format_ != NULL);
     char* format_string = cJSON_GetStringValue(format_);
 
-    cJSON* nnz_ = cJSON_GetObjectItemCaseSensitive(binsparse, "nnz");
+    cJSON* nnz_ =
+        cJSON_GetObjectItemCaseSensitive(binsparse, "number_of_stored_values");
     assert(nnz_ != NULL);
     size_t nnz = cJSON_GetNumberValue(nnz_);
 
