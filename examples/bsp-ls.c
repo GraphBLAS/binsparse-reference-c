@@ -60,6 +60,15 @@ void print_group_info(hid_t g, const char* name) {
 
     printf("Group \"%s\": Version %s Binsparse matrix. Format %s, %zu x %zu.\n",
            full_group_path, version_string, format_string, nrows, ncols);
+
+    cJSON* data_types =
+        cJSON_GetObjectItemCaseSensitive(binsparse, "data_types");
+    assert(data_types != NULL);
+
+    cJSON* item;
+    cJSON_ArrayForEach(item, data_types) {
+      printf("  %s: %s\n", item->string, cJSON_Print(item));
+    }
   }
 
   H5Literate(g, H5_INDEX_NAME, H5_ITER_INC, NULL, visit_group, NULL);
