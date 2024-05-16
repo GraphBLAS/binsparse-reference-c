@@ -101,6 +101,17 @@ int main(int argc, char** argv) {
   bsp_matrix_t matrix1 = bsp_read_matrix(info1.fname, info1.dataset);
   bsp_matrix_t matrix2 = bsp_read_matrix(info2.fname, info2.dataset);
 
+  bool perform_suitesparse_declamping = true;
+  if (perform_suitesparse_declamping &&
+      strcmp(bsp_get_file_extension(file1), ".mtx") == 0) {
+    bsp_matrix_declamp_values(matrix1);
+  }
+
+  if (perform_suitesparse_declamping &&
+      strcmp(bsp_get_file_extension(file2), ".mtx") == 0) {
+    bsp_matrix_declamp_values(matrix2);
+  }
+
   // If matrices are not the same format, try to convert.
   if (matrix1.format != matrix2.format) {
     if (matrix1.format != BSP_COOR) {
