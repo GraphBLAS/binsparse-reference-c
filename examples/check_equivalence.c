@@ -101,6 +101,21 @@ int main(int argc, char** argv) {
   bsp_matrix_t matrix1 = bsp_read_matrix(info1.fname, info1.dataset);
   bsp_matrix_t matrix2 = bsp_read_matrix(info2.fname, info2.dataset);
 
+  // If matrices are not the same format, try to convert.
+  if (matrix1.format != matrix2.format) {
+    if (matrix1.format != BSP_COOR) {
+      bsp_matrix_t intermediate = bsp_convert_matrix(matrix1, BSP_COOR);
+      bsp_destroy_matrix_t(matrix1);
+      matrix1 = intermediate;
+    }
+
+    if (matrix2.format != BSP_COOR) {
+      bsp_matrix_t intermediate = bsp_convert_matrix(matrix2, BSP_COOR);
+      bsp_destroy_matrix_t(matrix2);
+      matrix2 = intermediate;
+    }
+  }
+
   if (matrix1.format != matrix2.format) {
     fprintf(stderr, "Formats do not match. (%s != %s)\n",
             bsp_get_matrix_format_string(matrix1.format),

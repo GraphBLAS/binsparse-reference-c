@@ -12,7 +12,54 @@ bsp_matrix_t bsp_convert_matrix(bsp_matrix_t matrix,
 
   if (format == BSP_COOR) {
     // *Convert to COO* from another format.
-    assert(false);
+    if (matrix.format == BSP_CSR) {
+      // Convert CSR -> COOR
+      bsp_matrix_t result = bsp_construct_default_matrix_t();
+
+      result.format = BSP_COOR;
+
+      // Inherit NNZ, nrows, ncols, ISO-ness, and structure directly from
+      // original matrix.
+      result.nnz = matrix.nnz;
+      result.nrows = matrix.nrows;
+      result.ncols = matrix.ncols;
+      result.is_iso = matrix.is_iso;
+      result.structure = matrix.structure;
+
+      size_t max_dim =
+          (matrix.nrows > matrix.ncols) ? matrix.nrows : matrix.ncols;
+
+      bsp_type_t index_type = bsp_pick_integer_type(max_dim);
+
+      result.values = bsp_copy_construct_array_t(matrix.values);
+
+      // There is a corner case with tall and skinny matrices where we need a
+      // higher width for rowind.  In order to keep rowind/colind the same type,
+      // we might upcast.
+
+      if (index_type == matrix.indices_0.type) {
+        result.indices_1 = bsp_copy_construct_array_t(matrix.indices_0);
+      } else {
+        result.indices_1 = bsp_construct_array_t(matrix.nnz, index_type);
+        for (size_t i = 0; i < matrix.nnz; i++) {
+          bsp_array_awrite(result.indices_1, i, matrix.indices_0, i);
+        }
+      }
+
+      result.indices_0 = bsp_construct_array_t(matrix.nnz, index_type);
+
+      for (size_t i = 0; i < matrix.nrows; i++) {
+        size_t row_begin, row_end;
+        bsp_array_read(matrix.pointers_to_1, i, row_begin);
+        bsp_array_read(matrix.pointers_to_1, i + 1, row_end);
+        for (size_t j_ptr = row_begin; j_ptr < row_end; j_ptr++) {
+          bsp_array_write(result.indices_0, j_ptr, i);
+        }
+      }
+      return result;
+    } else {
+      assert(false);
+    }
   } else {
     // Convert to any another format.
 
@@ -29,6 +76,14 @@ bsp_matrix_t bsp_convert_matrix(bsp_matrix_t matrix,
 
         bsp_matrix_t result = bsp_construct_default_matrix_t();
 
+        result.format = BSP_CSR;
+
+        result.nrows = matrix.nrows;
+        result.ncols = matrix.ncols;
+        result.nnz = matrix.nnz;
+        result.is_iso = matrix.is_iso;
+        result.structure = matrix.structure;
+
         // TODO: consider whether to produce files with varying integer types
         //       for row indices, column indices, and offsets.
 
@@ -41,13 +96,25 @@ bsp_matrix_t bsp_convert_matrix(bsp_matrix_t matrix,
         bsp_type_t value_type = matrix.values.type;
         bsp_type_t index_type = bsp_pick_integer_type(max_value);
 
-        result.values = bsp_construct_array_t(matrix.nnz, value_type);
-        result.indices_0 = bsp_construct_array_t(matrix.nnz, index_type);
+        // Since COOR is sorted by rows and then by columns, values and column
+        // indices can be copied exactly.  Values' type will not change, but
+        // column indices might, thus the extra branch.
+
+        result.values = bsp_copy_construct_array_t(matrix.values);
+
+        if (index_type == matrix.indices_1.type) {
+          result.indices_0 = bsp_copy_construct_array_t(matrix.indices_1);
+        } else {
+          result.indices_0 = bsp_construct_array_t(matrix.nnz, index_type);
+
+          for (size_t i = 0; i < matrix.nnz; i++) {
+            bsp_array_awrite(result.indices_0, i, matrix.indices_1, i);
+          }
+        }
+
         result.pointers_to_1 =
             bsp_construct_array_t(matrix.nrows + 1, index_type);
 
-        bsp_array_t values = result.values;
-        bsp_array_t colind = result.indices_0;
         bsp_array_t rowptr = result.pointers_to_1;
 
         bsp_array_write(rowptr, 0, 0);
@@ -55,9 +122,6 @@ bsp_matrix_t bsp_convert_matrix(bsp_matrix_t matrix,
         size_t r = 0;
         size_t c = 0;
         for (size_t c = 0; c < matrix.nnz; c++) {
-          bsp_array_awrite(values, c, matrix.values, c);
-          bsp_array_awrite(colind, c, matrix.indices_1, c);
-
           size_t j;
           bsp_array_read(matrix.indices_0, c, j);
 
