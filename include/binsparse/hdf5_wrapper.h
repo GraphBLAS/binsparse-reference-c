@@ -96,8 +96,7 @@ void bsp_write_attribute(hid_t f, char* label, char* string) {
   hid_t strtype = H5Tcopy(H5T_C_S1);
   H5Tset_size(strtype, strlen(string));
   H5Tset_cset(strtype, H5T_CSET_UTF8);
-  hsize_t size = 1;
-  hid_t dataspace = H5Screate_simple(1, &size, H5P_DEFAULT);
+  hid_t dataspace = H5Screate(H5S_SCALAR);
 
   hid_t attribute =
       H5Acreate2(f, label, strtype, dataspace, H5P_DEFAULT, H5P_DEFAULT);
