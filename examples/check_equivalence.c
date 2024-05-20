@@ -63,11 +63,8 @@ int check_array_equivalence(bsp_array_t array1, bsp_array_t array2) {
       bsp_array_read(array2, i, value2);
 
       if (value1 != value2) {
-        fprintf(stderr,
-                "Array values are not equal. (%.17lg + i%.17lg != %.17lg + "
-                "i%.17lg)\n",
-                __real__ value1, __imag__ value1, __real__ value2,
-                __imag__ value2);
+        fprintf(stderr, "Array values are not equal. (%.17lg != %.17lg)\n",
+                value1, value2);
         return 4;
       }
     } else if (mm_type1 == BSP_MM_COMPLEX) {
@@ -76,7 +73,11 @@ int check_array_equivalence(bsp_array_t array1, bsp_array_t array2) {
       bsp_array_read(array2, i, value2);
 
       if (value1 != value2) {
-        fprintf(stderr, "Array values are not equal.\n");
+        fprintf(stderr,
+                "Array values are not equal. (%.17lg + i%.17lg != %.17lg + "
+                "i%.17lg)\n",
+                __real__ value1, __imag__ value1, __real__ value2,
+                __imag__ value2);
         return 4;
       }
     }
