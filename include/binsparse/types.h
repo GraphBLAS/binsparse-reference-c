@@ -280,3 +280,17 @@ hid_t bsp_get_hdf5_native_type(bsp_type_t type) {
     return H5I_INVALID_HID;
   }
 }
+
+// Given the maximum value `max_value` that must be stored,
+// pick an unsigned integer type for indices.
+bsp_type_t bsp_pick_integer_type(size_t max_value) {
+  if (max_value < (size_t) UINT8_MAX) {
+    return BSP_UINT8;
+  } else if (max_value < (size_t) UINT16_MAX) {
+    return BSP_UINT16;
+  } else if (max_value < (size_t) UINT32_MAX) {
+    return BSP_UINT32;
+  } else {
+    return BSP_UINT64;
+  }
+}

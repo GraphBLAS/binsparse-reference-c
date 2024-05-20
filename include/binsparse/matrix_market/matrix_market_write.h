@@ -76,8 +76,10 @@ void bsp_mmwrite(char* file_path, bsp_matrix_t matrix) {
         bsp_array_read(matrix.indices_0, count, i);
         bsp_array_read(matrix.indices_1, count, j);
         bsp_array_read(matrix.values, count, value);
-        fprintf(f, "%zu %zu %lf\n", i + 1, j + 1, value);
+        fprintf(f, "%zu %zu %.17lg\n", i + 1, j + 1, value);
       } else if (mm_type == BSP_MM_COMPLEX) {
+        // TODO: use Tim Davis' trick from SuiteSparse to limit the number of
+        //       digits printed without reducing accuracy.
         size_t i, j;
         double _Complex value;
         bsp_array_read(matrix.indices_0, count, i);
@@ -85,7 +87,7 @@ void bsp_mmwrite(char* file_path, bsp_matrix_t matrix) {
         bsp_array_read(matrix.values, count, value);
         double real_value = 1.0 * value;
         double complex_value = 1j * value;
-        fprintf(f, "%zu %zu %lf %lf\n", i + 1, j + 1, real_value,
+        fprintf(f, "%zu %zu %.17lg %.17lg\n", i + 1, j + 1, real_value,
                 complex_value);
       } else {
         assert(false);

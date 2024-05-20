@@ -53,7 +53,8 @@ int check_array_equivalence(bsp_array_t array1, bsp_array_t array2) {
       bsp_array_read(array2, i, value2);
 
       if (value1 != value2) {
-        fprintf(stderr, "Array values are not equal.\n");
+        fprintf(stderr, "Array values are not equal. (%zu != %zu)\n", value1,
+                value2);
         return 4;
       }
     } else if (mm_type1 == BSP_MM_REAL) {
@@ -62,7 +63,8 @@ int check_array_equivalence(bsp_array_t array1, bsp_array_t array2) {
       bsp_array_read(array2, i, value2);
 
       if (value1 != value2) {
-        fprintf(stderr, "Array values are not equal.\n");
+        fprintf(stderr, "Array values are not equal. (%.17lg != %.17lg)\n",
+                value1, value2);
         return 4;
       }
     } else if (mm_type1 == BSP_MM_COMPLEX) {
@@ -71,46 +73,17 @@ int check_array_equivalence(bsp_array_t array1, bsp_array_t array2) {
       bsp_array_read(array2, i, value2);
 
       if (value1 != value2) {
-        fprintf(stderr, "Array values are not equal.\n");
+        fprintf(stderr,
+                "Array values are not equal. (%.17lg + i%.17lg != %.17lg + "
+                "i%.17lg)\n",
+                __real__ value1, __imag__ value1, __real__ value2,
+                __imag__ value2);
         return 4;
       }
     }
   }
 
   return 0;
-}
-
-typedef struct {
-  char* fname;
-  char* dataset;
-} bsp_fdataset_info_t;
-
-bsp_fdataset_info_t bsp_parse_fdataset_string(char* str) {
-  size_t len = strlen(str);
-
-  int split = -1;
-  for (int i = len - 1; i >= 0; i--) {
-    if (str[i] == ':') {
-      split = i;
-      break;
-    }
-  }
-
-  if (split == -1) {
-    bsp_fdataset_info_t info;
-    info.fname = (char*) malloc(sizeof(char) * (len + 1));
-    strcpy(info.fname, str);
-    info.dataset = NULL;
-    return info;
-  } else {
-    bsp_fdataset_info_t info;
-    info.fname = (char*) malloc(sizeof(char) * (split + 1));
-    strncpy(info.fname, str, split);
-    info.fname[split] = '\0';
-    info.dataset = (char*) malloc(sizeof(char) * (len - split));
-    strcpy(info.dataset, &str[split + 1]);
-    return info;
-  }
 }
 
 int main(int argc, char** argv) {
@@ -133,6 +106,32 @@ int main(int argc, char** argv) {
 
   bsp_matrix_t matrix1 = bsp_read_matrix(info1.fname, info1.dataset);
   bsp_matrix_t matrix2 = bsp_read_matrix(info2.fname, info2.dataset);
+
+  bool perform_suitesparse_declamping = true;
+  if (perform_suitesparse_declamping &&
+      strcmp(bsp_get_file_extension(file1), ".mtx") == 0) {
+    bsp_matrix_declamp_values(matrix1);
+  }
+
+  if (perform_suitesparse_declamping &&
+      strcmp(bsp_get_file_extension(file2), ".mtx") == 0) {
+    bsp_matrix_declamp_values(matrix2);
+  }
+
+  // If matrices are not the same format, try to convert.
+  if (matrix1.format != matrix2.format) {
+    if (matrix1.format != BSP_COOR) {
+      bsp_matrix_t intermediate = bsp_convert_matrix(matrix1, BSP_COOR);
+      bsp_destroy_matrix_t(matrix1);
+      matrix1 = intermediate;
+    }
+
+    if (matrix2.format != BSP_COOR) {
+      bsp_matrix_t intermediate = bsp_convert_matrix(matrix2, BSP_COOR);
+      bsp_destroy_matrix_t(matrix2);
+      matrix2 = intermediate;
+    }
+  }
 
   if (matrix1.format != matrix2.format) {
     fprintf(stderr, "Formats do not match. (%s != %s)\n",
