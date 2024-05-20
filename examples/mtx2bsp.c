@@ -114,8 +114,6 @@ int main(int argc, char** argv) {
 
   bsp_print_matrix_info(matrix);
 
-  bsp_array_write(matrix.values, 0, -12);
-
   printf(" === Writing to %s... ===\n", output_fname);
   bsp_write_matrix(output_fname, matrix, group_name, user_json);
   printf(" === Done writing. ===\n");
