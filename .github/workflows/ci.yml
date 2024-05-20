@@ -38,4 +38,6 @@ jobs:
     - name: Build
       run: make -C build -j `nproc`
     - name: Test
-      run: ctest build/test/bash
+      run: |
+        pwd
+        ctest ./build/test/bash
