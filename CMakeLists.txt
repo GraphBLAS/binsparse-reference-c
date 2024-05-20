@@ -25,4 +25,5 @@ target_link_libraries(${PROJECT_NAME} INTERFACE cjson)
 
 if(CMAKE_PROJECT_NAME STREQUAL PROJECT_NAME)
   add_subdirectory(examples)
+  add_subdirectory(test)
 endif()
