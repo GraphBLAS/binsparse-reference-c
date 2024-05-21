@@ -5,7 +5,7 @@ int main(int argc, char** argv) {
 
   if (argc < 3) {
     printf("usage: ./mtx2bsp [input.mtx] [output.bsp.h5]:[optional: group] "
-           "[optional: format]\n");
+           "[optional: format] [optional: compression level 0-9]\n");
     printf("\n");
     printf("Description: Convert a Matrix Market file to a Binsparse HDF5 "
            "file.\n");
@@ -29,6 +29,13 @@ int main(int argc, char** argv) {
         "example: ./mtx2bsp chesapeake.mtx chesapeake.bsp.h5:chesapeake CSR\n");
     printf("         - Same as previous example, but matrix will use CSR "
            "format.\n");
+    printf("example: ./mtx2bsp chesapeake.mtx chesapeake.bsp.h5:chesapeake CSR "
+           "5\n");
+    printf("         - Same as previous example, but will use GZip compression "
+           "level 5.\n");
+    printf("           0 is no compression, 1-9 correspond to GZip compression "
+           "levels.\n");
+    printf("           Default is 9.\n");
     return 1;
   }
 
@@ -47,6 +54,12 @@ int main(int argc, char** argv) {
 
   if (argc >= 4) {
     format_name = argv[3];
+  }
+
+  int compression_level = 9;
+
+  if (argc >= 5) {
+    compression_level = atoi(argv[4]);
   }
 
   char* input_file_extension = bsp_get_file_extension(input_fname);
@@ -90,6 +103,8 @@ int main(int argc, char** argv) {
     printf("File has very long comments, not printing.\n");
   }
 
+  printf("Printing with compression level %d.\n", compression_level);
+
   cJSON* user_json = cJSON_CreateObject();
 
   assert(user_json != NULL);
@@ -115,7 +130,8 @@ int main(int argc, char** argv) {
   bsp_print_matrix_info(matrix);
 
   printf(" === Writing to %s... ===\n", output_fname);
-  bsp_write_matrix(output_fname, matrix, group_name, user_json);
+  bsp_write_matrix(output_fname, matrix, group_name, user_json,
+                   compression_level);
   printf(" === Done writing. ===\n");
 
   bsp_destroy_matrix_t(matrix);
