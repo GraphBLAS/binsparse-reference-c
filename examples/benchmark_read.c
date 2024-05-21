@@ -1,4 +1,5 @@
 #include <binsparse/binsparse.h>
+#include <stdlib.h>
 #include <time.h>
 
 double gettime() {
@@ -11,7 +12,40 @@ int compar(const void* a, const void* b) {
   double x = *((const double*) a);
   double y = *((const double*) b);
 
-  return x - y;
+  double diff = x - y;
+
+  if (diff > 0) {
+    return 1;
+  } else if (diff < 0) {
+    return -1;
+  } else {
+    return 0;
+  }
+}
+
+double compute_variance(double* x, size_t n) {
+  double sum = 0;
+
+  for (size_t i = 0; i < n; i++) {
+    sum += x[i];
+  }
+
+  double mean = sum / n;
+
+  double sum_of_squares = 0;
+  for (size_t i = 0; i < n; i++) {
+    sum_of_squares += (x[i] - mean) * (x[i] - mean);
+  }
+
+  return sum_of_squares / (n - 1);
+}
+
+void flush_cache() {
+#ifdef __APPLE__
+  system("bash -c \"sync && sudo purge\"");
+#else
+  static_assert(false);
+#endif
 }
 
 int main(int argc, char** argv) {
@@ -29,6 +63,7 @@ int main(int argc, char** argv) {
   double durations[num_trials];
 
   for (size_t i = 0; i < num_trials; i++) {
+    flush_cache();
     double begin = gettime();
     bsp_matrix_t mat = bsp_read_matrix(file_name, NULL);
     double end = gettime();
@@ -36,9 +71,23 @@ int main(int argc, char** argv) {
     bsp_destroy_matrix_t(mat);
   }
 
+  printf("[");
+  for (size_t i = 0; i < num_trials; i++) {
+    printf("%lf", durations[i]);
+    if (i + 1 < num_trials) {
+      printf(", ");
+    }
+  }
+  printf("]\n");
+
   qsort(durations, num_trials, sizeof(double), compar);
 
+  double variance = compute_variance(durations, num_trials);
+
   printf("Read file in %lf seconds\n", durations[num_trials / 2]);
+
+  printf("Variance is %lf seconds, standard devication is %lf seconds\n",
+         variance, sqrt(variance));
 
   printf("[");
   for (size_t i = 0; i < num_trials; i++) {
