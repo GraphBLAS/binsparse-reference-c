@@ -48,13 +48,34 @@ void flush_cache() {
 #endif
 }
 
+void flush_writes() {
+#ifdef __APPLE__
+  system("bash -c \"sync\"");
+#else
+  static_assert(false);
+#endif
+}
+
+void delete_file(char* file_name) {
+  char command[2048];
+  snprintf(command, 2047, "rm %s", file_name);
+  system(command);
+}
+
 int main(int argc, char** argv) {
   if (argc < 2) {
-    fprintf(stderr, "usage: ./benchmark_read [file_name.h5]\n");
+    fprintf(stderr, "usage: ./benchmark_read [file_name.h5] [optional: "
+                    "compression_level]\n");
     return 1;
   }
 
   char* file_name = argv[1];
+
+  int compression_level = 0;
+
+  if (argc >= 3) {
+    compression_level = atoi(argv[2]);
+  }
 
   printf("Opening %s\n", file_name);
 
@@ -62,16 +83,23 @@ int main(int argc, char** argv) {
 
   double durations[num_trials];
 
-  size_t nbytes = 0;
+  bsp_matrix_t mat = bsp_read_matrix(file_name, NULL);
+  size_t nbytes = bsp_matrix_nbytes(mat);
+
+  char output_filename[2048];
+  strncpy(output_filename, "benchmark_write_file_n.h5", 2047);
 
   for (size_t i = 0; i < num_trials; i++) {
     flush_cache();
+    output_filename[21] = '0' + i;
+    printf("Writing to file %s\n", output_filename);
+
     double begin = gettime();
-    bsp_matrix_t mat = bsp_read_matrix(file_name, NULL);
+    bsp_write_matrix(output_filename, mat, NULL, NULL, compression_level);
+    flush_writes();
     double end = gettime();
     durations[i] = end - begin;
-    nbytes = bsp_matrix_nbytes(mat);
-    bsp_destroy_matrix_t(mat);
+    delete_file(output_filename);
   }
 
   printf("[");
@@ -87,7 +115,7 @@ int main(int argc, char** argv) {
 
   double variance = compute_variance(durations, num_trials);
 
-  printf("Read file in %lf seconds\n", durations[num_trials / 2]);
+  printf("Wrote file in %lf seconds\n", durations[num_trials / 2]);
 
   printf("Variance is %lf seconds, standard devication is %lf seconds\n",
          variance, sqrt(variance));
