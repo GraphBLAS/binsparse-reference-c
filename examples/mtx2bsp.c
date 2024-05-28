@@ -1,6 +1,14 @@
 #include <binsparse/binsparse.h>
 #include <stdio.h>
 
+#include <time.h>
+
+double gettime() {
+  struct timespec time;
+  clock_gettime(CLOCK_MONOTONIC, &time);
+  return ((double) time.tv_sec) + ((double) 1e-9) * time.tv_nsec;
+}
+
 int main(int argc, char** argv) {
 
   if (argc < 3) {
@@ -112,26 +120,48 @@ int main(int argc, char** argv) {
   cJSON_AddStringToObject(user_json, "comment", m.comments);
 
   printf(" === Reading file... ===\n");
+  double begin = gettime();
   bsp_matrix_t matrix = bsp_mmread(input_fname);
+  double end = gettime();
   printf(" === Done reading. ===\n");
 
+  double duration = end - begin;
+  printf("%lf seconds reading Matrix Market file...\n", duration);
+
   if (perform_suitesparse_declamping) {
+    begin = gettime();
     bsp_matrix_declamp_values(matrix);
+    end = gettime();
+    duration = end - begin;
+    printf("%lf seconds declamping...\n", duration);
   }
 
+  begin = gettime();
   matrix = bsp_matrix_minimize_values(matrix);
+  end = gettime();
+  duration = end - begin;
+  printf("%lf seconds minimizing values...\n", duration);
 
   if (format != BSP_COOR) {
+    begin = gettime();
     bsp_matrix_t converted_matrix = bsp_convert_matrix(matrix, format);
     bsp_destroy_matrix_t(matrix);
     matrix = converted_matrix;
+    end = gettime();
+    duration = end - begin;
+    printf("%lf seconds converting to %s format...\n", duration,
+           bsp_get_matrix_format_string(format));
   }
 
   bsp_print_matrix_info(matrix);
 
   printf(" === Writing to %s... ===\n", output_fname);
+  begin = gettime();
   bsp_write_matrix(output_fname, matrix, group_name, user_json,
                    compression_level);
+  end = gettime();
+  duration = end - begin;
+  printf("%lf seconds writing Binsparse file...\n", duration);
   printf(" === Done writing. ===\n");
 
   bsp_destroy_matrix_t(matrix);
