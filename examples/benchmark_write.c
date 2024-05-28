@@ -43,7 +43,7 @@ double compute_variance(double* x, size_t n) {
 void flush_cache() {
 #ifdef __APPLE__
   system("bash -c \"sync && sudo purge\"");
-#elif __LINUX__
+#elif __linux__
   system("bash -c \"sync\" && sudo echo 3 > /proc/sys/vm/drop_caches");
 #else
   static_assert(false);
@@ -53,7 +53,7 @@ void flush_cache() {
 void flush_writes() {
 #ifdef __APPLE__
   system("bash -c \"sync\"");
-#elif __LINUX__
+#elif __linux__
   system("bash -c \"sync\"");
 #else
   static_assert(false);
