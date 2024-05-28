@@ -39,6 +39,27 @@ void bsp_destroy_matrix_t(bsp_matrix_t matrix) {
   bsp_destroy_array_t(matrix.pointers_to_1);
 }
 
+size_t bsp_matrix_nbytes(bsp_matrix_t mat) {
+  size_t nbytes = 0;
+  if (mat.values.size > 0) {
+    nbytes += mat.values.size * bsp_type_size(mat.values.type);
+  }
+
+  if (mat.indices_0.size > 0) {
+    nbytes += mat.indices_0.size * bsp_type_size(mat.indices_0.type);
+  }
+
+  if (mat.indices_1.size > 0) {
+    nbytes += mat.indices_1.size * bsp_type_size(mat.indices_1.type);
+  }
+
+  if (mat.pointers_to_1.size > 0) {
+    nbytes += mat.pointers_to_1.size * bsp_type_size(mat.pointers_to_1.type);
+  }
+
+  return nbytes;
+}
+
 void bsp_print_matrix_info(bsp_matrix_t matrix) {
   printf("%lu x %lu matrix with %lu nnz.\n", matrix.nrows, matrix.ncols,
          matrix.nnz);

@@ -73,6 +73,50 @@ void bsp_destroy_array_t(bsp_array_t array) {
   free(array.data);
 }
 
+#define bsp_array_block(array, ptr, code_block)                                \
+  {                                                                            \
+    if (array.type == BSP_UINT8) {                                             \
+      uint8_t* ptr = array.data;                                               \
+      code_block;                                                              \
+    } else if (array.type == BSP_UINT16) {                                     \
+      uint16_t* ptr = array.data;                                              \
+      code_block;                                                              \
+    } else if (array.type == BSP_UINT32) {                                     \
+      uint32_t* ptr = array.data;                                              \
+      code_block;                                                              \
+    } else if (array.type == BSP_UINT64) {                                     \
+      uint64_t* ptr = array.data;                                              \
+      code_block;                                                              \
+    } else if (array.type == BSP_INT8) {                                       \
+      int8_t* ptr = array.data;                                                \
+      code_block;                                                              \
+    } else if (array.type == BSP_INT16) {                                      \
+      int16_t* ptr = array.data;                                               \
+      code_block;                                                              \
+    } else if (array.type == BSP_INT32) {                                      \
+      int32_t* ptr = array.data;                                               \
+      code_block;                                                              \
+    } else if (array.type == BSP_INT64) {                                      \
+      int64_t* ptr = array.data;                                               \
+      code_block;                                                              \
+    } else if (array.type == BSP_FLOAT32) {                                    \
+      float* ptr = array.data;                                                 \
+      code_block;                                                              \
+    } else if (array.type == BSP_FLOAT64) {                                    \
+      double* ptr = array.data;                                                \
+      code_block;                                                              \
+    } else if (array.type == BSP_BINT8) {                                      \
+      int8_t* ptr = array.data;                                                \
+      code_block;                                                              \
+    } else if (array.type == BSP_COMPLEX_FLOAT32) {                            \
+      float _Complex* ptr = array.data;                                        \
+      code_block;                                                              \
+    } else if (array.type == BSP_COMPLEX_FLOAT64) {                            \
+      double _Complex* ptr = array.data;                                       \
+      code_block;                                                              \
+    }                                                                          \
+  }
+
 // array[index] = value
 #define bsp_array_write(array, index, value)                                   \
   {                                                                            \

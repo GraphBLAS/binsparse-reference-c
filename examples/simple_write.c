@@ -13,7 +13,7 @@ int main(int argc, char** argv) {
     bsp_array_write(array, i, i);
   }
 
-  bsp_write_array(f, "test", array);
+  bsp_write_array(f, "test", array, 0);
 
   H5Fclose(f);
   bsp_destroy_array_t(array);

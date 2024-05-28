@@ -81,28 +81,32 @@ char* bsp_generate_json(bsp_matrix_t matrix, cJSON* user_json) {
   return string;
 }
 
-int bsp_write_matrix_to_group(hid_t f, bsp_matrix_t matrix, cJSON* user_json) {
-  int result = bsp_write_array(f, "values", matrix.values);
+int bsp_write_matrix_to_group(hid_t f, bsp_matrix_t matrix, cJSON* user_json,
+                              int compression_level) {
+  int result = bsp_write_array(f, "values", matrix.values, compression_level);
 
   if (result != 0)
     return result;
 
   if (matrix.indices_0.size > 0) {
-    result = bsp_write_array(f, "indices_0", matrix.indices_0);
+    result =
+        bsp_write_array(f, "indices_0", matrix.indices_0, compression_level);
     if (result != 0) {
       return result;
     }
   }
 
   if (matrix.indices_1.size > 0) {
-    result = bsp_write_array(f, "indices_1", matrix.indices_1);
+    result =
+        bsp_write_array(f, "indices_1", matrix.indices_1, compression_level);
     if (result != 0) {
       return result;
     }
   }
 
   if (matrix.pointers_to_1.size > 0) {
-    result = bsp_write_array(f, "pointers_to_1", matrix.pointers_to_1);
+    result = bsp_write_array(f, "pointers_to_1", matrix.pointers_to_1,
+                             compression_level);
     if (result != 0) {
       return result;
     }
@@ -117,10 +121,10 @@ int bsp_write_matrix_to_group(hid_t f, bsp_matrix_t matrix, cJSON* user_json) {
 }
 
 int bsp_write_matrix(char* fname, bsp_matrix_t matrix, char* group,
-                     cJSON* user_json) {
+                     cJSON* user_json, int compression_level) {
   if (group == NULL) {
     hid_t f = H5Fcreate(fname, H5F_ACC_TRUNC, H5P_DEFAULT, H5P_DEFAULT);
-    bsp_write_matrix_to_group(f, matrix, user_json);
+    bsp_write_matrix_to_group(f, matrix, user_json, compression_level);
     H5Fclose(f);
   } else {
     hid_t f;
@@ -130,7 +134,7 @@ int bsp_write_matrix(char* fname, bsp_matrix_t matrix, char* group,
       f = H5Fcreate(fname, H5F_ACC_TRUNC, H5P_DEFAULT, H5P_DEFAULT);
     }
     hid_t g = H5Gcreate1(f, group, H5P_DEFAULT);
-    bsp_write_matrix_to_group(g, matrix, user_json);
+    bsp_write_matrix_to_group(g, matrix, user_json, compression_level);
     H5Gclose(g);
     H5Fclose(f);
   }
