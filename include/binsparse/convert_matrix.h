@@ -37,12 +37,15 @@ bsp_matrix_t bsp_convert_matrix(bsp_matrix_t matrix,
       // higher width for rowind.  In order to keep rowind/colind the same type,
       // we might upcast.
 
-      if (index_type == matrix.indices_0.type) {
-        result.indices_1 = bsp_copy_construct_array_t(matrix.indices_0);
+      if (index_type == matrix.indices_1.type) {
+        result.indices_1 = bsp_copy_construct_array_t(matrix.indices_1);
       } else {
-        result.indices_1 = bsp_construct_array_t(matrix.nnz, index_type);
-        for (size_t i = 0; i < matrix.nnz; i++) {
-          bsp_array_awrite(result.indices_1, i, matrix.indices_0, i);
+        result.indices_1 =
+            bsp_construct_array_t(matrix.indices_1.size, index_type);
+        for (size_t i = 0; i < matrix.indices_1.size; i++) {
+          size_t index;
+          bsp_array_read(matrix.indices_1, i, index);
+          bsp_array_write(result.indices_1, i, index);
         }
       }
 
@@ -103,12 +106,14 @@ bsp_matrix_t bsp_convert_matrix(bsp_matrix_t matrix,
         result.values = bsp_copy_construct_array_t(matrix.values);
 
         if (index_type == matrix.indices_1.type) {
-          result.indices_0 = bsp_copy_construct_array_t(matrix.indices_1);
+          result.indices_1 = bsp_copy_construct_array_t(matrix.indices_1);
         } else {
-          result.indices_0 = bsp_construct_array_t(matrix.nnz, index_type);
+          result.indices_1 = bsp_construct_array_t(matrix.nnz, index_type);
 
           for (size_t i = 0; i < matrix.nnz; i++) {
-            bsp_array_awrite(result.indices_0, i, matrix.indices_1, i);
+            size_t index;
+            bsp_array_read(matrix.indices_1, i, index);
+            bsp_array_write(result.indices_1, i, index);
           }
         }
 
