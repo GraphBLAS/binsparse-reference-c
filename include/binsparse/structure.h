@@ -17,21 +17,21 @@ typedef enum bsp_structure_t {
 
 char* bsp_get_structure_string(bsp_structure_t structure) {
   if (structure == BSP_GENERAL) {
-    return "general";
+    return (char*) "general";
   } else if (structure == BSP_SYMMETRIC_LOWER) {
-    return "symmetric_lower";
+    return (char*) "symmetric_lower";
   } else if (structure == BSP_SYMMETRIC_UPPER) {
-    return "symmetric_upper";
+    return (char*) "symmetric_upper";
   } else if (structure == BSP_HERMITIAN_LOWER) {
-    return "hermitian_lower";
+    return (char*) "hermitian_lower";
   } else if (structure == BSP_HERMITIAN_UPPER) {
-    return "hermitian_upper";
+    return (char*) "hermitian_upper";
   } else if (structure == BSP_SKEW_SYMMETRIC_LOWER) {
-    return "skew_symmetric_lower";
+    return (char*) "skew_symmetric_lower";
   } else if (structure == BSP_SKEW_SYMMETRIC_UPPER) {
-    return "skew_symmetric_upper";
+    return (char*) "skew_symmetric_upper";
   } else {
-    return "";
+    return (char*) "";
   }
 }
 
