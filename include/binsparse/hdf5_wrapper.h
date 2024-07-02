@@ -13,8 +13,12 @@ int bsp_write_array(hid_t f, char* label, bsp_array_t array,
     array = bsp_complex_array_to_fp(array);
   }
 
+  hsize_t hsize[1];
+
+  hsize[0] = array.size;
+
   hid_t hdf5_standard_type = bsp_get_hdf5_standard_type(array.type);
-  hid_t fspace = H5Screate_simple(1, (hsize_t[]){array.size}, NULL);
+  hid_t fspace = H5Screate_simple(1, hsize, NULL);
   hid_t lcpl = H5Pcreate(H5P_LINK_CREATE);
 
   hid_t dcpl = H5Pcreate(H5P_DATASET_CREATE);
@@ -27,7 +31,8 @@ int bsp_write_array(hid_t f, char* label, bsp_array_t array,
     chunk_size = array.size;
   }
 
-  H5Pset_chunk(dcpl, 1, (hsize_t[]){chunk_size});
+  hsize[0] = chunk_size;
+  H5Pset_chunk(dcpl, 1, hsize);
 
   if (compression_level > 0) {
     H5Pset_deflate(dcpl, compression_level);
