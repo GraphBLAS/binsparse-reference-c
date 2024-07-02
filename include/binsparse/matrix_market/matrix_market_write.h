@@ -13,13 +13,13 @@ void bsp_mmwrite(char* file_path, bsp_matrix_t matrix) {
 
   char* structure = NULL;
   if (matrix.structure == BSP_GENERAL) {
-    structure = "general";
+    structure = (char*) "general";
   } else if (matrix.structure == BSP_SYMMETRIC) {
-    structure = "symmetric";
+    structure = (char*) "symmetric";
   } else if (matrix.structure == BSP_HERMITIAN) {
-    structure = "hermitian";
+    structure = (char*) "hermitian";
   } else if (matrix.structure == BSP_SKEW_SYMMETRIC) {
-    structure = "skew-symmetric";
+    structure = (char*) "skew-symmetric";
   } else {
     assert(false);
   }
@@ -33,20 +33,20 @@ void bsp_mmwrite(char* file_path, bsp_matrix_t matrix) {
 
   if (matrix.is_iso == true) {
     mm_type = BSP_MM_PATTERN;
-    type = "pattern";
+    type = (char*) "pattern";
   } else if ((matrix.values.type >= BSP_UINT8 &&
               matrix.values.type <= BSP_INT64) ||
              matrix.values.type == BSP_BINT8) {
     mm_type = BSP_MM_INTEGER;
-    type = "integer";
+    type = (char*) "integer";
   } else if (matrix.values.type >= BSP_FLOAT32 &&
              matrix.values.type <= BSP_FLOAT64) {
     mm_type = BSP_MM_REAL;
-    type = "real";
+    type = (char*) "real";
   } else if (matrix.values.type == BSP_COMPLEX_FLOAT32 ||
              matrix.values.type == BSP_COMPLEX_FLOAT64) {
     mm_type = BSP_MM_COMPLEX;
-    type = "complex";
+    type = (char*) "complex";
   } else {
     assert(false);
   }
