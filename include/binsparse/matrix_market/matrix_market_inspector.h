@@ -60,7 +60,7 @@ bsp_mm_metadata bsp_mmread_metadata(char* file_path) {
         while (comments_size + strlen(line) > comments_capacity) {
           comments_capacity <<= 1;
         }
-        comments = realloc(comments, sizeof(char) * comments_capacity);
+        comments = (char*) realloc(comments, sizeof(char) * comments_capacity);
       }
 
       memcpy(comments + comments_size, line, strlen(line));
