@@ -85,8 +85,8 @@ void bsp_mmwrite(char* file_path, bsp_matrix_t matrix) {
         bsp_array_read(matrix.indices_0, count, i);
         bsp_array_read(matrix.indices_1, count, j);
         bsp_array_read(matrix.values, count, value);
-        double real_value = 1.0 * value;
-        double complex_value = 1j * value;
+        double real_value = __real__ value;
+        double complex_value = __imag__ * value;
         fprintf(f, "%zu %zu %.17lg %.17lg\n", i + 1, j + 1, real_value,
                 complex_value);
       } else {
