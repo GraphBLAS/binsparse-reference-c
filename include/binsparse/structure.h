@@ -12,7 +12,8 @@ typedef enum bsp_structure_t {
   BSP_HERMITIAN_UPPER = 103,
   BSP_SKEW_SYMMETRIC = 104,
   BSP_SKEW_SYMMETRIC_LOWER = 104,
-  BSP_SKEW_SYMMETRIC_UPPER = 105
+  BSP_SKEW_SYMMETRIC_UPPER = 105,
+  BSP_INVALID_STRUCTURE = 106
 } bsp_structure_t;
 
 char* bsp_get_structure_string(bsp_structure_t structure) {
@@ -49,6 +50,6 @@ bsp_structure_t bsp_get_structure(char* structure) {
   } else if (strcmp(structure, "skew_symmetric_upper") == 0) {
     return BSP_SKEW_SYMMETRIC_UPPER;
   } else {
-    return BSP_SKEW_SYMMETRIC_UPPER + 100;
+    return BSP_INVALID_STRUCTURE;
   }
 }
