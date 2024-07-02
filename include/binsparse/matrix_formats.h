@@ -19,25 +19,25 @@ typedef enum bsp_matrix_format_t {
 
 char* bsp_get_matrix_format_string(bsp_matrix_format_t format) {
   if (format == BSP_DVEC) {
-    return "DVEC";
+    return (char*) "DVEC";
   } else if (format == BSP_DMAT) {
-    return "DMAT";
+    return (char*) "DMAT";
   } else if (format == BSP_DMATC) {
-    return "DMATC";
+    return (char*) "DMATC";
   } else if (format == BSP_CVEC) {
-    return "CVEC";
+    return (char*) "CVEC";
   } else if (format == BSP_CSR) {
-    return "CSR";
+    return (char*) "CSR";
   } else if (format == BSP_DCSR) {
-    return "DCSR";
+    return (char*) "DCSR";
   } else if (format == BSP_DCSC) {
-    return "DCSC";
+    return (char*) "DCSC";
   } else if (format == BSP_COO) {
-    return "COO";
+    return (char*) "COO";
   } else if (format == BSP_COOC) {
-    return "COOC";
+    return (char*) "COOC";
   } else {
-    return "";
+    return (char*) "";
   }
 }
 
