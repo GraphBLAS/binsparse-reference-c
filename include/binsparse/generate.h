@@ -4,57 +4,57 @@
 
 void bsp_array_fill_random(bsp_array_t array, size_t bound) {
   if (array.type == BSP_UINT8) {
-    uint8_t* values = array.data;
+    uint8_t* values = (uint8_t*) array.data;
     for (size_t i = 0; i < array.size; i++) {
       values[i] = lrand48() % bound;
     }
   } else if (array.type == BSP_UINT16) {
-    uint16_t* values = array.data;
+    uint16_t* values = (uint16_t*) array.data;
     for (size_t i = 0; i < array.size; i++) {
       values[i] = lrand48() % bound;
     }
   } else if (array.type == BSP_UINT32) {
-    uint32_t* values = array.data;
+    uint32_t* values = (uint32_t*) array.data;
     for (size_t i = 0; i < array.size; i++) {
       values[i] = lrand48() % bound;
     }
   } else if (array.type == BSP_UINT64) {
-    uint64_t* values = array.data;
+    uint64_t* values = (uint64_t*) array.data;
     for (size_t i = 0; i < array.size; i++) {
       values[i] = lrand48() % bound;
     }
   } else if (array.type == BSP_INT8) {
-    int8_t* values = array.data;
+    int8_t* values = (int8_t*) array.data;
     for (size_t i = 0; i < array.size; i++) {
       values[i] = lrand48() % bound;
     }
   } else if (array.type == BSP_INT16) {
-    int16_t* values = array.data;
+    int16_t* values = (int16_t*) array.data;
     for (size_t i = 0; i < array.size; i++) {
       values[i] = lrand48() % bound;
     }
   } else if (array.type == BSP_INT32) {
-    int32_t* values = array.data;
+    int32_t* values = (int32_t*) array.data;
     for (size_t i = 0; i < array.size; i++) {
       values[i] = lrand48() % bound;
     }
   } else if (array.type == BSP_INT64) {
-    int64_t* values = array.data;
+    int64_t* values = (int64_t*) array.data;
     for (size_t i = 0; i < array.size; i++) {
       values[i] = lrand48() % bound;
     }
   } else if (array.type == BSP_FLOAT32) {
-    float* values = array.data;
+    float* values = (float*) array.data;
     for (size_t i = 0; i < array.size; i++) {
       values[i] = drand48() * bound;
     }
   } else if (array.type == BSP_FLOAT64) {
-    double* values = array.data;
+    double* values = (double*) array.data;
     for (size_t i = 0; i < array.size; i++) {
       values[i] = drand48() * bound;
     }
   } else if (array.type == BSP_BINT8) {
-    int8_t* values = array.data;
+    int8_t* values = (int8_t*) array.data;
     for (size_t i = 0; i < array.size; i++) {
       values[i] = lrand48() % 2;
     }
