@@ -73,6 +73,8 @@ void bsp_destroy_array_t(bsp_array_t array) {
   free(array.data);
 }
 
+#ifndef __cplusplus
+
 #define bsp_array_block(array, ptr, code_block)                                \
   {                                                                            \
     if (array.type == BSP_UINT8) {                                             \
@@ -335,3 +337,5 @@ void bsp_destroy_array_t(bsp_array_t array) {
       data[j] = v;                                                             \
     }                                                                          \
   }
+
+#endif
