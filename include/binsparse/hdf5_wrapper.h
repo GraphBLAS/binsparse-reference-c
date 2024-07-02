@@ -7,7 +7,8 @@
 
 // Write an array to a dataset / file
 // Returns 0 on success, nonzero on error.
-int bsp_write_array(hid_t f, char* label, bsp_array_t array) {
+int bsp_write_array(hid_t f, char* label, bsp_array_t array,
+                    int compression_level) {
   if (array.type == BSP_COMPLEX_FLOAT32 || array.type == BSP_COMPLEX_FLOAT64) {
     array = bsp_complex_array_to_fp(array);
   }
@@ -28,7 +29,9 @@ int bsp_write_array(hid_t f, char* label, bsp_array_t array) {
 
   H5Pset_chunk(dcpl, 1, (hsize_t[]){chunk_size});
 
-  H5Pset_deflate(dcpl, 9);
+  if (compression_level > 0) {
+    H5Pset_deflate(dcpl, compression_level);
+  }
 
   hid_t dset =
       H5Dcreate2(f, label, hdf5_standard_type, fspace, lcpl, dcpl, H5P_DEFAULT);
