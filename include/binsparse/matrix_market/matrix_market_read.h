@@ -209,7 +209,7 @@ bsp_matrix_t bsp_mmread_explicit_coordinate(char* file_path,
     count++;
   }
 
-  size_t* indices = malloc(sizeof(size_t) * matrix.nnz);
+  size_t* indices = (size_t*) malloc(sizeof(size_t) * matrix.nnz);
 
   for (size_t i = 0; i < matrix.nnz; i++) {
     indices[i] = i;

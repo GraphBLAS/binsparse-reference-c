@@ -83,7 +83,8 @@ char* bsp_generate_json(bsp_matrix_t matrix, cJSON* user_json) {
 
 int bsp_write_matrix_to_group(hid_t f, bsp_matrix_t matrix, cJSON* user_json,
                               int compression_level) {
-  int result = bsp_write_array(f, "values", matrix.values, compression_level);
+  int result =
+      bsp_write_array(f, (char*) "values", matrix.values, compression_level);
 
   if (result != 0)
     return result;
