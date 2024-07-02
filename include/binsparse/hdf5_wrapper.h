@@ -120,7 +120,7 @@ char* bsp_read_attribute(hid_t f, char* label) {
 
   size_t size = H5Tget_size(strtype);
 
-  char* string = malloc(size + 1);
+  char* string = (char*) malloc(size + 1);
 
   H5Aread(attribute, strtype, string);
 
