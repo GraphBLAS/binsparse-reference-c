@@ -7,7 +7,7 @@
 bsp_matrix_t bsp_read_matrix_from_group(hid_t f) {
   bsp_matrix_t matrix = bsp_construct_default_matrix_t();
 
-  char* json_string = bsp_read_attribute(f, "binsparse");
+  char* json_string = bsp_read_attribute(f, (char*) "binsparse");
 
   cJSON* j = cJSON_Parse(json_string);
 
@@ -65,7 +65,7 @@ bsp_matrix_t bsp_read_matrix_from_group(hid_t f) {
   assert(data_types_ != NULL);
 
   if (cJSON_HasObjectItem(data_types_, "values")) {
-    matrix.values = bsp_read_array(f, "values");
+    matrix.values = bsp_read_array(f, (char*) "values");
 
     cJSON* value_type = cJSON_GetObjectItemCaseSensitive(data_types_, "values");
     char* type_string = cJSON_GetStringValue(value_type);
@@ -81,15 +81,15 @@ bsp_matrix_t bsp_read_matrix_from_group(hid_t f) {
   }
 
   if (cJSON_HasObjectItem(data_types_, "indices_0")) {
-    matrix.indices_0 = bsp_read_array(f, "indices_0");
+    matrix.indices_0 = bsp_read_array(f, (char*) "indices_0");
   }
 
   if (cJSON_HasObjectItem(data_types_, "indices_1")) {
-    matrix.indices_1 = bsp_read_array(f, "indices_1");
+    matrix.indices_1 = bsp_read_array(f, (char*) "indices_1");
   }
 
   if (cJSON_HasObjectItem(data_types_, "pointers_to_1")) {
-    matrix.pointers_to_1 = bsp_read_array(f, "pointers_to_1");
+    matrix.pointers_to_1 = bsp_read_array(f, (char*) "pointers_to_1");
   }
 
   if (cJSON_HasObjectItem(binsparse, "structure")) {
