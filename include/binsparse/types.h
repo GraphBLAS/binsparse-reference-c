@@ -16,7 +16,8 @@ typedef enum bsp_type_t {
   BSP_FLOAT64 = 9,
   BSP_BINT8 = 10,
   BSP_COMPLEX_FLOAT32 = 11,
-  BSP_COMPLEX_FLOAT64 = 12
+  BSP_COMPLEX_FLOAT64 = 12,
+  BSP_INVALID_TYPE = 13
 } bsp_type_t;
 
 char* bsp_get_type_string(bsp_type_t type) {
@@ -128,7 +129,7 @@ bsp_type_t bsp_get_bsp_type(hid_t type) {
       } else if (size == 8) {
         return BSP_UINT64;
       } else {
-        return H5I_INVALID_HID;
+        return BSP_INVALID_TYPE;
       }
     } else /* if (sign == H5T_SGN_2) */ {
       if (size == 1) {
@@ -140,7 +141,7 @@ bsp_type_t bsp_get_bsp_type(hid_t type) {
       } else if (size == 8) {
         return BSP_INT64;
       } else {
-        return H5I_INVALID_HID;
+        return BSP_INVALID_TYPE;
       }
     }
   } else if (cl == H5T_FLOAT) {
@@ -149,10 +150,10 @@ bsp_type_t bsp_get_bsp_type(hid_t type) {
     } else if (size == 8) {
       return BSP_FLOAT64;
     } else {
-      return H5I_INVALID_HID;
+      return BSP_INVALID_TYPE;
     }
   } else {
-    return H5I_INVALID_HID;
+    return BSP_INVALID_TYPE;
   }
 }
 
