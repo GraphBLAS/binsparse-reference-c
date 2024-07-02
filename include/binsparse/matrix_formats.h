@@ -14,7 +14,8 @@ typedef enum bsp_matrix_format_t {
   BSP_DCSC = 18,
   BSP_COO = 19,
   BSP_COOR = 19,
-  BSP_COOC = 20
+  BSP_COOC = 20,
+  BSP_INVALID_FORMAT = 21
 } bsp_matrix_format_t;
 
 char* bsp_get_matrix_format_string(bsp_matrix_format_t format) {
@@ -67,6 +68,6 @@ bsp_matrix_format_t bsp_get_matrix_format(char* format) {
   } else if (strcmp("COOC", format) == 0) {
     return BSP_COOC;
   } else {
-    return 0;
+    return BSP_INVALID_FORMAT;
   }
 }
