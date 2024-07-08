@@ -339,3 +339,7 @@ void bsp_destroy_array_t(bsp_array_t array) {
   }
 
 #endif
+
+#ifdef __cplusplus
+#include <binsparse/detail/cpp/array.hpp>
+#endif

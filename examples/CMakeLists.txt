@@ -13,3 +13,5 @@ add_example(check_equivalence)
 add_example(bsp-ls)
 add_example(benchmark_read)
 add_example(benchmark_write)
+
+add_subdirectory(cpp)
