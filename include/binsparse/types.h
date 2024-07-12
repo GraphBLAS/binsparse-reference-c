@@ -16,38 +16,39 @@ typedef enum bsp_type_t {
   BSP_FLOAT64 = 9,
   BSP_BINT8 = 10,
   BSP_COMPLEX_FLOAT32 = 11,
-  BSP_COMPLEX_FLOAT64 = 12
+  BSP_COMPLEX_FLOAT64 = 12,
+  BSP_INVALID_TYPE = 13
 } bsp_type_t;
 
 char* bsp_get_type_string(bsp_type_t type) {
   if (type == BSP_UINT8) {
-    return "uint8";
+    return (char*) "uint8";
   } else if (type == BSP_UINT16) {
-    return "uint16";
+    return (char*) "uint16";
   } else if (type == BSP_UINT32) {
-    return "uint32";
+    return (char*) "uint32";
   } else if (type == BSP_UINT64) {
-    return "uint64";
+    return (char*) "uint64";
   } else if (type == BSP_INT8) {
-    return "int8";
+    return (char*) "int8";
   } else if (type == BSP_INT16) {
-    return "int16";
+    return (char*) "int16";
   } else if (type == BSP_INT32) {
-    return "int32";
+    return (char*) "int32";
   } else if (type == BSP_INT64) {
-    return "int64";
+    return (char*) "int64";
   } else if (type == BSP_FLOAT32) {
-    return "float32";
+    return (char*) "float32";
   } else if (type == BSP_FLOAT64) {
-    return "float64";
+    return (char*) "float64";
   } else if (type == BSP_BINT8) {
-    return "bint8";
+    return (char*) "bint8";
   } else if (type == BSP_COMPLEX_FLOAT32) {
-    return "complex[float32]";
+    return (char*) "complex[float32]";
   } else if (type == BSP_COMPLEX_FLOAT64) {
-    return "complex[float64]";
+    return (char*) "complex[float64]";
   } else {
-    return "";
+    return (char*) "";
   }
 }
 
@@ -128,7 +129,7 @@ bsp_type_t bsp_get_bsp_type(hid_t type) {
       } else if (size == 8) {
         return BSP_UINT64;
       } else {
-        return H5I_INVALID_HID;
+        return BSP_INVALID_TYPE;
       }
     } else /* if (sign == H5T_SGN_2) */ {
       if (size == 1) {
@@ -140,7 +141,7 @@ bsp_type_t bsp_get_bsp_type(hid_t type) {
       } else if (size == 8) {
         return BSP_INT64;
       } else {
-        return H5I_INVALID_HID;
+        return BSP_INVALID_TYPE;
       }
     }
   } else if (cl == H5T_FLOAT) {
@@ -149,10 +150,10 @@ bsp_type_t bsp_get_bsp_type(hid_t type) {
     } else if (size == 8) {
       return BSP_FLOAT64;
     } else {
-      return H5I_INVALID_HID;
+      return BSP_INVALID_TYPE;
     }
   } else {
-    return H5I_INVALID_HID;
+    return BSP_INVALID_TYPE;
   }
 }
 

@@ -45,7 +45,7 @@ bsp_mm_metadata bsp_mmread_metadata(char* file_path) {
 
   size_t comments_capacity = 2048;
   size_t comments_size = 0;
-  char* comments = malloc(sizeof(char) * comments_capacity);
+  char* comments = (char*) malloc(sizeof(char) * comments_capacity);
 
   while (!outOfComments) {
     char* line = fgets(buf, 2048, f);
@@ -60,7 +60,7 @@ bsp_mm_metadata bsp_mmread_metadata(char* file_path) {
         while (comments_size + strlen(line) > comments_capacity) {
           comments_capacity <<= 1;
         }
-        comments = realloc(comments, sizeof(char) * comments_capacity);
+        comments = (char*) realloc(comments, sizeof(char) * comments_capacity);
       }
 
       memcpy(comments + comments_size, line, strlen(line));

@@ -83,29 +83,30 @@ char* bsp_generate_json(bsp_matrix_t matrix, cJSON* user_json) {
 
 int bsp_write_matrix_to_group(hid_t f, bsp_matrix_t matrix, cJSON* user_json,
                               int compression_level) {
-  int result = bsp_write_array(f, "values", matrix.values, compression_level);
+  int result =
+      bsp_write_array(f, (char*) "values", matrix.values, compression_level);
 
   if (result != 0)
     return result;
 
   if (matrix.indices_0.size > 0) {
-    result =
-        bsp_write_array(f, "indices_0", matrix.indices_0, compression_level);
+    result = bsp_write_array(f, (char*) "indices_0", matrix.indices_0,
+                             compression_level);
     if (result != 0) {
       return result;
     }
   }
 
   if (matrix.indices_1.size > 0) {
-    result =
-        bsp_write_array(f, "indices_1", matrix.indices_1, compression_level);
+    result = bsp_write_array(f, (char*) "indices_1", matrix.indices_1,
+                             compression_level);
     if (result != 0) {
       return result;
     }
   }
 
   if (matrix.pointers_to_1.size > 0) {
-    result = bsp_write_array(f, "pointers_to_1", matrix.pointers_to_1,
+    result = bsp_write_array(f, (char*) "pointers_to_1", matrix.pointers_to_1,
                              compression_level);
     if (result != 0) {
       return result;
@@ -114,7 +115,7 @@ int bsp_write_matrix_to_group(hid_t f, bsp_matrix_t matrix, cJSON* user_json,
 
   char* json_string = bsp_generate_json(matrix, user_json);
 
-  bsp_write_attribute(f, "binsparse", json_string);
+  bsp_write_attribute(f, (char*) "binsparse", json_string);
   free(json_string);
 
   return 0;
