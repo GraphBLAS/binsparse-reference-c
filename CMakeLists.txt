@@ -1,6 +1,8 @@
 cmake_minimum_required(VERSION 3.5)
 project(binsparse-rc)
 
+cmake_policy(SET CMP0079 NEW)
+
 set(CMAKE_C_STANDARD 11)
 
 set(CMAKE_C_FLAGS "-O3 -march=native")
