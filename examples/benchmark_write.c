@@ -68,22 +68,24 @@ void delete_file(char* file_name) {
 
 int main(int argc, char** argv) {
   if (argc < 2) {
-    fprintf(stderr, "usage: ./benchmark_read [file_name.h5] [optional: "
-                    "compression_level]\n");
+    fprintf(stderr,
+            "usage: ./benchmark_read [file_name.h5] [scratch_space] [optional: "
+            "compression_level]\n");
     return 1;
   }
 
   char* file_name = argv[1];
+  char* scratch_space = argv[2];
 
   int compression_level = 0;
 
-  if (argc >= 3) {
-    compression_level = atoi(argv[2]);
+  if (argc >= 4) {
+    compression_level = atoi(argv[3]);
   }
 
   printf("Opening %s\n", file_name);
 
-  const int num_trials = 10;
+  const int num_trials = 1;
 
   double durations[num_trials];
 
@@ -91,18 +93,38 @@ int main(int argc, char** argv) {
   size_t nbytes = bsp_matrix_nbytes(mat);
 
   char output_filename[2048];
-  strncpy(output_filename, "benchmark_write_file_n.h5", 2047);
+  strncpy(output_filename, scratch_space, 2047);
+  strncpy(output_filename + strlen(scratch_space), "/benchmark_write_file_n.h5",
+          2047 - strlen(scratch_space));
+
+  // Current output name logic does not do much.
+  assert(num_trials <= 10);
+
+  // To flush the filesystem cache before each trial, change to `true`.
+  bool cold_cache = false;
+
+  // To flush each write to the filesystem and include this in the timing,
+  // change to `true`.
+  bool flush_each_write = true;
 
   for (size_t i = 0; i < num_trials; i++) {
-    flush_cache();
-    output_filename[21] = '0' + i;
+    if (cold_cache) {
+      flush_cache();
+    }
+
+    output_filename[strlen(scratch_space) + 21] = '0' + i;
     printf("Writing to file %s\n", output_filename);
 
     double begin = gettime();
     bsp_write_matrix(output_filename, mat, NULL, NULL, compression_level);
-    flush_writes();
+
+    if (flush_each_write) {
+      flush_writes();
+    }
+
     double end = gettime();
     durations[i] = end - begin;
+
     delete_file(output_filename);
   }
 
@@ -119,13 +141,17 @@ int main(int argc, char** argv) {
 
   double variance = compute_variance(durations, num_trials);
 
-  printf("Wrote file in %lf seconds\n", durations[num_trials / 2]);
+  double median_time = durations[num_trials / 2];
 
-  printf("Variance is %lf seconds, standard devication is %lf seconds\n",
-         variance, sqrt(variance));
+  printf("Wrote file in %lf seconds\n", median_time);
+
+  if (num_trials > 1) {
+    printf("Variance is %lf seconds, standard devication is %lf seconds\n",
+           variance, sqrt(variance));
+  }
 
   double gbytes = ((double) nbytes) / 1024 / 1024 / 1024;
-  double gbytes_s = gbytes / durations[num_trials / 2];
+  double gbytes_s = gbytes / median_time;
 
   printf("Achieved %lf GiB/s\n", gbytes_s);
 
@@ -137,6 +163,8 @@ int main(int argc, char** argv) {
     }
   }
   printf("]\n");
+
+  printf("FORPARSER: %s,%lf,%lf\n", file_name, median_time, gbytes_s);
 
   return 0;
 }

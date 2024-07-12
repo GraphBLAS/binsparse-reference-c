@@ -60,14 +60,19 @@ int main(int argc, char** argv) {
 
   printf("Opening %s\n", file_name);
 
-  const int num_trials = 10;
+  const int num_trials = 1;
 
   double durations[num_trials];
 
   size_t nbytes = 0;
 
+  // To flush the filesystem cache before each trial, change to `true`.
+  bool cold_cache = false;
+
   for (size_t i = 0; i < num_trials; i++) {
-    flush_cache();
+    if (cold_cache) {
+      flush_cache();
+    }
     double begin = gettime();
     bsp_matrix_t mat = bsp_read_matrix(file_name, NULL);
     double end = gettime();
@@ -89,13 +94,17 @@ int main(int argc, char** argv) {
 
   double variance = compute_variance(durations, num_trials);
 
-  printf("Read file in %lf seconds\n", durations[num_trials / 2]);
+  double median_time = durations[num_trials / 2];
 
-  printf("Variance is %lf seconds, standard devication is %lf seconds\n",
-         variance, sqrt(variance));
+  printf("Read file in %lf seconds\n", median_time);
+
+  if (num_trials > 1) {
+    printf("Variance is %lf seconds, standard devication is %lf seconds\n",
+           variance, sqrt(variance));
+  }
 
   double gbytes = ((double) nbytes) / 1024 / 1024 / 1024;
-  double gbytes_s = gbytes / durations[num_trials / 2];
+  double gbytes_s = gbytes / median_time;
 
   printf("Achieved %lf GiB/s\n", gbytes_s);
 
@@ -107,6 +116,8 @@ int main(int argc, char** argv) {
     }
   }
   printf("]\n");
+
+  printf("FORPARSER: %s,%lf,%lf\n", file_name, median_time, gbytes_s);
 
   return 0;
 }
