@@ -58,8 +58,9 @@ void print_group_info(hid_t g, const char* name) {
     char full_group_path[2048];
     size_t size = H5Iget_name(g, full_group_path, 2048);
 
-    printf("Group \"%s\": Version %s Binsparse matrix. Format %s, %zu x %zu.\n",
-           full_group_path, version_string, format_string, nrows, ncols);
+    printf("Group \"%s\": Version %s Binsparse matrix. Format %s, %zu x %zu. "
+           "%zu stored values.\n",
+           full_group_path, version_string, format_string, nrows, ncols, nnz);
 
     cJSON* data_types =
         cJSON_GetObjectItemCaseSensitive(binsparse, "data_types");
