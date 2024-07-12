@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.5)
-project(binsparse-rc C CXX)
+project(binsparse-rc)
 
 set(CMAKE_C_STANDARD 11)
 
