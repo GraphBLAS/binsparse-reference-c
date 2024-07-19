@@ -60,7 +60,7 @@ void flush_writes() {
 #endif
 }
 
-void delete_file(char* file_name) {
+void delete_file(const char* file_name) {
   char command[2048];
   snprintf(command, 2047, "rm %s", file_name);
   system(command);

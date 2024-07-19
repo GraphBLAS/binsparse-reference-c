@@ -35,7 +35,7 @@ bsp_fdataset_info_t bsp_parse_fdataset_string(char* str) {
   }
 }
 
-char* bsp_get_file_extension(char* file_name) {
+const char* bsp_get_file_extension(const char* file_name) {
   int64_t len = strlen(file_name);
   for (int64_t i = len - 1; i >= 0; i--) {
     if (file_name[i] == '.') {

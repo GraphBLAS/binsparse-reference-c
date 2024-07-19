@@ -7,7 +7,7 @@
 
 // Write an array to a dataset / file
 // Returns 0 on success, nonzero on error.
-int bsp_write_array(hid_t f, char* label, bsp_array_t array,
+int bsp_write_array(hid_t f, const char* label, bsp_array_t array,
                     int compression_level) {
   if (array.type == BSP_COMPLEX_FLOAT32 || array.type == BSP_COMPLEX_FLOAT64) {
     array = bsp_complex_array_to_fp(array);
@@ -61,7 +61,7 @@ int bsp_write_array(hid_t f, char* label, bsp_array_t array,
   return 0;
 }
 
-bsp_array_t bsp_read_array(hid_t f, char* label) {
+bsp_array_t bsp_read_array(hid_t f, const char* label) {
   hid_t dset = H5Dopen2(f, label, H5P_DEFAULT);
 
   if (dset == H5I_INVALID_HID) {
@@ -100,7 +100,7 @@ bsp_array_t bsp_read_array(hid_t f, char* label) {
   return array;
 }
 
-void bsp_write_attribute(hid_t f, char* label, char* string) {
+void bsp_write_attribute(hid_t f, const char* label, const char* string) {
   hid_t strtype = H5Tcopy(H5T_C_S1);
   H5Tset_size(strtype, strlen(string));
   H5Tset_cset(strtype, H5T_CSET_UTF8);
@@ -116,7 +116,7 @@ void bsp_write_attribute(hid_t f, char* label, char* string) {
   H5Sclose(dataspace);
 }
 
-char* bsp_read_attribute(hid_t f, char* label) {
+char* bsp_read_attribute(hid_t f, const char* label) {
   hid_t attribute = H5Aopen(f, label, H5P_DEFAULT);
   hid_t strtype = H5Aget_type(attribute);
 
