@@ -100,7 +100,7 @@ bsp_array_t bsp_read_array(hid_t f, const char* label) {
   return array;
 }
 
-void bsp_write_attribute(hid_t f, const char* label, char* string) {
+void bsp_write_attribute(hid_t f, const char* label, const char* string) {
   hid_t strtype = H5Tcopy(H5T_C_S1);
   H5Tset_size(strtype, strlen(string));
   H5Tset_cset(strtype, H5T_CSET_UTF8);
