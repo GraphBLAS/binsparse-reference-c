@@ -115,7 +115,7 @@ size_t bsp_final_dot(const char* str) {
   return dot_idx;
 }
 
-bsp_matrix_t bsp_read_matrix(const char* file_name, char* group) {
+bsp_matrix_t bsp_read_matrix(const char* file_name, const char* group) {
   if (group == NULL) {
     size_t idx = bsp_final_dot(file_name);
     if (strcmp(file_name + idx, ".hdf5") == 0 ||
