@@ -7,7 +7,7 @@ int main(int argc, char** argv) {
 
   bsp_array_t array = bsp_read_array(f, "test");
 
-  int* values = array.data;
+  int* values = (int*) array.data;
 
   for (size_t i = 0; i < array.size; i++) {
     printf("%lu: %d\n", i, values[i]);
