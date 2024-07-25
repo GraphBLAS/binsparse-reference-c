@@ -14,9 +14,4 @@ add_example(bsp-ls)
 add_example(benchmark_read)
 add_example(benchmark_write)
 
-
-add_executable(test test.cpp)
-target_link_libraries(test binsparse-rc)
-
-
 add_subdirectory(cpp)
