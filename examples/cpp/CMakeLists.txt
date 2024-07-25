@@ -1,6 +1,6 @@
 function(add_example example_name)
-  add_executable(${example_name} ${example_name}.c)
-  target_link_libraries(${example_name} binsparse-rc)
+  add_executable(${example_name}-cpp ${example_name}.cpp)
+  target_link_libraries(${example_name}-cpp binsparse-rc)
 endfunction()
 
 add_example(simple_matrix_write)
@@ -13,10 +13,3 @@ add_example(check_equivalence)
 add_example(bsp-ls)
 add_example(benchmark_read)
 add_example(benchmark_write)
-
-
-add_executable(test test.cpp)
-target_link_libraries(test binsparse-rc)
-
-
-add_subdirectory(cpp)
