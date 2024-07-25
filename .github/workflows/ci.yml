@@ -36,6 +36,6 @@ jobs:
         sudo apt-get install libhdf5-dev g++-14
         cmake -B build
     - name: Build
-      run: CXX=g++-14 make -C build -j `nproc`
+      run: VERBOSE=true CXX=g++-14 make -C build -j `nproc`
     - name: Test
       run: ctest --test-dir ./build/test/bash
