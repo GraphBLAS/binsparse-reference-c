@@ -23,6 +23,7 @@ bsp_array_t bsp_construct_array_t(size_t size, bsp_type_t type) {
 
   bsp_array_t array;
   array.data = malloc(byte_size);
+  assert(array.data != NULL);
   array.size = size;
   array.type = type;
 

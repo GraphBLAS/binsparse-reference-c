@@ -44,10 +44,12 @@ void flush_cache() {
 #ifdef __APPLE__
   system("bash -c \"sync && sudo purge\"");
 #elif __linux__
-  system("bash -c \"sync\" && sudo echo 3 > /proc/sys/vm/drop_caches");
+  system("bash -c \"sync\" && sudo sh -c \"/usr/bin/echo 3 > "
+         "/proc/sys/vm/drop_caches\"");
 #else
   static_assert(false);
 #endif
+  usleep(100000);
 }
 
 int main(int argc, char** argv) {
@@ -67,7 +69,13 @@ int main(int argc, char** argv) {
   size_t nbytes = 0;
 
   // To flush the filesystem cache before each trial, change to `true`.
-  bool cold_cache = false;
+  bool cold_cache = true;
+
+  // If running warm cache experiments, read once to warm cache.
+  if (!cold_cache) {
+    bsp_matrix_t mat = bsp_read_matrix(file_name, NULL);
+    bsp_destroy_matrix_t(mat);
+  }
 
   for (size_t i = 0; i < num_trials; i++) {
     if (cold_cache) {
