@@ -22,4 +22,3 @@ do
   dataset=`echo ${file} | sed -E "s/.+\/(.+\/.+)\.h5/\1/"`
   $BENCHMARK_BINARY ${SCRATCH_DIR} $file
 done
-
