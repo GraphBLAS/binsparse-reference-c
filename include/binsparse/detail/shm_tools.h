@@ -1,6 +1,7 @@
 #pragma once
 
 #include <stddef.h>
+#include <stdio.h>
 #include <sys/ipc.h>
 #include <sys/shm.h>
 #include <sys/stat.h>

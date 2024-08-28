@@ -42,10 +42,10 @@ double compute_variance(double* x, size_t n) {
 
 void flush_cache() {
 #ifdef __APPLE__
-  system("bash -c \"sync && sudo purge\"");
+  int rv = system("bash -c \"sync && sudo purge\"");
 #elif __linux__
-  system("bash -c \"sync\" && sudo sh -c \"/usr/bin/echo 3 > "
-         "/proc/sys/vm/drop_caches\"");
+  int rv = system("bash -c \"sync\" && sudo sh -c \"/usr/bin/echo 3 > "
+                  "/proc/sys/vm/drop_caches\"");
 #else
   static_assert(false);
 #endif

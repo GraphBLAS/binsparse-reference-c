@@ -42,10 +42,10 @@ double compute_variance(double* x, size_t n) {
 
 void flush_cache() {
 #ifdef __APPLE__
-  system("bash -c \"sync && sudo purge\"");
+  int rv = system("bash -c \"sync && sudo purge\"");
 #elif __linux__
-  system("bash -c \"sync\" && sudo sh -c \"/usr/bin/echo 3 > "
-         "/proc/sys/vm/drop_caches\"");
+  int rv = system("bash -c \"sync\" && sudo sh -c \"/usr/bin/echo 3 > "
+                  "/proc/sys/vm/drop_caches\"");
 #else
   static_assert(false);
 #endif
@@ -54,9 +54,9 @@ void flush_cache() {
 
 void flush_writes() {
 #ifdef __APPLE__
-  system("bash -c \"sync\"");
+  int rv = system("bash -c \"sync\"");
 #elif __linux__
-  system("bash -c \"sync\"");
+  int rv = system("bash -c \"sync\"");
 #else
   static_assert(false);
 #endif
@@ -65,7 +65,7 @@ void flush_writes() {
 void delete_file(char* file_name) {
   char command[2048];
   snprintf(command, 2047, "rm %s", file_name);
-  system(command);
+  int rv = system(command);
 }
 
 int main(int argc, char** argv) {

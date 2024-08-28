@@ -33,8 +33,10 @@ bsp_mm_metadata bsp_mmread_metadata(char* file_path) {
 
   bsp_mm_metadata metadata;
 
-  fscanf(f, "%%%%MatrixMarket matrix %s %s %s\n", metadata.format,
-         metadata.type, metadata.structure);
+  int read_items = fscanf(f, "%%%%MatrixMarket matrix %s %s %s\n",
+                          metadata.format, metadata.type, metadata.structure);
+
+  assert(read_items == 3);
 
   for (size_t i = 0; i < strlen(metadata.structure); i++) {
     metadata.structure[i] = tolower(metadata.structure[i]);
