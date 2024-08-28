@@ -42,19 +42,21 @@ double compute_variance(double* x, size_t n) {
 
 void flush_cache() {
 #ifdef __APPLE__
-  system("bash -c \"sync && sudo purge\"");
+  int rv = system("bash -c \"sync && sudo purge\"");
 #elif __linux__
-  system("bash -c \"sync\" && sudo echo 3 > /proc/sys/vm/drop_caches");
+  int rv = system("bash -c \"sync\" && sudo sh -c \"/usr/bin/echo 3 > "
+                  "/proc/sys/vm/drop_caches\"");
 #else
   static_assert(false);
 #endif
+  usleep(100000);
 }
 
 void flush_writes() {
 #ifdef __APPLE__
-  system("bash -c \"sync\"");
+  int rv = system("bash -c \"sync\"");
 #elif __linux__
-  system("bash -c \"sync\"");
+  int rv = system("bash -c \"sync\"");
 #else
   static_assert(false);
 #endif
@@ -63,7 +65,7 @@ void flush_writes() {
 void delete_file(const char* file_name) {
   char command[2048];
   snprintf(command, 2047, "rm %s", file_name);
-  system(command);
+  int rv = system(command);
 }
 
 int main(int argc, char** argv) {
@@ -85,7 +87,7 @@ int main(int argc, char** argv) {
 
   printf("Opening %s\n", file_name);
 
-  const int num_trials = 1;
+  const int num_trials = 10;
 
   double durations[num_trials];
 
@@ -105,7 +107,7 @@ int main(int argc, char** argv) {
 
   // To flush each write to the filesystem and include this in the timing,
   // change to `true`.
-  bool flush_each_write = true;
+  bool flush_each_write = false;
 
   for (size_t i = 0; i < num_trials; i++) {
     if (cold_cache) {
@@ -124,6 +126,11 @@ int main(int argc, char** argv) {
 
     double end = gettime();
     durations[i] = end - begin;
+
+    double gbytes = ((double) nbytes) / 1024 / 1024 / 1024;
+    double gbytes_s = gbytes / durations[i];
+
+    printf("FORPARSER: %s,%lf,%lf\n", file_name, durations[i], gbytes_s);
 
     delete_file(output_filename);
   }
@@ -163,8 +170,6 @@ int main(int argc, char** argv) {
     }
   }
   printf("]\n");
-
-  printf("FORPARSER: %s,%lf,%lf\n", file_name, median_time, gbytes_s);
 
   return 0;
 }
