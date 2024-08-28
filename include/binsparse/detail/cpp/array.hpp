@@ -2,6 +2,7 @@
 
 #ifdef __cplusplus
 
+#include <string>
 #include <type_traits>
 #include <variant>
 
@@ -71,7 +72,7 @@ void bsp_array_read(bsp_array_t array, size_t index, T& value) {
       [&](auto* ptr) {
         using U = std::remove_pointer_t<decltype(ptr)>;
 
-        if constexpr (std::is_assignable_v<T, U>) {
+        if constexpr (std::is_assignable_v<T&, U>) {
           value = ptr[index];
         }
       },
@@ -87,7 +88,7 @@ void bsp_array_write(bsp_array_t array, size_t index, U value) {
       [&](auto* ptr) {
         using T = std::remove_pointer_t<decltype(ptr)>;
 
-        if constexpr (std::is_assignable_v<T, U>) {
+        if constexpr (std::is_assignable_v<T&, U>) {
           ptr[index] = value;
         }
       },
@@ -105,7 +106,7 @@ void bsp_array_awrite(bsp_array_t array_0, size_t index_0, bsp_array_t array_1,
         using T = std::remove_pointer_t<decltype(ptr_0)>;
         using U = std::remove_pointer_t<decltype(ptr_1)>;
 
-        if constexpr (std::is_assignable_v<T, U>) {
+        if constexpr (std::is_assignable_v<T&, U>) {
           ptr_0[index_0] = ptr_1[index_1];
         }
       },

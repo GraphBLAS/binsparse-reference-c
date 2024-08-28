@@ -70,8 +70,8 @@ int main(int argc, char** argv) {
     compression_level = atoi(argv[4]);
   }
 
-  char* input_file_extension = bsp_get_file_extension(input_fname);
-  char* output_file_extension = bsp_get_file_extension(output_fname);
+  const char* input_file_extension = bsp_get_file_extension(input_fname);
+  const char* output_file_extension = bsp_get_file_extension(output_fname);
 
   if (input_file_extension == NULL ||
       strcmp(input_file_extension, ".mtx") != 0) {

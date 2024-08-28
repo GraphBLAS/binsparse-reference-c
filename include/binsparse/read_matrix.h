@@ -209,7 +209,7 @@ bsp_matrix_t bsp_read_matrix_from_group(hid_t f) {
   return matrix;
 }
 
-size_t bsp_final_dot(char* str) {
+size_t bsp_final_dot(const char* str) {
   size_t dot_idx = 0;
   for (size_t i = 0; str[i] != '\0'; i++) {
     if (str[i] == '.') {
@@ -219,7 +219,7 @@ size_t bsp_final_dot(char* str) {
   return dot_idx;
 }
 
-bsp_matrix_t bsp_read_matrix_parallel(char* file_name, char* group,
+bsp_matrix_t bsp_read_matrix_parallel(const char* file_name, const char* group,
                                       int num_threads) {
   if (group == NULL) {
     size_t idx = bsp_final_dot(file_name);
@@ -244,7 +244,7 @@ bsp_matrix_t bsp_read_matrix_parallel(char* file_name, char* group,
   }
 }
 
-bsp_matrix_t bsp_read_matrix(char* file_name, char* group) {
+bsp_matrix_t bsp_read_matrix(const char* file_name, const char* group) {
   if (group == NULL) {
     size_t idx = bsp_final_dot(file_name);
     if (strcmp(file_name + idx, ".hdf5") == 0 ||

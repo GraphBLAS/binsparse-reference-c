@@ -121,7 +121,7 @@ int bsp_write_matrix_to_group(hid_t f, bsp_matrix_t matrix, cJSON* user_json,
   return 0;
 }
 
-int bsp_write_matrix(char* fname, bsp_matrix_t matrix, char* group,
+int bsp_write_matrix(const char* fname, bsp_matrix_t matrix, const char* group,
                      cJSON* user_json, int compression_level) {
   if (group == NULL) {
     hid_t f = H5Fcreate(fname, H5F_ACC_TRUNC, H5P_DEFAULT, H5P_DEFAULT);
