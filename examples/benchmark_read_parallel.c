@@ -62,7 +62,9 @@ int main(int argc, char** argv) {
 
   printf("Opening %s\n", file_name);
 
-  const int num_trials = 10;
+  const int num_trials = 2;
+
+  int num_threads = 6;
 
   double durations[num_trials];
 
@@ -72,8 +74,9 @@ int main(int argc, char** argv) {
   bool cold_cache = true;
 
   // If running warm cache experiments, read once to warm cache.
-  if (!cold_cache) {
-    bsp_matrix_t mat = bsp_read_matrix(file_name, NULL);
+  if (!cold_cache && false) {
+    printf("Warm cache read...\n");
+    bsp_matrix_t mat = bsp_read_matrix_parallel(file_name, NULL, num_threads);
     bsp_destroy_matrix_t(mat);
   }
 
@@ -82,10 +85,11 @@ int main(int argc, char** argv) {
       flush_cache();
     }
     double begin = gettime();
-    bsp_matrix_t mat = bsp_read_matrix(file_name, NULL);
+    bsp_matrix_t mat = bsp_read_matrix_parallel(file_name, NULL, num_threads);
     double end = gettime();
     durations[i] = end - begin;
     nbytes = bsp_matrix_nbytes(mat);
+
     bsp_destroy_matrix_t(mat);
 
     double gbytes = ((double) nbytes) / 1024 / 1024 / 1024;

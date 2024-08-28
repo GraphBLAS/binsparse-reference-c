@@ -5,6 +5,10 @@
 #include <hdf5.h>
 #include <string.h>
 
+#include <unistd.h>
+
+#include <binsparse/detail/shm_tools.h>
+
 // Write an array to a dataset / file
 // Returns 0 on success, nonzero on error.
 int bsp_write_array(hid_t f, char* label, bsp_array_t array,
@@ -59,6 +63,88 @@ int bsp_write_array(hid_t f, char* label, bsp_array_t array,
   H5Pclose(dcpl);
 
   return 0;
+}
+
+bsp_array_t bsp_read_array_parallel(hid_t f, char* label, int num_threads) {
+  hid_t dset = H5Dopen2(f, label, H5P_DEFAULT);
+
+  if (dset == H5I_INVALID_HID) {
+    return bsp_construct_default_array_t();
+  }
+
+  hid_t fspace = H5Dget_space(dset);
+
+  if (fspace == H5I_INVALID_HID) {
+    return bsp_construct_default_array_t();
+  }
+
+  hsize_t dims[3];
+
+  int r = H5Sget_simple_extent_dims(fspace, dims, NULL);
+
+  if (r < 0) {
+    return bsp_construct_default_array_t();
+  }
+
+  hid_t hdf5_type = H5Dget_type(dset);
+
+  bsp_type_t type = bsp_get_bsp_type(hdf5_type);
+
+  bsp_shm_t array_shm = bsp_shm_new(dims[0] * bsp_type_size(type));
+  bsp_array_t array;
+  array.type = type;
+  array.size = dims[0];
+  array.shm = array_shm;
+  array.shmat_memory = true;
+
+  pid_t* pids = (pid_t*) malloc(sizeof(pid_t) * num_threads);
+
+  int thread_num = 0;
+
+  for (size_t i = 0; i < num_threads - 1; i++) {
+    pid_t new_pid = fork();
+
+    if (new_pid != 0) {
+      pids[i] = new_pid;
+    } else {
+      thread_num = i + 1;
+      break;
+    }
+  }
+
+  array.data = bsp_shm_attach(array_shm);
+  if (thread_num == 0) {
+    bsp_shm_delete(array.shm);
+  }
+
+  hsize_t chunk_size = (array.size + num_threads - 1) / num_threads;
+  hsize_t start = (chunk_size * thread_num < array.size)
+                      ? chunk_size * thread_num
+                      : array.size;
+  hsize_t count =
+      (start + chunk_size <= array.size) ? chunk_size : array.size - start;
+
+  if (count > 0) {
+    H5Sselect_hyperslab(fspace, H5S_SELECT_SET, &start, NULL, &count, NULL);
+
+    hid_t memspace_id = H5Screate_simple(1, &count, NULL);
+
+    H5Dread(dset, bsp_get_hdf5_native_type(type), memspace_id, fspace,
+            H5P_DEFAULT, array.data + start * bsp_type_size(type));
+    H5Sclose(memspace_id);
+  }
+
+  H5Dclose(dset);
+  H5Sclose(fspace);
+
+  if (thread_num > 0) {
+    bsp_shm_detach(array.data);
+    exit(0);
+  }
+
+  free(pids);
+
+  return array;
 }
 
 bsp_array_t bsp_read_array(hid_t f, char* label) {

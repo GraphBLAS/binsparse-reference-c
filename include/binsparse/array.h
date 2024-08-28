@@ -1,6 +1,7 @@
 #pragma once
 
 #include <assert.h>
+#include <binsparse/detail/shm_tools.h>
 #include <binsparse/types.h>
 #include <stdlib.h>
 #include <string.h>
@@ -9,12 +10,15 @@ typedef struct bsp_array_t {
   void* data;
   size_t size;
   bsp_type_t type;
+  bool shmat_memory;
+  bsp_shm_t shm;
 } bsp_array_t;
 
 bsp_array_t bsp_construct_default_array_t() {
   bsp_array_t array;
   array.data = NULL;
   array.size = 0;
+  array.shmat_memory = false;
   return array;
 }
 
@@ -26,6 +30,7 @@ bsp_array_t bsp_construct_array_t(size_t size, bsp_type_t type) {
   assert(array.data != NULL);
   array.size = size;
   array.type = type;
+  array.shmat_memory = false;
 
   return array;
 }
@@ -71,7 +76,37 @@ bsp_array_t bsp_fp_array_to_complex(bsp_array_t other) {
 }
 
 void bsp_destroy_array_t(bsp_array_t array) {
-  free(array.data);
+  if (array.shmat_memory == false) {
+    free(array.data);
+  } else {
+    bsp_shm_detach(array.data);
+  }
+}
+
+bool bsp_array_equal(bsp_array_t x, bsp_array_t y) {
+  if (x.size != y.size) {
+    return false;
+  }
+
+  if (x.size == 0) {
+    return true;
+  }
+
+  if (x.type != y.type) {
+    return false;
+  }
+
+  uint8_t* x_data = (uint8_t*) x.data;
+  uint8_t* y_data = (uint8_t*) y.data;
+  for (size_t i = 0; i < x.size * bsp_type_size(x.type); i++) {
+    if (x_data[i] != y_data[i]) {
+      printf("Index %zu incorrect %d != %d\n", i, (int) x_data[i],
+             (int) y_data[i]);
+      fflush(stdout);
+      return false;
+    }
+  }
+  return true;
 }
 
 #ifndef __cplusplus
