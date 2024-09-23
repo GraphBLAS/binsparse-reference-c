@@ -1,0 +1,97 @@
+TODO/Notes/Comments:
+
+write a user guide
+
+write the MATLAB interface
+
+write the GraphBLAS and/or LAGraph interface
+
+tag each file with a comment and copyright notice:
+    SPDX-License-Identifier: BSD-3-clause
+
+distinguish between user-callable and non-user-callable methods
+
+malloc/free: allow another allocator to be used instead
+
+does the C package need to be header-only?  If so, would it be better to
+    place all the files in a single binsparse.h?  Otherwise, the install
+    process is complicated for the linux maintainer ... there would be many
+    files in a /usr/local/include/binsparse/*.h, say (and the filenames
+    should all be "binsparse_something.h" as well, so they don't get
+    confused with other packages).
+
+    If the C package was not header-only, then non-user-callable functions
+    can more easily be hidden.  The code structure could be more easily
+    seen if each function was in its own file.
+
+can the JSON details be hidden, at least for common terms,
+    or do we need the end user to use cJSON objects directly?
+
+mtx2bsp can add m.comments to the json header, but how is it read back in
+    from a *.bsp.h5 file by binsparse and given back to the user application?
+
+Is the hid_t visible to the end-user?  If so, what if we have different
+    backends in the future?  Or will we always use HDF5?
+    Can the HDF5 interface be hidden, so that other backends could be more
+    easily added in the future, without disrupting the binsparse user API?
+
+parallelism: using process IDs and fork, but that's not portable to Windows.
+    We should use OpenMP.  pid_t, fork, shmget, etc are all POSIX, and not
+    on Windows. With OpenMP, there would be no need for shmget.
+    Can H5* methods be called from OpenMP threads?
+
+need to port to Windows
+
+read_parallel is in the C implementation, but not C++?
+    C++ has no parallelism at all.
+
+What is binsparse/include/detail/cpp/array.hpp doing?
+
+Why have examples/cpp?  It looks like the files there are almost identical
+    to the corresponding examples/*.c files.
+
+why are the cpp tests so much slower than the c tests?  Is it doing more
+    things?  The tests look identical.  See "verbose_test_output.txt.
+    The Matrix Market reading is very very slow in the cpp examples.
+    The mtx2bsp.c and mtx2bsp.cpp files are identical,
+    check_equivalence.c and check_equivalence.cpp are also identical.
+    I suggest we remove the cpp examples, and the include/detail/cpp/array.hpp
+    file, or fix the performance.
+
+how are text files written into the *.bsp.h5 file?
+    For example, IMDB/IMDB_code.txt and IMDB/IMDB_colname.txt
+
+in write_matrix.h, the user_json object could itself include a term called
+    "binsparse", which would cause chaos.  Can other terms cause conflicts?
+
+I added a top-level Makefile, for convenience, and an empty ./build folder
+    with a single .gitignore file.
+
+We need to add lots of comments to the source code.
+
+API discussion:  lots of errors could be returned.  We should use a consistent
+    error handling scheme, like the GrB_Info of GraphBLAS.  Every binsparse
+    function would return that enum.  If a method returns an object, like
+
+        bsp_matrix_t matrix = bsp_read_matrx (filename, group) ;
+
+    replace it with
+
+        bsp_matrix_t matrix ;
+        bsp_info bsp_read_matrix (&matrix, filename, group) ;
+
+perror should not be called; it would not fit into either a MATLAB or
+    GraphBLAS interface to binsparse
+
+need sanity checks for user parameters, like NULL string for file_name,
+    which would currently cause a segfault
+
+reduce duplications:  bsp_read_matrix_from_group and
+    bsp_read_matrix_from_group_parallel are almost identical.
+    Just pass in num_threads = 1 to read single-threaded.
+
+examples/bsp-ls.c:  this uses HDF5 methods to iterate over a *.bsp.h5 file,
+    but these features need to be user-callable with a simpler bsp_read_*
+    set of methods.  How does the user iterate over a *.bsp.h5 file to
+    extract all matrices from the h5 file, one matrix at a time?
+

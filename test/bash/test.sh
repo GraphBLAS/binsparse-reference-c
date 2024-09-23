@@ -32,7 +32,7 @@ convert_ssmc() {
 
   # echo "Primary matrix is \"${main_matrix}\" -> ${dest_file}/root"
   echo "mtx2bsp ${main_matrix} ${dest_file} ${format}"
-  mtx2bsp ${main_matrix} ${dest_file} ${format}
+  time mtx2bsp ${main_matrix} ${dest_file} ${format}
 
   # Set "null option" to return an empty list if no files match glob.
   shopt -s nullglob
@@ -44,7 +44,7 @@ convert_ssmc() {
     secondary_name=${secondary_name/.mtx/}
     secondary_name=${secondary_name/${matrix_name}_/}
     echo "mtx2bsp ${secondary_matrix} ${dest_file}:${secondary_name}"
-    mtx2bsp ${secondary_matrix} ${dest_file}:${secondary_name}
+    time mtx2bsp ${secondary_matrix} ${dest_file}:${secondary_name}
   done
 
   rm -r ${directory}/${matrix_name}
@@ -79,7 +79,7 @@ check_ssmc() {
 
   # echo "Primary matrix is \"${main_matrix}\" -> ${dest_file}/root"
   echo "check_equivalence ${main_matrix} ${dest_file}"
-  check_equivalence ${main_matrix} ${dest_file}
+  time check_equivalence ${main_matrix} ${dest_file}
 
   # Set "null option" to return an empty list if no files match glob.
   shopt -s nullglob
@@ -91,7 +91,7 @@ check_ssmc() {
     secondary_name=${secondary_name/.mtx/}
     secondary_name=${secondary_name/${matrix_name}_/}
     echo "check_equivalence ${secondary_matrix} ${dest_file}:${secondary_name}"
-    check_equivalence ${secondary_matrix} ${dest_file}:${secondary_name}
+    time check_equivalence ${secondary_matrix} ${dest_file}:${secondary_name}
   done
 
   rm -r ${directory}/${matrix_name}

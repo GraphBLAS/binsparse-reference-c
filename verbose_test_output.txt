@@ -1,0 +1,775 @@
+Script started on 2024-09-23 17:10:15-05:00 [TERM="xterm-256color" TTY="/dev/pts/2" COLUMNS="120" LINES="51"]
+
+[?2004h[0;36mbackslash $[0m make vtests
+[?2004l( cd build && cmake  .. && cmake --build . --config Release )
+-- Configuring done
+-- Generating done
+-- Build files have been written to: /home/faculty/d/davis/dev2/binsparse-reference-c/build
+gmake[1]: Entering directory '/home/faculty/d/davis/dev2/binsparse-reference-c/build'
+gmake[2]: Entering directory '/home/faculty/d/davis/dev2/binsparse-reference-c/build'
+gmake[3]: Entering directory '/home/faculty/d/davis/dev2/binsparse-reference-c/build'
+gmake[3]: Leaving directory '/home/faculty/d/davis/dev2/binsparse-reference-c/build'
+[  2%] Built target cjson
+gmake[3]: Entering directory '/home/faculty/d/davis/dev2/binsparse-reference-c/build'
+gmake[3]: Leaving directory '/home/faculty/d/davis/dev2/binsparse-reference-c/build'
+[  4%] Built target cJSON_test
+gmake[3]: Entering directory '/home/faculty/d/davis/dev2/binsparse-reference-c/build'
+gmake[3]: Leaving directory '/home/faculty/d/davis/dev2/binsparse-reference-c/build'
+[  6%] Built target unity
+gmake[3]: Entering directory '/home/faculty/d/davis/dev2/binsparse-reference-c/build'
+gmake[3]: Leaving directory '/home/faculty/d/davis/dev2/binsparse-reference-c/build'
+[  9%] Built target parse_examples
+gmake[3]: Entering directory '/home/faculty/d/davis/dev2/binsparse-reference-c/build'
+gmake[3]: Leaving directory '/home/faculty/d/davis/dev2/binsparse-reference-c/build'
+[ 11%] Built target parse_number
+gmake[3]: Entering directory '/home/faculty/d/davis/dev2/binsparse-reference-c/build'
+gmake[3]: Leaving directory '/home/faculty/d/davis/dev2/binsparse-reference-c/build'
+[ 13%] Built target parse_hex4
+gmake[3]: Entering directory '/home/faculty/d/davis/dev2/binsparse-reference-c/build'
+gmake[3]: Leaving directory '/home/faculty/d/davis/dev2/binsparse-reference-c/build'
+[ 16%] Built target parse_string
+gmake[3]: Entering directory '/home/faculty/d/davis/dev2/binsparse-reference-c/build'
+gmake[3]: Leaving directory '/home/faculty/d/davis/dev2/binsparse-reference-c/build'
+[ 18%] Built target parse_array
+gmake[3]: Entering directory '/home/faculty/d/davis/dev2/binsparse-reference-c/build'
+gmake[3]: Leaving directory '/home/faculty/d/davis/dev2/binsparse-reference-c/build'
+[ 20%] Built target parse_object
+gmake[3]: Entering directory '/home/faculty/d/davis/dev2/binsparse-reference-c/build'
+gmake[3]: Leaving directory '/home/faculty/d/davis/dev2/binsparse-reference-c/build'
+[ 22%] Built target parse_value
+gmake[3]: Entering directory '/home/faculty/d/davis/dev2/binsparse-reference-c/build'
+gmake[3]: Leaving directory '/home/faculty/d/davis/dev2/binsparse-reference-c/build'
+[ 25%] Built target print_string
+gmake[3]: Entering directory '/home/faculty/d/davis/dev2/binsparse-reference-c/build'
+gmake[3]: Leaving directory '/home/faculty/d/davis/dev2/binsparse-reference-c/build'
+[ 27%] Built target print_number
+gmake[3]: Entering directory '/home/faculty/d/davis/dev2/binsparse-reference-c/build'
+gmake[3]: Leaving directory '/home/faculty/d/davis/dev2/binsparse-reference-c/build'
+[ 29%] Built target print_array
+gmake[3]: Entering directory '/home/faculty/d/davis/dev2/binsparse-reference-c/build'
+gmake[3]: Leaving directory '/home/faculty/d/davis/dev2/binsparse-reference-c/build'
+[ 32%] Built target print_object
+gmake[3]: Entering directory '/home/faculty/d/davis/dev2/binsparse-reference-c/build'
+gmake[3]: Leaving directory '/home/faculty/d/davis/dev2/binsparse-reference-c/build'
+[ 34%] Built target print_value
+gmake[3]: Entering directory '/home/faculty/d/davis/dev2/binsparse-reference-c/build'
+gmake[3]: Leaving directory '/home/faculty/d/davis/dev2/binsparse-reference-c/build'
+[ 36%] Built target misc_tests
+gmake[3]: Entering directory '/home/faculty/d/davis/dev2/binsparse-reference-c/build'
+gmake[3]: Leaving directory '/home/faculty/d/davis/dev2/binsparse-reference-c/build'
+[ 39%] Built target parse_with_opts
+gmake[3]: Entering directory '/home/faculty/d/davis/dev2/binsparse-reference-c/build'
+gmake[3]: Leaving directory '/home/faculty/d/davis/dev2/binsparse-reference-c/build'
+[ 41%] Built target compare_tests
+gmake[3]: Entering directory '/home/faculty/d/davis/dev2/binsparse-reference-c/build'
+gmake[3]: Leaving directory '/home/faculty/d/davis/dev2/binsparse-reference-c/build'
+[ 43%] Built target cjson_add
+gmake[3]: Entering directory '/home/faculty/d/davis/dev2/binsparse-reference-c/build'
+gmake[3]: Leaving directory '/home/faculty/d/davis/dev2/binsparse-reference-c/build'
+[ 45%] Built target readme_examples
+gmake[3]: Entering directory '/home/faculty/d/davis/dev2/binsparse-reference-c/build'
+gmake[3]: Leaving directory '/home/faculty/d/davis/dev2/binsparse-reference-c/build'
+[ 48%] Built target minify_tests
+gmake[3]: Entering directory '/home/faculty/d/davis/dev2/binsparse-reference-c/build'
+gmake[3]: Leaving directory '/home/faculty/d/davis/dev2/binsparse-reference-c/build'
+[ 51%] Built target fuzz_main
+gmake[3]: Entering directory '/home/faculty/d/davis/dev2/binsparse-reference-c/build'
+gmake[3]: Leaving directory '/home/faculty/d/davis/dev2/binsparse-reference-c/build'
+[ 54%] Built target simple_matrix_write
+gmake[3]: Entering directory '/home/faculty/d/davis/dev2/binsparse-reference-c/build'
+gmake[3]: Leaving directory '/home/faculty/d/davis/dev2/binsparse-reference-c/build'
+[ 56%] Built target simple_matrix_read
+gmake[3]: Entering directory '/home/faculty/d/davis/dev2/binsparse-reference-c/build'
+gmake[3]: Leaving directory '/home/faculty/d/davis/dev2/binsparse-reference-c/build'
+[ 58%] Built target simple_read
+gmake[3]: Entering directory '/home/faculty/d/davis/dev2/binsparse-reference-c/build'
+gmake[3]: Leaving directory '/home/faculty/d/davis/dev2/binsparse-reference-c/build'
+[ 60%] Built target simple_write
+gmake[3]: Entering directory '/home/faculty/d/davis/dev2/binsparse-reference-c/build'
+gmake[3]: Leaving directory '/home/faculty/d/davis/dev2/binsparse-reference-c/build'
+[ 63%] Built target mtx2bsp
+gmake[3]: Entering directory '/home/faculty/d/davis/dev2/binsparse-reference-c/build'
+gmake[3]: Leaving directory '/home/faculty/d/davis/dev2/binsparse-reference-c/build'
+[ 65%] Built target bsp2mtx
+gmake[3]: Entering directory '/home/faculty/d/davis/dev2/binsparse-reference-c/build'
+gmake[3]: Leaving directory '/home/faculty/d/davis/dev2/binsparse-reference-c/build'
+[ 67%] Built target check_equivalence
+gmake[3]: Entering directory '/home/faculty/d/davis/dev2/binsparse-reference-c/build'
+gmake[3]: Leaving directory '/home/faculty/d/davis/dev2/binsparse-reference-c/build'
+[ 70%] Built target bsp-ls
+gmake[3]: Entering directory '/home/faculty/d/davis/dev2/binsparse-reference-c/build'
+gmake[3]: Leaving directory '/home/faculty/d/davis/dev2/binsparse-reference-c/build'
+[ 72%] Built target benchmark_read
+gmake[3]: Entering directory '/home/faculty/d/davis/dev2/binsparse-reference-c/build'
+gmake[3]: Leaving directory '/home/faculty/d/davis/dev2/binsparse-reference-c/build'
+[ 74%] Built target benchmark_read_parallel
+gmake[3]: Entering directory '/home/faculty/d/davis/dev2/binsparse-reference-c/build'
+gmake[3]: Leaving directory '/home/faculty/d/davis/dev2/binsparse-reference-c/build'
+[ 77%] Built target benchmark_write
+gmake[3]: Entering directory '/home/faculty/d/davis/dev2/binsparse-reference-c/build'
+gmake[3]: Leaving directory '/home/faculty/d/davis/dev2/binsparse-reference-c/build'
+[ 79%] Built target simple_matrix_write-cpp
+gmake[3]: Entering directory '/home/faculty/d/davis/dev2/binsparse-reference-c/build'
+gmake[3]: Leaving directory '/home/faculty/d/davis/dev2/binsparse-reference-c/build'
+[ 81%] Built target simple_matrix_read-cpp
+gmake[3]: Entering directory '/home/faculty/d/davis/dev2/binsparse-reference-c/build'
+gmake[3]: Leaving directory '/home/faculty/d/davis/dev2/binsparse-reference-c/build'
+[ 83%] Built target simple_read-cpp
+gmake[3]: Entering directory '/home/faculty/d/davis/dev2/binsparse-reference-c/build'
+gmake[3]: Leaving directory '/home/faculty/d/davis/dev2/binsparse-reference-c/build'
+[ 86%] Built target simple_write-cpp
+gmake[3]: Entering directory '/home/faculty/d/davis/dev2/binsparse-reference-c/build'
+gmake[3]: Leaving directory '/home/faculty/d/davis/dev2/binsparse-reference-c/build'
+[ 88%] Built target mtx2bsp-cpp
+gmake[3]: Entering directory '/home/faculty/d/davis/dev2/binsparse-reference-c/build'
+gmake[3]: Leaving directory '/home/faculty/d/davis/dev2/binsparse-reference-c/build'
+[ 90%] Built target bsp2mtx-cpp
+gmake[3]: Entering directory '/home/faculty/d/davis/dev2/binsparse-reference-c/build'
+gmake[3]: Leaving directory '/home/faculty/d/davis/dev2/binsparse-reference-c/build'
+[ 93%] Built target check_equivalence-cpp
+gmake[3]: Entering directory '/home/faculty/d/davis/dev2/binsparse-reference-c/build'
+gmake[3]: Leaving directory '/home/faculty/d/davis/dev2/binsparse-reference-c/build'
+[ 95%] Built target bsp-ls-cpp
+gmake[3]: Entering directory '/home/faculty/d/davis/dev2/binsparse-reference-c/build'
+gmake[3]: Leaving directory '/home/faculty/d/davis/dev2/binsparse-reference-c/build'
+[ 97%] Built target benchmark_read-cpp
+gmake[3]: Entering directory '/home/faculty/d/davis/dev2/binsparse-reference-c/build'
+gmake[3]: Leaving directory '/home/faculty/d/davis/dev2/binsparse-reference-c/build'
+[100%] Built target benchmark_write-cpp
+gmake[2]: Leaving directory '/home/faculty/d/davis/dev2/binsparse-reference-c/build'
+gmake[1]: Leaving directory '/home/faculty/d/davis/dev2/binsparse-reference-c/build'
+ctest -VV --test-dir ./build/test/bash
+Internal ctest changing into directory: /home/faculty/d/davis/dev2/binsparse-reference-c/build/test/bash
+UpdateCTestConfiguration  from :/home/faculty/d/davis/dev2/binsparse-reference-c/build/test/bash/DartConfiguration.tcl
+UpdateCTestConfiguration  from :/home/faculty/d/davis/dev2/binsparse-reference-c/build/test/bash/DartConfiguration.tcl
+Test project /home/faculty/d/davis/dev2/binsparse-reference-c/build/test/bash
+Constructing a list of tests
+Done constructing a list of tests
+Updating test list for fixtures
+Added 0 tests to meet fixture requirements
+Checking test dependency graph...
+Checking test dependency graph end
+test 1
+    Start 1: integration.chesapeake
+
+1: Test command: /usr/bin/bash "/home/faculty/d/davis/dev2/binsparse-reference-c/test/bash/test.sh" "/home/faculty/d/davis/dev2/binsparse-reference-c/build/data/chesapeake.tar.gz"
+1: Working Directory: /home/faculty/d/davis/dev2/binsparse-reference-c/build/test/bash
+1: Test timeout computed to be: 10000000
+1: unpacking /home/faculty/d/davis/dev2/binsparse-reference-c/build/data/chesapeake.tar.gz
+1: Writing in format COO.
+1: mtx2bsp /home/faculty/d/davis/dev2/binsparse-reference-c/build/data/chesapeake/chesapeake.mtx /home/faculty/d/davis/dev2/binsparse-reference-c/build/data/chesapeake.coo.bsp.h5 COO
+1: 39 x 39 matrix with 170 nonzeros.
+1: Matrix Market format is "coordinate" with type "pattern" and structure "symmetric"
+1: File has very long comments, not printing.
+1: Printing with compression level 9.
+1:  === Reading file... ===
+1:  === Done reading. ===
+1: 0.000319 seconds reading Matrix Market file...
+1: 0.000000 seconds declamping...
+1: 0.000001 seconds minimizing values...
+1: 39 x 39 matrix with 170 nnz.
+1: COO format with symmetric_lower structure
+1: 1 values of type bint8
+1: 170 indices_0 of type uint8
+1: 170 indices_1 of type uint8
+1:  === Writing to /home/faculty/d/davis/dev2/binsparse-reference-c/build/data/chesapeake.coo.bsp.h5... ===
+1: 0.002914 seconds writing Binsparse file...
+1:  === Done writing. ===
+1: 
+1: real	0m0.015s
+1: user	0m0.005s
+1: sys	0m0.010s
+1: unpacking /home/faculty/d/davis/dev2/binsparse-reference-c/build/data/chesapeake.tar.gz
+1: check_equivalence /home/faculty/d/davis/dev2/binsparse-reference-c/build/data/chesapeake/chesapeake.mtx /home/faculty/d/davis/dev2/binsparse-reference-c/build/data/chesapeake.coo.bsp.h5
+1: Matrix 1: /home/faculty/d/davis/dev2/binsparse-reference-c/build/data/chesapeake/chesapeake.mtx and root
+1: Matrix 2: /home/faculty/d/davis/dev2/binsparse-reference-c/build/data/chesapeake.coo.bsp.h5 and root
+1: The files are equivalent.
+1: OK!
+1: 
+1: real	0m0.013s
+1: user	0m0.004s
+1: sys	0m0.010s
+1/8 Test #1: integration.chesapeake ...........   Passed    0.55 sec
+test 2
+    Start 2: integration.1138_bus
+
+2: Test command: /usr/bin/bash "/home/faculty/d/davis/dev2/binsparse-reference-c/test/bash/test.sh" "/home/faculty/d/davis/dev2/binsparse-reference-c/build/data/1138_bus.tar.gz"
+2: Working Directory: /home/faculty/d/davis/dev2/binsparse-reference-c/build/test/bash
+2: Test timeout computed to be: 10000000
+2: unpacking /home/faculty/d/davis/dev2/binsparse-reference-c/build/data/1138_bus.tar.gz
+2: Writing in format COO.
+2: mtx2bsp /home/faculty/d/davis/dev2/binsparse-reference-c/build/data/1138_bus/1138_bus.mtx /home/faculty/d/davis/dev2/binsparse-reference-c/build/data/1138_bus.coo.bsp.h5 COO
+2: 1138 x 1138 matrix with 2596 nonzeros.
+2: Matrix Market format is "coordinate" with type "real" and structure "symmetric"
+2: File has very long comments, not printing.
+2: Printing with compression level 9.
+2:  === Reading file... ===
+2:  === Done reading. ===
+2: 0.002394 seconds reading Matrix Market file...
+2: 0.000004 seconds declamping...
+2: 0.000007 seconds minimizing values...
+2: 1138 x 1138 matrix with 2596 nnz.
+2: COO format with symmetric_lower structure
+2: 2596 values of type float64
+2: 2596 indices_0 of type uint16
+2: 2596 indices_1 of type uint16
+2:  === Writing to /home/faculty/d/davis/dev2/binsparse-reference-c/build/data/1138_bus.coo.bsp.h5... ===
+2: 0.002279 seconds writing Binsparse file...
+2:  === Done writing. ===
+2: 
+2: real	0m0.017s
+2: user	0m0.010s
+2: sys	0m0.007s
+2: unpacking /home/faculty/d/davis/dev2/binsparse-reference-c/build/data/1138_bus.tar.gz
+2: check_equivalence /home/faculty/d/davis/dev2/binsparse-reference-c/build/data/1138_bus/1138_bus.mtx /home/faculty/d/davis/dev2/binsparse-reference-c/build/data/1138_bus.coo.bsp.h5
+2: Matrix 1: /home/faculty/d/davis/dev2/binsparse-reference-c/build/data/1138_bus/1138_bus.mtx and root
+2: Matrix 2: /home/faculty/d/davis/dev2/binsparse-reference-c/build/data/1138_bus.coo.bsp.h5 and root
+2: The files are equivalent.
+2: OK!
+2: 
+2: real	0m0.015s
+2: user	0m0.006s
+2: sys	0m0.008s
+2/8 Test #2: integration.1138_bus .............   Passed    0.09 sec
+test 3
+    Start 3: integration.mouse_gene
+
+3: Test command: /usr/bin/bash "/home/faculty/d/davis/dev2/binsparse-reference-c/test/bash/test.sh" "/home/faculty/d/davis/dev2/binsparse-reference-c/build/data/mouse_gene.tar.gz"
+3: Working Directory: /home/faculty/d/davis/dev2/binsparse-reference-c/build/test/bash
+3: Test timeout computed to be: 10000000
+3: unpacking /home/faculty/d/davis/dev2/binsparse-reference-c/build/data/mouse_gene.tar.gz
+3: Writing in format COO.
+3: mtx2bsp /home/faculty/d/davis/dev2/binsparse-reference-c/build/data/mouse_gene/mouse_gene.mtx /home/faculty/d/davis/dev2/binsparse-reference-c/build/data/mouse_gene.coo.bsp.h5 COO
+3: 45101 x 45101 matrix with 14506196 nonzeros.
+3: Matrix Market format is "coordinate" with type "real" and structure "symmetric"
+3: File has very long comments, not printing.
+3: Printing with compression level 9.
+3:  === Reading file... ===
+3:  === Done reading. ===
+3: 13.832894 seconds reading Matrix Market file...
+3: 0.014606 seconds declamping...
+3: 0.075702 seconds minimizing values...
+3: 45101 x 45101 matrix with 14506196 nnz.
+3: COO format with symmetric_lower structure
+3: 14506196 values of type float32
+3: 14506196 indices_0 of type uint16
+3: 14506196 indices_1 of type uint16
+3:  === Writing to /home/faculty/d/davis/dev2/binsparse-reference-c/build/data/mouse_gene.coo.bsp.h5... ===
+3: 3.341448 seconds writing Binsparse file...
+3:  === Done writing. ===
+3: 
+3: real	0m17.368s
+3: user	0m16.301s
+3: sys	0m1.036s
+3: unpacking /home/faculty/d/davis/dev2/binsparse-reference-c/build/data/mouse_gene.tar.gz
+3: check_equivalence /home/faculty/d/davis/dev2/binsparse-reference-c/build/data/mouse_gene/mouse_gene.mtx /home/faculty/d/davis/dev2/binsparse-reference-c/build/data/mouse_gene.coo.bsp.h5
+3: Matrix 1: /home/faculty/d/davis/dev2/binsparse-reference-c/build/data/mouse_gene/mouse_gene.mtx and root
+3: Matrix 2: /home/faculty/d/davis/dev2/binsparse-reference-c/build/data/mouse_gene.coo.bsp.h5 and root
+3: The files are equivalent.
+3: OK!
+3: 
+3: real	0m14.431s
+3: user	0m13.413s
+3: sys	0m1.017s
+3/8 Test #3: integration.mouse_gene ...........   Passed   36.60 sec
+test 4
+    Start 4: integration.IMDB
+
+4: Test command: /usr/bin/bash "/home/faculty/d/davis/dev2/binsparse-reference-c/test/bash/test.sh" "/home/faculty/d/davis/dev2/binsparse-reference-c/build/data/IMDB.tar.gz"
+4: Working Directory: /home/faculty/d/davis/dev2/binsparse-reference-c/build/test/bash
+4: Test timeout computed to be: 10000000
+4: unpacking /home/faculty/d/davis/dev2/binsparse-reference-c/build/data/IMDB.tar.gz
+4: Writing in format COO.
+4: mtx2bsp /home/faculty/d/davis/dev2/binsparse-reference-c/build/data/IMDB/IMDB.mtx /home/faculty/d/davis/dev2/binsparse-reference-c/build/data/IMDB.coo.bsp.h5 COO
+4: 428440 x 896308 matrix with 3782463 nonzeros.
+4: Matrix Market format is "coordinate" with type "pattern" and structure "general"
+4: File has very long comments, not printing.
+4: Printing with compression level 9.
+4:  === Reading file... ===
+4:  === Done reading. ===
+4: 2.467696 seconds reading Matrix Market file...
+4: 0.000000 seconds declamping...
+4: 0.000000 seconds minimizing values...
+4: 428440 x 896308 matrix with 3782463 nnz.
+4: COO format with general structure
+4: 1 values of type bint8
+4: 3782463 indices_0 of type uint32
+4: 3782463 indices_1 of type uint32
+4:  === Writing to /home/faculty/d/davis/dev2/binsparse-reference-c/build/data/IMDB.coo.bsp.h5... ===
+4: 1.711331 seconds writing Binsparse file...
+4:  === Done writing. ===
+4: 
+4: real	0m4.262s
+4: user	0m4.076s
+4: sys	0m0.181s
+4: mtx2bsp /home/faculty/d/davis/dev2/binsparse-reference-c/build/data/IMDB/IMDB_ActorBacon.mtx /home/faculty/d/davis/dev2/binsparse-reference-c/build/data/IMDB.coo.bsp.h5:ActorBacon
+4: 896308 x 1 matrix with 896308 nonzeros.
+4: Matrix Market format is "array" with type "real" and structure "general"
+4: File has very long comments, not printing.
+4: Printing with compression level 9.
+4:  === Reading file... ===
+4:  === Done reading. ===
+4: 0.170868 seconds reading Matrix Market file...
+4: 0.000591 seconds declamping...
+4: 0.004192 seconds minimizing values...
+4: 896308 x 1 matrix with 896308 nnz.
+4: DMAT format with general structure
+4: 896308 values of type float32
+4:  === Writing to /home/faculty/d/davis/dev2/binsparse-reference-c/build/data/IMDB.coo.bsp.h5... ===
+4: 1.317077 seconds writing Binsparse file...
+4:  === Done writing. ===
+4: 
+4: real	0m1.686s
+4: user	0m1.656s
+4: sys	0m0.030s
+4: mtx2bsp /home/faculty/d/davis/dev2/binsparse-reference-c/build/data/IMDB/IMDB_category.mtx /home/faculty/d/davis/dev2/binsparse-reference-c/build/data/IMDB.coo.bsp.h5:category
+4: 428440 x 1 matrix with 428440 nonzeros.
+4: Matrix Market format is "array" with type "real" and structure "general"
+4: File has very long comments, not printing.
+4: Printing with compression level 9.
+4:  === Reading file... ===
+4:  === Done reading. ===
+4: 0.084666 seconds reading Matrix Market file...
+4: 0.000277 seconds declamping...
+4: 0.002017 seconds minimizing values...
+4: 428440 x 1 matrix with 428440 nnz.
+4: DMAT format with general structure
+4: 428440 values of type float32
+4:  === Writing to /home/faculty/d/davis/dev2/binsparse-reference-c/build/data/IMDB.coo.bsp.h5... ===
+4: 0.547058 seconds writing Binsparse file...
+4:  === Done writing. ===
+4: 
+4: real	0m0.980s
+4: user	0m0.966s
+4: sys	0m0.013s
+4: mtx2bsp /home/faculty/d/davis/dev2/binsparse-reference-c/build/data/IMDB/IMDB_KevinBacon.mtx /home/faculty/d/davis/dev2/binsparse-reference-c/build/data/IMDB.coo.bsp.h5:KevinBacon
+4: 1 x 1 matrix with 1 nonzeros.
+4: Matrix Market format is "array" with type "real" and structure "general"
+4: File has very long comments, not printing.
+4: Printing with compression level 9.
+4:  === Reading file... ===
+4:  === Done reading. ===
+4: 0.000142 seconds reading Matrix Market file...
+4: 0.000001 seconds declamping...
+4: 0.000002 seconds minimizing values...
+4: 1 x 1 matrix with 1 nnz.
+4: DMAT format with general structure
+4: 1 values of type float32
+4:  === Writing to /home/faculty/d/davis/dev2/binsparse-reference-c/build/data/IMDB.coo.bsp.h5... ===
+4: 0.002515 seconds writing Binsparse file...
+4:  === Done writing. ===
+4: 
+4: real	0m0.014s
+4: user	0m0.006s
+4: sys	0m0.008s
+4: mtx2bsp /home/faculty/d/davis/dev2/binsparse-reference-c/build/data/IMDB/IMDB_MovieBacon.mtx /home/faculty/d/davis/dev2/binsparse-reference-c/build/data/IMDB.coo.bsp.h5:MovieBacon
+4: 428440 x 1 matrix with 428440 nonzeros.
+4: Matrix Market format is "array" with type "real" and structure "general"
+4: File has very long comments, not printing.
+4: Printing with compression level 9.
+4:  === Reading file... ===
+4:  === Done reading. ===
+4: 0.127804 seconds reading Matrix Market file...
+4: 0.000365 seconds declamping...
+4: 0.002619 seconds minimizing values...
+4: 428440 x 1 matrix with 428440 nnz.
+4: DMAT format with general structure
+4: 428440 values of type float32
+4:  === Writing to /home/faculty/d/davis/dev2/binsparse-reference-c/build/data/IMDB.coo.bsp.h5... ===
+4: 0.556600 seconds writing Binsparse file...
+4:  === Done writing. ===
+4: 
+4: real	0m0.995s
+4: user	0m0.984s
+4: sys	0m0.011s
+4: mtx2bsp /home/faculty/d/davis/dev2/binsparse-reference-c/build/data/IMDB/IMDB_year.mtx /home/faculty/d/davis/dev2/binsparse-reference-c/build/data/IMDB.coo.bsp.h5:year
+4: 428440 x 1 matrix with 428440 nonzeros.
+4: Matrix Market format is "array" with type "real" and structure "general"
+4: File has very long comments, not printing.
+4: Printing with compression level 9.
+4:  === Reading file... ===
+4:  === Done reading. ===
+4: 0.083988 seconds reading Matrix Market file...
+4: 0.000288 seconds declamping...
+4: 0.001643 seconds minimizing values...
+4: 428440 x 1 matrix with 428440 nnz.
+4: DMAT format with general structure
+4: 428440 values of type float32
+4:  === Writing to /home/faculty/d/davis/dev2/binsparse-reference-c/build/data/IMDB.coo.bsp.h5... ===
+4: 0.350797 seconds writing Binsparse file...
+4:  === Done writing. ===
+4: 
+4: real	0m0.670s
+4: user	0m0.660s
+4: sys	0m0.010s
+4: unpacking /home/faculty/d/davis/dev2/binsparse-reference-c/build/data/IMDB.tar.gz
+4: check_equivalence /home/faculty/d/davis/dev2/binsparse-reference-c/build/data/IMDB/IMDB.mtx /home/faculty/d/davis/dev2/binsparse-reference-c/build/data/IMDB.coo.bsp.h5
+4: Matrix 1: /home/faculty/d/davis/dev2/binsparse-reference-c/build/data/IMDB/IMDB.mtx and root
+4: Matrix 2: /home/faculty/d/davis/dev2/binsparse-reference-c/build/data/IMDB.coo.bsp.h5 and root
+4: The files are equivalent.
+4: OK!
+4: 
+4: real	0m2.765s
+4: user	0m2.629s
+4: sys	0m0.135s
+4: check_equivalence /home/faculty/d/davis/dev2/binsparse-reference-c/build/data/IMDB/IMDB_ActorBacon.mtx /home/faculty/d/davis/dev2/binsparse-reference-c/build/data/IMDB.coo.bsp.h5:ActorBacon
+4: Matrix 1: /home/faculty/d/davis/dev2/binsparse-reference-c/build/data/IMDB/IMDB_ActorBacon.mtx and root
+4: Matrix 2: /home/faculty/d/davis/dev2/binsparse-reference-c/build/data/IMDB.coo.bsp.h5 and ActorBacon
+4: The files are equivalent.
+4: OK!
+4: 
+4: real	0m0.245s
+4: user	0m0.227s
+4: sys	0m0.018s
+4: check_equivalence /home/faculty/d/davis/dev2/binsparse-reference-c/build/data/IMDB/IMDB_category.mtx /home/faculty/d/davis/dev2/binsparse-reference-c/build/data/IMDB.coo.bsp.h5:category
+4: Matrix 1: /home/faculty/d/davis/dev2/binsparse-reference-c/build/data/IMDB/IMDB_category.mtx and root
+4: Matrix 2: /home/faculty/d/davis/dev2/binsparse-reference-c/build/data/IMDB.coo.bsp.h5 and category
+4: The files are equivalent.
+4: OK!
+4: 
+4: real	0m0.103s
+4: user	0m0.087s
+4: sys	0m0.015s
+4: check_equivalence /home/faculty/d/davis/dev2/binsparse-reference-c/build/data/IMDB/IMDB_KevinBacon.mtx /home/faculty/d/davis/dev2/binsparse-reference-c/build/data/IMDB.coo.bsp.h5:KevinBacon
+4: Matrix 1: /home/faculty/d/davis/dev2/binsparse-reference-c/build/data/IMDB/IMDB_KevinBacon.mtx and root
+4: Matrix 2: /home/faculty/d/davis/dev2/binsparse-reference-c/build/data/IMDB.coo.bsp.h5 and KevinBacon
+4: The files are equivalent.
+4: OK!
+4: 
+4: real	0m0.012s
+4: user	0m0.004s
+4: sys	0m0.008s
+4: check_equivalence /home/faculty/d/davis/dev2/binsparse-reference-c/build/data/IMDB/IMDB_MovieBacon.mtx /home/faculty/d/davis/dev2/binsparse-reference-c/build/data/IMDB.coo.bsp.h5:MovieBacon
+4: Matrix 1: /home/faculty/d/davis/dev2/binsparse-reference-c/build/data/IMDB/IMDB_MovieBacon.mtx and root
+4: Matrix 2: /home/faculty/d/davis/dev2/binsparse-reference-c/build/data/IMDB.coo.bsp.h5 and MovieBacon
+4: The files are equivalent.
+4: OK!
+4: 
+4: real	0m0.117s
+4: user	0m0.100s
+4: sys	0m0.018s
+4: check_equivalence /home/faculty/d/davis/dev2/binsparse-reference-c/build/data/IMDB/IMDB_year.mtx /home/faculty/d/davis/dev2/binsparse-reference-c/build/data/IMDB.coo.bsp.h5:year
+4: Matrix 1: /home/faculty/d/davis/dev2/binsparse-reference-c/build/data/IMDB/IMDB_year.mtx and root
+4: Matrix 2: /home/faculty/d/davis/dev2/binsparse-reference-c/build/data/IMDB.coo.bsp.h5 and year
+4: The files are equivalent.
+4: OK!
+4: 
+4: real	0m0.133s
+4: user	0m0.121s
+4: sys	0m0.012s
+4/8 Test #4: integration.IMDB .................   Passed   12.79 sec
+test 5
+    Start 5: integration.cpp.chesapeake
+
+5: Test command: /usr/bin/bash "/home/faculty/d/davis/dev2/binsparse-reference-c/test/bash/test-cpp.sh" "/home/faculty/d/davis/dev2/binsparse-reference-c/build/data/chesapeake.tar.gz"
+5: Working Directory: /home/faculty/d/davis/dev2/binsparse-reference-c/build/test/bash
+5: Test timeout computed to be: 10000000
+5: unpacking /home/faculty/d/davis/dev2/binsparse-reference-c/build/data/chesapeake.tar.gz
+5: Writing in format COO.
+5: mtx2bsp-cpp /home/faculty/d/davis/dev2/binsparse-reference-c/build/data/chesapeake/chesapeake.mtx /home/faculty/d/davis/dev2/binsparse-reference-c/build/data/chesapeake.coo.bsp.h5 COO
+5: 39 x 39 matrix with 170 nonzeros.
+5: Matrix Market format is "coordinate" with type "pattern" and structure "symmetric"
+5: File has very long comments, not printing.
+5: Printing with compression level 9.
+5:  === Reading file... ===
+5:  === Done reading. ===
+5: 0.001156 seconds reading Matrix Market file...
+5: 0.000000 seconds declamping...
+5: 0.000001 seconds minimizing values...
+5: 39 x 39 matrix with 170 nnz.
+5: COO format with symmetric_lower structure
+5: 1 values of type bint8
+5: 170 indices_0 of type uint8
+5: 170 indices_1 of type uint8
+5:  === Writing to /home/faculty/d/davis/dev2/binsparse-reference-c/build/data/chesapeake.coo.bsp.h5... ===
+5: 0.002642 seconds writing Binsparse file...
+5:  === Done writing. ===
+5: 
+5: real	0m0.016s
+5: user	0m0.005s
+5: sys	0m0.011s
+5: unpacking /home/faculty/d/davis/dev2/binsparse-reference-c/build/data/chesapeake.tar.gz
+5: check_equivalence /home/faculty/d/davis/dev2/binsparse-reference-c/build/data/chesapeake/chesapeake.mtx /home/faculty/d/davis/dev2/binsparse-reference-c/build/data/chesapeake.coo.bsp.h5
+5: Matrix 1: /home/faculty/d/davis/dev2/binsparse-reference-c/build/data/chesapeake/chesapeake.mtx and root
+5: Matrix 2: /home/faculty/d/davis/dev2/binsparse-reference-c/build/data/chesapeake.coo.bsp.h5 and root
+5: The files are equivalent.
+5: OK!
+5: 
+5: real	0m0.015s
+5: user	0m0.005s
+5: sys	0m0.010s
+5/8 Test #5: integration.cpp.chesapeake .......   Passed    0.09 sec
+test 6
+    Start 6: integration.cpp.1138_bus
+
+6: Test command: /usr/bin/bash "/home/faculty/d/davis/dev2/binsparse-reference-c/test/bash/test-cpp.sh" "/home/faculty/d/davis/dev2/binsparse-reference-c/build/data/1138_bus.tar.gz"
+6: Working Directory: /home/faculty/d/davis/dev2/binsparse-reference-c/build/test/bash
+6: Test timeout computed to be: 10000000
+6: unpacking /home/faculty/d/davis/dev2/binsparse-reference-c/build/data/1138_bus.tar.gz
+6: Writing in format COO.
+6: mtx2bsp-cpp /home/faculty/d/davis/dev2/binsparse-reference-c/build/data/1138_bus/1138_bus.mtx /home/faculty/d/davis/dev2/binsparse-reference-c/build/data/1138_bus.coo.bsp.h5 COO
+6: 1138 x 1138 matrix with 2596 nonzeros.
+6: Matrix Market format is "coordinate" with type "real" and structure "symmetric"
+6: File has very long comments, not printing.
+6: Printing with compression level 9.
+6:  === Reading file... ===
+6:  === Done reading. ===
+6: 0.025058 seconds reading Matrix Market file...
+6: 0.000022 seconds declamping...
+6: 0.000015 seconds minimizing values...
+6: 1138 x 1138 matrix with 2596 nnz.
+6: COO format with symmetric_lower structure
+6: 2596 values of type float64
+6: 2596 indices_0 of type uint16
+6: 2596 indices_1 of type uint16
+6:  === Writing to /home/faculty/d/davis/dev2/binsparse-reference-c/build/data/1138_bus.coo.bsp.h5... ===
+6: 0.002387 seconds writing Binsparse file...
+6:  === Done writing. ===
+6: 
+6: real	0m0.042s
+6: user	0m0.032s
+6: sys	0m0.010s
+6: unpacking /home/faculty/d/davis/dev2/binsparse-reference-c/build/data/1138_bus.tar.gz
+6: check_equivalence /home/faculty/d/davis/dev2/binsparse-reference-c/build/data/1138_bus/1138_bus.mtx /home/faculty/d/davis/dev2/binsparse-reference-c/build/data/1138_bus.coo.bsp.h5
+6: Matrix 1: /home/faculty/d/davis/dev2/binsparse-reference-c/build/data/1138_bus/1138_bus.mtx and root
+6: Matrix 2: /home/faculty/d/davis/dev2/binsparse-reference-c/build/data/1138_bus.coo.bsp.h5 and root
+6: The files are equivalent.
+6: OK!
+6: 
+6: real	0m0.047s
+6: user	0m0.038s
+6: sys	0m0.009s
+6/8 Test #6: integration.cpp.1138_bus .........   Passed    0.15 sec
+test 7
+    Start 7: integration.cpp.mouse_gene
+
+7: Test command: /usr/bin/bash "/home/faculty/d/davis/dev2/binsparse-reference-c/test/bash/test-cpp.sh" "/home/faculty/d/davis/dev2/binsparse-reference-c/build/data/mouse_gene.tar.gz"
+7: Working Directory: /home/faculty/d/davis/dev2/binsparse-reference-c/build/test/bash
+7: Test timeout computed to be: 10000000
+7: unpacking /home/faculty/d/davis/dev2/binsparse-reference-c/build/data/mouse_gene.tar.gz
+7: Writing in format COO.
+7: mtx2bsp-cpp /home/faculty/d/davis/dev2/binsparse-reference-c/build/data/mouse_gene/mouse_gene.mtx /home/faculty/d/davis/dev2/binsparse-reference-c/build/data/mouse_gene.coo.bsp.h5 COO
+7: 45101 x 45101 matrix with 14506196 nonzeros.
+7: Matrix Market format is "coordinate" with type "real" and structure "symmetric"
+7: File has very long comments, not printing.
+7: Printing with compression level 9.
+7:  === Reading file... ===
+7:  === Done reading. ===
+7: 183.296357 seconds reading Matrix Market file...
+7: 0.075456 seconds declamping...
+7: 0.125618 seconds minimizing values...
+7: 45101 x 45101 matrix with 14506196 nnz.
+7: COO format with symmetric_lower structure
+7: 14506196 values of type float32
+7: 14506196 indices_0 of type uint16
+7: 14506196 indices_1 of type uint16
+7:  === Writing to /home/faculty/d/davis/dev2/binsparse-reference-c/build/data/mouse_gene.coo.bsp.h5... ===
+7: 3.390502 seconds writing Binsparse file...
+7:  === Done writing. ===
+7: 
+7: real	3m7.000s
+7: user	3m5.795s
+7: sys	0m1.164s
+7: unpacking /home/faculty/d/davis/dev2/binsparse-reference-c/build/data/mouse_gene.tar.gz
+7: check_equivalence /home/faculty/d/davis/dev2/binsparse-reference-c/build/data/mouse_gene/mouse_gene.mtx /home/faculty/d/davis/dev2/binsparse-reference-c/build/data/mouse_gene.coo.bsp.h5
+7: Matrix 1: /home/faculty/d/davis/dev2/binsparse-reference-c/build/data/mouse_gene/mouse_gene.mtx and root
+7: Matrix 2: /home/faculty/d/davis/dev2/binsparse-reference-c/build/data/mouse_gene.coo.bsp.h5 and root
+7: The files are equivalent.
+7: OK!
+7: 
+7: real	3m17.610s
+7: user	3m17.010s
+7: sys	0m0.590s
+7/8 Test #7: integration.cpp.mouse_gene .......   Passed  389.56 sec
+test 8
+    Start 8: integration.cpp.IMDB
+
+8: Test command: /usr/bin/bash "/home/faculty/d/davis/dev2/binsparse-reference-c/test/bash/test-cpp.sh" "/home/faculty/d/davis/dev2/binsparse-reference-c/build/data/IMDB.tar.gz"
+8: Working Directory: /home/faculty/d/davis/dev2/binsparse-reference-c/build/test/bash
+8: Test timeout computed to be: 10000000
+8: unpacking /home/faculty/d/davis/dev2/binsparse-reference-c/build/data/IMDB.tar.gz
+8: Writing in format COO.
+8: mtx2bsp-cpp /home/faculty/d/davis/dev2/binsparse-reference-c/build/data/IMDB/IMDB.mtx /home/faculty/d/davis/dev2/binsparse-reference-c/build/data/IMDB.coo.bsp.h5 COO
+8: 428440 x 896308 matrix with 3782463 nonzeros.
+8: Matrix Market format is "coordinate" with type "pattern" and structure "general"
+8: File has very long comments, not printing.
+8: Printing with compression level 9.
+8:  === Reading file... ===
+8:  === Done reading. ===
+8: 48.237873 seconds reading Matrix Market file...
+8: 0.000000 seconds declamping...
+8: 0.000001 seconds minimizing values...
+8: 428440 x 896308 matrix with 3782463 nnz.
+8: COO format with general structure
+8: 1 values of type bint8
+8: 3782463 indices_0 of type uint32
+8: 3782463 indices_1 of type uint32
+8:  === Writing to /home/faculty/d/davis/dev2/binsparse-reference-c/build/data/IMDB.coo.bsp.h5... ===
+8: 1.904371 seconds writing Binsparse file...
+8:  === Done writing. ===
+8: 
+8: real	0m50.227s
+8: user	0m50.080s
+8: sys	0m0.137s
+8: mtx2bsp-cpp /home/faculty/d/davis/dev2/binsparse-reference-c/build/data/IMDB/IMDB_ActorBacon.mtx /home/faculty/d/davis/dev2/binsparse-reference-c/build/data/IMDB.coo.bsp.h5:ActorBacon
+8: 896308 x 1 matrix with 896308 nonzeros.
+8: Matrix Market format is "array" with type "real" and structure "general"
+8: File has very long comments, not printing.
+8: Printing with compression level 9.
+8:  === Reading file... ===
+8:  === Done reading. ===
+8: 0.420115 seconds reading Matrix Market file...
+8: 0.004850 seconds declamping...
+8: 0.007545 seconds minimizing values...
+8: 896308 x 1 matrix with 896308 nnz.
+8: DMAT format with general structure
+8: 896308 values of type float32
+8:  === Writing to /home/faculty/d/davis/dev2/binsparse-reference-c/build/data/IMDB.coo.bsp.h5... ===
+8: 1.317653 seconds writing Binsparse file...
+8:  === Done writing. ===
+8: 
+8: real	0m1.943s
+8: user	0m1.925s
+8: sys	0m0.018s
+8: mtx2bsp-cpp /home/faculty/d/davis/dev2/binsparse-reference-c/build/data/IMDB/IMDB_category.mtx /home/faculty/d/davis/dev2/binsparse-reference-c/build/data/IMDB.coo.bsp.h5:category
+8: 428440 x 1 matrix with 428440 nonzeros.
+8: Matrix Market format is "array" with type "real" and structure "general"
+8: File has very long comments, not printing.
+8: Printing with compression level 9.
+8:  === Reading file... ===
+8:  === Done reading. ===
+8: 0.204987 seconds reading Matrix Market file...
+8: 0.002311 seconds declamping...
+8: 0.003645 seconds minimizing values...
+8: 428440 x 1 matrix with 428440 nnz.
+8: DMAT format with general structure
+8: 428440 values of type float32
+8:  === Writing to /home/faculty/d/davis/dev2/binsparse-reference-c/build/data/IMDB.coo.bsp.h5... ===
+8: 0.546609 seconds writing Binsparse file...
+8:  === Done writing. ===
+8: 
+8: real	0m1.103s
+8: user	0m1.088s
+8: sys	0m0.015s
+8: mtx2bsp-cpp /home/faculty/d/davis/dev2/binsparse-reference-c/build/data/IMDB/IMDB_KevinBacon.mtx /home/faculty/d/davis/dev2/binsparse-reference-c/build/data/IMDB.coo.bsp.h5:KevinBacon
+8: 1 x 1 matrix with 1 nonzeros.
+8: Matrix Market format is "array" with type "real" and structure "general"
+8: File has very long comments, not printing.
+8: Printing with compression level 9.
+8:  === Reading file... ===
+8:  === Done reading. ===
+8: 0.000162 seconds reading Matrix Market file...
+8: 0.000001 seconds declamping...
+8: 0.000002 seconds minimizing values...
+8: 1 x 1 matrix with 1 nnz.
+8: DMAT format with general structure
+8: 1 values of type float32
+8:  === Writing to /home/faculty/d/davis/dev2/binsparse-reference-c/build/data/IMDB.coo.bsp.h5... ===
+8: 0.002483 seconds writing Binsparse file...
+8:  === Done writing. ===
+8: 
+8: real	0m0.015s
+8: user	0m0.005s
+8: sys	0m0.010s
+8: mtx2bsp-cpp /home/faculty/d/davis/dev2/binsparse-reference-c/build/data/IMDB/IMDB_MovieBacon.mtx /home/faculty/d/davis/dev2/binsparse-reference-c/build/data/IMDB.coo.bsp.h5:MovieBacon
+8: 428440 x 1 matrix with 428440 nonzeros.
+8: Matrix Market format is "array" with type "real" and structure "general"
+8: File has very long comments, not printing.
+8: Printing with compression level 9.
+8:  === Reading file... ===
+8:  === Done reading. ===
+8: 0.220121 seconds reading Matrix Market file...
+8: 0.003631 seconds declamping...
+8: 0.003597 seconds minimizing values...
+8: 428440 x 1 matrix with 428440 nnz.
+8: DMAT format with general structure
+8: 428440 values of type float32
+8:  === Writing to /home/faculty/d/davis/dev2/binsparse-reference-c/build/data/IMDB.coo.bsp.h5... ===
+8: 0.491847 seconds writing Binsparse file...
+8:  === Done writing. ===
+8: 
+8: real	0m1.050s
+8: user	0m1.034s
+8: sys	0m0.015s
+8: mtx2bsp-cpp /home/faculty/d/davis/dev2/binsparse-reference-c/build/data/IMDB/IMDB_year.mtx /home/faculty/d/davis/dev2/binsparse-reference-c/build/data/IMDB.coo.bsp.h5:year
+8: 428440 x 1 matrix with 428440 nonzeros.
+8: Matrix Market format is "array" with type "real" and structure "general"
+8: File has very long comments, not printing.
+8: Printing with compression level 9.
+8:  === Reading file... ===
+8:  === Done reading. ===
+8: 0.269571 seconds reading Matrix Market file...
+8: 0.002959 seconds declamping...
+8: 0.004766 seconds minimizing values...
+8: 428440 x 1 matrix with 428440 nnz.
+8: DMAT format with general structure
+8: 428440 values of type float32
+8:  === Writing to /home/faculty/d/davis/dev2/binsparse-reference-c/build/data/IMDB.coo.bsp.h5... ===
+8: 0.355830 seconds writing Binsparse file...
+8:  === Done writing. ===
+8: 
+8: real	0m0.871s
+8: user	0m0.854s
+8: sys	0m0.016s
+8: unpacking /home/faculty/d/davis/dev2/binsparse-reference-c/build/data/IMDB.tar.gz
+8: check_equivalence /home/faculty/d/davis/dev2/binsparse-reference-c/build/data/IMDB/IMDB.mtx /home/faculty/d/davis/dev2/binsparse-reference-c/build/data/IMDB.coo.bsp.h5
+8: Matrix 1: /home/faculty/d/davis/dev2/binsparse-reference-c/build/data/IMDB/IMDB.mtx and root
+8: Matrix 2: /home/faculty/d/davis/dev2/binsparse-reference-c/build/data/IMDB.coo.bsp.h5 and root
+8: The files are equivalent.
+8: OK!
+8: 
+8: real	0m50.576s
+8: user	0m50.447s
+8: sys	0m0.124s
+8: check_equivalence-cpp /home/faculty/d/davis/dev2/binsparse-reference-c/build/data/IMDB/IMDB_ActorBacon.mtx /home/faculty/d/davis/dev2/binsparse-reference-c/build/data/IMDB.coo.bsp.h5:ActorBacon
+8: Matrix 1: /home/faculty/d/davis/dev2/binsparse-reference-c/build/data/IMDB/IMDB_ActorBacon.mtx and root
+8: Matrix 2: /home/faculty/d/davis/dev2/binsparse-reference-c/build/data/IMDB.coo.bsp.h5 and ActorBacon
+8: The files are equivalent.
+8: OK!
+8: 
+8: real	0m0.885s
+8: user	0m0.866s
+8: sys	0m0.019s
+8: check_equivalence-cpp /home/faculty/d/davis/dev2/binsparse-reference-c/build/data/IMDB/IMDB_category.mtx /home/faculty/d/davis/dev2/binsparse-reference-c/build/data/IMDB.coo.bsp.h5:category
+8: Matrix 1: /home/faculty/d/davis/dev2/binsparse-reference-c/build/data/IMDB/IMDB_category.mtx and root
+8: Matrix 2: /home/faculty/d/davis/dev2/binsparse-reference-c/build/data/IMDB.coo.bsp.h5 and category
+8: The files are equivalent.
+8: OK!
+8: 
+8: real	0m0.435s
+8: user	0m0.424s
+8: sys	0m0.012s
+8: check_equivalence-cpp /home/faculty/d/davis/dev2/binsparse-reference-c/build/data/IMDB/IMDB_KevinBacon.mtx /home/faculty/d/davis/dev2/binsparse-reference-c/build/data/IMDB.coo.bsp.h5:KevinBacon
+8: Matrix 1: /home/faculty/d/davis/dev2/binsparse-reference-c/build/data/IMDB/IMDB_KevinBacon.mtx and root
+8: Matrix 2: /home/faculty/d/davis/dev2/binsparse-reference-c/build/data/IMDB.coo.bsp.h5 and KevinBacon
+8: The files are equivalent.
+8: OK!
+8: 
+8: real	0m0.014s
+8: user	0m0.006s
+8: sys	0m0.008s
+8: check_equivalence-cpp /home/faculty/d/davis/dev2/binsparse-reference-c/build/data/IMDB/IMDB_MovieBacon.mtx /home/faculty/d/davis/dev2/binsparse-reference-c/build/data/IMDB.coo.bsp.h5:MovieBacon
+8: Matrix 1: /home/faculty/d/davis/dev2/binsparse-reference-c/build/data/IMDB/IMDB_MovieBacon.mtx and root
+8: Matrix 2: /home/faculty/d/davis/dev2/binsparse-reference-c/build/data/IMDB.coo.bsp.h5 and MovieBacon
+8: The files are equivalent.
+8: OK!
+8: 
+8: real	0m0.453s
+8: user	0m0.435s
+8: sys	0m0.018s
+8: check_equivalence-cpp /home/faculty/d/davis/dev2/binsparse-reference-c/build/data/IMDB/IMDB_year.mtx /home/faculty/d/davis/dev2/binsparse-reference-c/build/data/IMDB.coo.bsp.h5:year
+8: Matrix 1: /home/faculty/d/davis/dev2/binsparse-reference-c/build/data/IMDB/IMDB_year.mtx and root
+8: Matrix 2: /home/faculty/d/davis/dev2/binsparse-reference-c/build/data/IMDB.coo.bsp.h5 and year
+8: The files are equivalent.
+8: OK!
+8: 
+8: real	0m0.532s
+8: user	0m0.517s
+8: sys	0m0.015s
+8/8 Test #8: integration.cpp.IMDB .............   Passed  108.90 sec
+
+[0;32m100% tests passed[0;0m, 0 tests failed[0;0m out of 8
+
+Total Test time (real) = 548.74 sec
+
+Script done on 2024-09-23 17:19:54-05:00 [COMMAND_EXIT_CODE="0"]
