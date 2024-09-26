@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: BSD-3-Clause
 
 # Usage: ./test.sh [/path/to/benchmark_read,/path/to/benchmark_write/] [/path/to/binsparse/matrices/] [/path/to/filesystem/for/experiments] [compression level: [0-9] ...]
 

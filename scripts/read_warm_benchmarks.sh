@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: BSD-3-Clause
+
 # COO No Compression
 ./test_warm.sh /home/xiii/src/binsparse-reference-c/build/examples/benchmark_read_parallel /media/xiii/zunyingdie/data/SuiteSparse_coo_noz_primary > br_coo_noz.out 2>&1
 
