@@ -1,3 +1,7 @@
+/*
+ * SPDX-License-Identifier: BSD-3-Clause
+ */
+
 #pragma once
 
 typedef enum bsp_matrix_market_type_t {

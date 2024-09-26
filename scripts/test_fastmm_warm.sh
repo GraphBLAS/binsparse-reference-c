@@ -29,9 +29,9 @@ echo "Benchmarking Binsparse using ${EXPERIMENT_DIR}"
 for file in $(find ${EXPERIMENT_DIR} -iname "*.mtx")
 do
   dataset=`echo ${file} | sed -E "s/.+\/(.+\/.+)\.mtx/\1/"`
-  binsparse_file=${BINSPARSE_DIR}/${dataset}*.bsp.h5
+  binsparse_file=${BINSPARSE_DIR}/${dataset}.coo.bsp.h5
   echo "${dataset} ${file} ${binsparse_file}"
-  $BENCHMARK_BINARY $file ${binsparse_file}
+  $BENCHMARK_BINARY $file ${binsparse_file} 6
 done
 
 if [ -z "$4" ]

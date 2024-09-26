@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: BSD-3-Clause
+
 #include <binsparse/binsparse.h>
 #include <stdio.h>
 

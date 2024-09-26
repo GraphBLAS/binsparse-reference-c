@@ -36,9 +36,9 @@ do
     sudo sh -c "/usr/bin/echo 3 > /proc/sys/vm/drop_caches"
     sleep 0.1
     dataset=`echo ${file} | sed -E "s/.+\/(.+\/.+)\.mtx/\1/"`
-    binsparse_file=${BINSPARSE_DIR}/${dataset}*.bsp.h5
+    binsparse_file=${BINSPARSE_DIR}/${dataset}.coo.bsp.h5
     echo "${dataset} ${file} ${binsparse_file}"
-    $BENCHMARK_BINARY $file ${binsparse_file}
+    $BENCHMARK_BINARY $file ${binsparse_file} 6
   done
 done
 

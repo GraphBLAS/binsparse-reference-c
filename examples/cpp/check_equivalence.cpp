@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: BSD-3-Clause
+
 #include <binsparse/binsparse.h>
 
 int check_array_equivalence(bsp_array_t array1, bsp_array_t array2) {

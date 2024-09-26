@@ -1,3 +1,7 @@
+/*
+ * SPDX-License-Identifier: BSD-3-Clause
+ */
+
 #pragma once
 
 #define BINSPARSE_VERSION "0.1"
