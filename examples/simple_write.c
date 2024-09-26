@@ -1,3 +1,9 @@
+/*
+ * SPDX-FileCopyrightText: 2024 Binsparse Developers
+ *
+ * SPDX-License-Identifier: BSD-3-Clause
+ */
+
 #include <binsparse/binsparse.h>
 
 int main(int argc, char** argv) {

@@ -1,3 +1,9 @@
+<!--
+SPDX-FileCopyrightText: 2024 Binsparse Developers
+
+SPDX-License-Identifier: BSD-3-Clause
+-->
+
 # Binsparse C Reference Implementation
 
 This library is a reference implementation of the [binsparse Binary Sparse Format Specification](https://github.com/GraphBLAS/binsparse-specification) written using C.
