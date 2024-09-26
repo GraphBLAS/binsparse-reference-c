@@ -1,3 +1,5 @@
+# SPDX-FileCopyrightText: 2024 Binsparse Developers
+#
 # SPDX-License-Identifier: BSD-3-Clause
 
 # Usage: ./test.sh [/path/to/benchmark_read,/path/to/benchmark_write/] [/path/to/binsparse/matrices/] [optional: /path/to/filesystem/for/experiments]
