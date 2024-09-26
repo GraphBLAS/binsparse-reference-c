@@ -96,11 +96,16 @@ int main(int argc, char** argv) {
   if (argc < 3) {
     printf(
         "usage: ./check_equivalence [file1.{mtx/hdf5}] [file2.{mtx/hdf5}]\n");
+
+    printf("  Note: the second argument will be read in parallel if it is a "
+           "Binsparse file.\n");
     return 1;
   }
 
   char* file1 = argv[1];
   char* file2 = argv[2];
+
+  int num_threads = 6;
 
   bsp_fdataset_info_t info1 = bsp_parse_fdataset_string(argv[1]);
   bsp_fdataset_info_t info2 = bsp_parse_fdataset_string(argv[2]);
@@ -110,8 +115,11 @@ int main(int argc, char** argv) {
   printf("Matrix 2: %s and %s\n", info2.fname,
          (info2.dataset == NULL) ? "root" : info2.dataset);
 
+  fflush(stdout);
+
   bsp_matrix_t matrix1 = bsp_read_matrix(info1.fname, info1.dataset);
-  bsp_matrix_t matrix2 = bsp_read_matrix(info2.fname, info2.dataset);
+  bsp_matrix_t matrix2 =
+      bsp_read_matrix_parallel(info2.fname, info2.dataset, num_threads);
 
   bool perform_suitesparse_declamping = true;
   if (perform_suitesparse_declamping &&

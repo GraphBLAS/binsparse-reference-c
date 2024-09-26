@@ -2,4 +2,7 @@
 #
 # SPDX-License-Identifier: BSD-3-Clause
 
-add_subdirectory(bash)
+scripts
+venv
+build
+._*

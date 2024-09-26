@@ -1,3 +1,7 @@
+# SPDX-FileCopyrightText: 2024 Binsparse Developers
+#
+# SPDX-License-Identifier: BSD-3-Clause
+
 # COO No Compression
 ./test_write.sh /home/xiii/src/binsparse-reference-c/build/examples/benchmark_write /media/xiii/zunyingdie/data/SuiteSparse_coo_noz_primary /media/xiii/zunyingdie/data/scratch 0 > br_coo_noz.out 2>&1
 

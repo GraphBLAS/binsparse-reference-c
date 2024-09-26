@@ -1,3 +1,9 @@
+/*
+ * SPDX-FileCopyrightText: 2024 Binsparse Developers
+ *
+ * SPDX-License-Identifier: BSD-3-Clause
+ */
+
 #include <binsparse/binsparse.h>
 #include <stdlib.h>
 #include <time.h>
@@ -61,8 +67,9 @@ int main(int argc, char** argv) {
   char* file_name = argv[1];
 
   printf("Opening %s\n", file_name);
+  fflush(stdout);
 
-  const int num_trials = 2;
+  const int num_trials = 10;
 
   int num_threads = 6;
 
@@ -71,11 +78,10 @@ int main(int argc, char** argv) {
   size_t nbytes = 0;
 
   // To flush the filesystem cache before each trial, change to `true`.
-  bool cold_cache = true;
+  bool cold_cache = false;
 
   // If running warm cache experiments, read once to warm cache.
-  if (!cold_cache && false) {
-    printf("Warm cache read...\n");
+  if (!cold_cache) {
     bsp_matrix_t mat = bsp_read_matrix_parallel(file_name, NULL, num_threads);
     bsp_destroy_matrix_t(mat);
   }
@@ -84,6 +90,7 @@ int main(int argc, char** argv) {
     if (cold_cache) {
       flush_cache();
     }
+    fflush(stdout);
     double begin = gettime();
     bsp_matrix_t mat = bsp_read_matrix_parallel(file_name, NULL, num_threads);
     double end = gettime();
@@ -95,6 +102,7 @@ int main(int argc, char** argv) {
     double gbytes = ((double) nbytes) / 1024 / 1024 / 1024;
     double gbytes_s = gbytes / durations[i];
     printf("FORPARSER: %s,%lf,%lf\n", file_name, durations[i], gbytes_s);
+    fflush(stdout);
   }
 
   printf("[");
