@@ -9,6 +9,10 @@
 
 #include <binsparse/detail/shm_tools.h>
 
+#if __STDC_VERSION__ >= 201112L
+#include <stdatomic.h>
+#endif
+
 // Write an array to a dataset / file
 // Returns 0 on success, nonzero on error.
 int bsp_write_array(hid_t f, const char* label, bsp_array_t array,
@@ -65,6 +69,7 @@ int bsp_write_array(hid_t f, const char* label, bsp_array_t array,
   return 0;
 }
 
+#if __STDC_VERSION__ >= 201112L
 bsp_array_t bsp_read_array_parallel(hid_t f, const char* label,
                                     int num_threads) {
   hid_t dset = H5Dopen2(f, label, H5P_DEFAULT);
@@ -91,12 +96,19 @@ bsp_array_t bsp_read_array_parallel(hid_t f, const char* label,
 
   bsp_type_t type = bsp_get_bsp_type(hdf5_type);
 
+  // Array will be written into a POSIX shared memory.
   bsp_shm_t array_shm = bsp_shm_new(dims[0] * bsp_type_size(type));
   bsp_array_t array;
   array.type = type;
   array.size = dims[0];
-  array.shm = array_shm;
-  array.shmat_memory = true;
+  array.allocator = bsp_shm_allocator;
+
+  bsp_shm_t active_children_shm = bsp_shm_new(sizeof(_Atomic int));
+
+  _Atomic int* active_children = bsp_shm_attach(active_children_shm);
+  bsp_shm_delete(active_children_shm);
+
+  *active_children = num_threads - 1;
 
   pid_t* pids = (pid_t*) malloc(sizeof(pid_t) * num_threads);
 
@@ -115,7 +127,7 @@ bsp_array_t bsp_read_array_parallel(hid_t f, const char* label,
 
   array.data = bsp_shm_attach(array_shm);
   if (thread_num == 0) {
-    bsp_shm_delete(array.shm);
+    bsp_shm_delete(array_shm);
   }
 
   hsize_t chunk_size = (array.size + num_threads - 1) / num_threads;
@@ -131,7 +143,7 @@ bsp_array_t bsp_read_array_parallel(hid_t f, const char* label,
     hid_t memspace_id = H5Screate_simple(1, &count, NULL);
 
     H5Dread(dset, bsp_get_hdf5_native_type(type), memspace_id, fspace,
-            H5P_DEFAULT, array.data + start * bsp_type_size(type));
+            H5P_DEFAULT, ((char*) array.data) + start * bsp_type_size(type));
     H5Sclose(memspace_id);
   }
 
@@ -139,14 +151,21 @@ bsp_array_t bsp_read_array_parallel(hid_t f, const char* label,
   H5Sclose(fspace);
 
   if (thread_num > 0) {
+    atomic_fetch_add_explicit(active_children, -1, memory_order_relaxed);
+    bsp_shm_detach(active_children);
     bsp_shm_detach(array.data);
     exit(0);
   }
 
   free(pids);
 
+  while (atomic_load(active_children) > 0) {
+  }
+  bsp_shm_detach(active_children);
+
   return array;
 }
+#endif
 
 bsp_array_t bsp_read_array(hid_t f, const char* label) {
   hid_t dset = H5Dopen2(f, label, H5P_DEFAULT);

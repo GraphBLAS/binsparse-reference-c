@@ -1,5 +1,6 @@
 #pragma once
 
+#include <binsparse/detail/allocator.h>
 #include <stddef.h>
 #include <stdio.h>
 #include <sys/ipc.h>
@@ -42,3 +43,20 @@ void* bsp_shm_attach(bsp_shm_t shm) {
 void bsp_shm_detach(void* data) {
   shmdt(data);
 }
+
+void* bsp_shm_malloc(size_t size) {
+  bsp_shm_t shm_id = bsp_shm_new(size);
+
+  void* ptr = bsp_shm_attach(shm_id);
+
+  bsp_shm_delete(shm_id);
+
+  return ptr;
+}
+
+void bsp_shm_free(void* ptr) {
+  bsp_shm_detach(ptr);
+}
+
+const static bsp_allocator_t bsp_shm_allocator = {.malloc = bsp_shm_malloc,
+                                                  .free = bsp_shm_free};
