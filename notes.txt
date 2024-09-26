@@ -26,6 +26,9 @@ does the C package need to be header-only?  If so, would it be better to
 
 can the JSON details be hidden, at least for common terms,
     or do we need the end user to use cJSON objects directly?
+    can we just pass JSON strings to binsparse and parse them internally?
+
+How does the user application read back the user_json struct or string?
 
 mtx2bsp can add m.comments to the json header, but how is it read back in
     from a *.bsp.h5 file by binsparse and given back to the user application?
