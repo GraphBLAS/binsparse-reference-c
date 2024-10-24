@@ -21,8 +21,8 @@
 
 // Write an array to a dataset / file
 // Returns 0 on success, nonzero on error.
-int bsp_write_array(hid_t f, const char* label, bsp_array_t array,
-                    int compression_level) {
+static inline int bsp_write_array(hid_t f, const char* label, bsp_array_t array,
+                                  int compression_level) {
   if (array.type == BSP_COMPLEX_FLOAT32 || array.type == BSP_COMPLEX_FLOAT64) {
     array = bsp_complex_array_to_fp(array);
   }
@@ -76,8 +76,8 @@ int bsp_write_array(hid_t f, const char* label, bsp_array_t array,
 }
 
 #if __STDC_VERSION__ >= 201112L
-bsp_array_t bsp_read_array_parallel(hid_t f, const char* label,
-                                    int num_threads) {
+static inline bsp_array_t bsp_read_array_parallel(hid_t f, const char* label,
+                                                  int num_threads) {
   hid_t dset = H5Dopen2(f, label, H5P_DEFAULT);
 
   if (dset == H5I_INVALID_HID) {
@@ -173,7 +173,7 @@ bsp_array_t bsp_read_array_parallel(hid_t f, const char* label,
 }
 #endif
 
-bsp_array_t bsp_read_array(hid_t f, const char* label) {
+static inline bsp_array_t bsp_read_array(hid_t f, const char* label) {
   hid_t dset = H5Dopen2(f, label, H5P_DEFAULT);
 
   if (dset == H5I_INVALID_HID) {
@@ -212,7 +212,8 @@ bsp_array_t bsp_read_array(hid_t f, const char* label) {
   return array;
 }
 
-void bsp_write_attribute(hid_t f, const char* label, const char* string) {
+static inline void bsp_write_attribute(hid_t f, const char* label,
+                                       const char* string) {
   hid_t strtype = H5Tcopy(H5T_C_S1);
   H5Tset_size(strtype, strlen(string));
   H5Tset_cset(strtype, H5T_CSET_UTF8);
@@ -228,7 +229,7 @@ void bsp_write_attribute(hid_t f, const char* label, const char* string) {
   H5Sclose(dataspace);
 }
 
-char* bsp_read_attribute(hid_t f, const char* label) {
+static inline char* bsp_read_attribute(hid_t f, const char* label) {
   hid_t attribute = H5Aopen(f, label, H5P_DEFAULT);
   hid_t strtype = H5Aget_type(attribute);
 
