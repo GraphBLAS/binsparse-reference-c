@@ -26,7 +26,7 @@ typedef enum bsp_type_t {
   BSP_INVALID_TYPE = 13
 } bsp_type_t;
 
-inline char* bsp_get_type_string(bsp_type_t type) {
+static inline char* bsp_get_type_string(bsp_type_t type) {
   if (type == BSP_UINT8) {
     return (char*) "uint8";
   } else if (type == BSP_UINT16) {
@@ -58,7 +58,7 @@ inline char* bsp_get_type_string(bsp_type_t type) {
   }
 }
 
-inline size_t bsp_type_size(bsp_type_t type) {
+static inline size_t bsp_type_size(bsp_type_t type) {
   if (type == BSP_UINT8) {
     return sizeof(uint8_t);
   } else if (type == BSP_UINT16) {
@@ -90,7 +90,7 @@ inline size_t bsp_type_size(bsp_type_t type) {
   }
 }
 
-inline hid_t bsp_get_hdf5_standard_type(bsp_type_t type) {
+static inline hid_t bsp_get_hdf5_standard_type(bsp_type_t type) {
   if (type == BSP_UINT8) {
     return H5T_STD_U8LE;
   } else if (type == BSP_UINT16) {
@@ -118,7 +118,7 @@ inline hid_t bsp_get_hdf5_standard_type(bsp_type_t type) {
   }
 }
 
-inline bsp_type_t bsp_get_bsp_type(hid_t type) {
+static inline bsp_type_t bsp_get_bsp_type(hid_t type) {
   H5T_class_t cl = H5Tget_class(type);
   H5T_order_t order = H5Tget_order(type);
   H5T_sign_t sign = H5Tget_sign(type);
@@ -166,7 +166,7 @@ inline bsp_type_t bsp_get_bsp_type(hid_t type) {
 // NOTE: This code is a bit silly, but it seems to be the only
 //       way to generically determine the HDF5 native types for
 //       stdint's fixed width integer types.
-inline hid_t bsp_get_hdf5_native_type(bsp_type_t type) {
+static inline hid_t bsp_get_hdf5_native_type(bsp_type_t type) {
   if (type == BSP_INT8 || type == BSP_BINT8) {
     if (sizeof(int8_t) == sizeof(char)) {
       return H5T_NATIVE_CHAR;
@@ -290,7 +290,7 @@ inline hid_t bsp_get_hdf5_native_type(bsp_type_t type) {
 
 // Given the maximum value `max_value` that must be stored,
 // pick an unsigned integer type for indices.
-inline bsp_type_t bsp_pick_integer_type(size_t max_value) {
+static inline bsp_type_t bsp_pick_integer_type(size_t max_value) {
   if (max_value < (size_t) UINT8_MAX) {
     return BSP_UINT8;
   } else if (max_value < (size_t) UINT16_MAX) {

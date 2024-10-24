@@ -13,7 +13,7 @@ typedef struct {
   char* dataset;
 } bsp_fdataset_info_t;
 
-inline bsp_fdataset_info_t bsp_parse_fdataset_string(char* str) {
+static inline bsp_fdataset_info_t bsp_parse_fdataset_string(char* str) {
   size_t len = strlen(str);
 
   int split = -1;
@@ -41,7 +41,7 @@ inline bsp_fdataset_info_t bsp_parse_fdataset_string(char* str) {
   }
 }
 
-inline const char* bsp_get_file_extension(const char* file_name) {
+static inline const char* bsp_get_file_extension(const char* file_name) {
   int64_t len = strlen(file_name);
   for (int64_t i = len - 1; i >= 0; i--) {
     if (file_name[i] == '.') {

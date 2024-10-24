@@ -24,7 +24,7 @@ typedef enum bsp_matrix_format_t {
   BSP_INVALID_FORMAT = 21
 } bsp_matrix_format_t;
 
-inline char* bsp_get_matrix_format_string(bsp_matrix_format_t format) {
+static inline char* bsp_get_matrix_format_string(bsp_matrix_format_t format) {
   if (format == BSP_DVEC) {
     return (char*) "DVEC";
   } else if (format == BSP_DMAT) {
@@ -48,7 +48,7 @@ inline char* bsp_get_matrix_format_string(bsp_matrix_format_t format) {
   }
 }
 
-inline bsp_matrix_format_t bsp_get_matrix_format(char* format) {
+static inline bsp_matrix_format_t bsp_get_matrix_format(char* format) {
   if (strcmp("DVEC", format) == 0) {
     return BSP_DVEC;
   } else if (strcmp("DMAT", format) == 0) {
