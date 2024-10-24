@@ -2,4 +2,7 @@
 #
 # SPDX-License-Identifier: BSD-3-Clause
 
-target_include_directories(binsparse-rc PUBLIC .)
+target_sources(binsparse-rc PRIVATE
+  src/read_matrix.c
+  src/write_matrix.c
+)

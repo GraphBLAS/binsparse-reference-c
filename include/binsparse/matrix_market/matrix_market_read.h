@@ -11,13 +11,14 @@
 #include <stdint.h>
 #include <stdlib.h>
 
+#include <binsparse/matrix.h>
 #include <binsparse/matrix_market/coo_sort_tools.h>
 #include <binsparse/matrix_market/matrix_market_inspector.h>
 #include <binsparse/matrix_market/matrix_market_type_t.h>
 
-bsp_matrix_t bsp_mmread_explicit_array(const char* file_path,
-                                       bsp_type_t value_type,
-                                       bsp_type_t index_type) {
+static inline bsp_matrix_t bsp_mmread_explicit_array(const char* file_path,
+                                                     bsp_type_t value_type,
+                                                     bsp_type_t index_type) {
   bsp_mm_metadata metadata = bsp_mmread_metadata(file_path);
 
   bsp_matrix_market_type_t mm_type;
@@ -103,9 +104,9 @@ bsp_matrix_t bsp_mmread_explicit_array(const char* file_path,
   return matrix;
 }
 
-bsp_matrix_t bsp_mmread_explicit_coordinate(const char* file_path,
-                                            bsp_type_t value_type,
-                                            bsp_type_t index_type) {
+static inline bsp_matrix_t
+bsp_mmread_explicit_coordinate(const char* file_path, bsp_type_t value_type,
+                               bsp_type_t index_type) {
   bsp_mm_metadata metadata = bsp_mmread_metadata(file_path);
 
   bsp_matrix_market_type_t mm_type;
@@ -261,8 +262,9 @@ bsp_matrix_t bsp_mmread_explicit_coordinate(const char* file_path,
   return matrix;
 }
 
-bsp_matrix_t bsp_mmread_explicit(const char* file_path, bsp_type_t value_type,
-                                 bsp_type_t index_type) {
+static inline bsp_matrix_t bsp_mmread_explicit(const char* file_path,
+                                               bsp_type_t value_type,
+                                               bsp_type_t index_type) {
   bsp_mm_metadata metadata = bsp_mmread_metadata(file_path);
 
   if (strcmp(metadata.format, "array") == 0) {
@@ -274,7 +276,7 @@ bsp_matrix_t bsp_mmread_explicit(const char* file_path, bsp_type_t value_type,
   }
 }
 
-bsp_matrix_t bsp_mmread(const char* file_path) {
+static inline bsp_matrix_t bsp_mmread(const char* file_path) {
   bsp_mm_metadata metadata = bsp_mmread_metadata(file_path);
 
   bsp_type_t value_type;

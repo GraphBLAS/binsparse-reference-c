@@ -13,11 +13,18 @@ set(CMAKE_CXX_STANDARD 20)
 
 set(CMAKE_C_FLAGS "-O3 -march=native")
 
+add_library(binsparse-rc STATIC)
+
 add_subdirectory(include)
+add_subdirectory(src)
+
+# NOTE: For now, both HDF5 and cJSON are `PUBLIC`, meaning that anything that
+# depends on `binsparse-rc` will also link/include HDF5 and cJSON. We can change
+# these to `PRIVATE` to use them only when building binsparse-rc.
 
 find_package(HDF5 REQUIRED COMPONENTS C)
-target_link_libraries(binsparse-rc INTERFACE ${HDF5_C_LIBRARIES})
-target_include_directories(binsparse-rc INTERFACE . ${HDF5_INCLUDE_DIRS})
+target_link_libraries(binsparse-rc PUBLIC ${HDF5_C_LIBRARIES})
+target_include_directories(binsparse-rc PUBLIC . ${HDF5_INCLUDE_DIRS})
 
 include(FetchContent)
 FetchContent_Declare(
@@ -28,8 +35,8 @@ FetchContent_Declare(
 FetchContent_MakeAvailable(cJSON)
 
 configure_file(${cJSON_SOURCE_DIR}/cJSON.h ${CMAKE_BINARY_DIR}/include/cJSON/cJSON.h)
-target_include_directories(${PROJECT_NAME} INTERFACE ${CMAKE_BINARY_DIR}/include)
-target_link_libraries(${PROJECT_NAME} INTERFACE cjson)
+target_include_directories(${PROJECT_NAME} PUBLIC ${CMAKE_BINARY_DIR}/include)
+target_link_libraries(${PROJECT_NAME} PUBLIC cjson)
 
 if(CMAKE_PROJECT_NAME STREQUAL PROJECT_NAME)
   add_subdirectory(examples)

@@ -19,7 +19,7 @@ using array_ptr_variant_t =
                  int32_t*, int64_t*, float*, double*, float _Complex*,
                  double _Complex*>;
 
-array_ptr_variant_t get_typed_ptr(bsp_array_t array) {
+inline array_ptr_variant_t get_typed_ptr(bsp_array_t array) {
   if (array.type == BSP_UINT8) {
     uint8_t* data = (uint8_t*) array.data;
     return data;
@@ -69,7 +69,7 @@ array_ptr_variant_t get_typed_ptr(bsp_array_t array) {
 
 // value = array[index]
 template <typename T>
-void bsp_array_read(bsp_array_t array, size_t index, T& value) {
+inline void bsp_array_read(bsp_array_t array, size_t index, T& value) {
   auto variant_ptr = binsparse::__detail::get_typed_ptr(array);
 
   std::visit(
@@ -85,7 +85,7 @@ void bsp_array_read(bsp_array_t array, size_t index, T& value) {
 
 // array[index] = value
 template <typename U>
-void bsp_array_write(bsp_array_t array, size_t index, U value) {
+inline void bsp_array_write(bsp_array_t array, size_t index, U value) {
   auto variant_ptr = binsparse::__detail::get_typed_ptr(array);
 
   std::visit(
@@ -100,8 +100,8 @@ void bsp_array_write(bsp_array_t array, size_t index, U value) {
 }
 
 // array_0[index_0] = array_1[index_1]
-void bsp_array_awrite(bsp_array_t array_0, size_t index_0, bsp_array_t array_1,
-                      size_t index_1) {
+inline void bsp_array_awrite(bsp_array_t array_0, size_t index_0,
+                             bsp_array_t array_1, size_t index_1) {
   auto variant_ptr_0 = binsparse::__detail::get_typed_ptr(array_0);
   auto variant_ptr_1 = binsparse::__detail::get_typed_ptr(array_1);
 

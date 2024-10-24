@@ -8,7 +8,7 @@
 
 #include <binsparse/matrix.h>
 
-void bsp_array_fill_random(bsp_array_t array, size_t bound) {
+static inline void bsp_array_fill_random(bsp_array_t array, size_t bound) {
   if (array.type == BSP_UINT8) {
     uint8_t* values = (uint8_t*) array.data;
     for (size_t i = 0; i < array.size; i++) {
@@ -67,8 +67,9 @@ void bsp_array_fill_random(bsp_array_t array, size_t bound) {
   }
 }
 
-bsp_matrix_t bsp_generate_coo(size_t m, size_t n, size_t nnz,
-                              bsp_type_t value_type, bsp_type_t index_type) {
+static inline bsp_matrix_t bsp_generate_coo(size_t m, size_t n, size_t nnz,
+                                            bsp_type_t value_type,
+                                            bsp_type_t index_type) {
   bsp_matrix_t matrix = bsp_construct_default_matrix_t();
   matrix.nrows = m;
   matrix.ncols = n;
