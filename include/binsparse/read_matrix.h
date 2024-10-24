@@ -10,6 +10,7 @@
 #include <binsparse/matrix.h>
 #include <cJSON/cJSON.h>
 
+#if __STDC_VERSION__ >= 201112L
 bsp_matrix_t bsp_read_matrix_from_group_parallel(hid_t f, int num_threads) {
   bsp_matrix_t matrix = bsp_construct_default_matrix_t();
 
@@ -113,6 +114,7 @@ bsp_matrix_t bsp_read_matrix_from_group_parallel(hid_t f, int num_threads) {
 
   return matrix;
 }
+#endif
 
 bsp_matrix_t bsp_read_matrix_from_group(hid_t f) {
   bsp_matrix_t matrix = bsp_construct_default_matrix_t();
@@ -225,6 +227,7 @@ size_t bsp_final_dot(const char* str) {
   return dot_idx;
 }
 
+#if __STDC_VERSION__ >= 201112L
 bsp_matrix_t bsp_read_matrix_parallel(const char* file_name, const char* group,
                                       int num_threads) {
   if (group == NULL) {
@@ -249,6 +252,7 @@ bsp_matrix_t bsp_read_matrix_parallel(const char* file_name, const char* group,
     return matrix;
   }
 }
+#endif
 
 bsp_matrix_t bsp_read_matrix(const char* file_name, const char* group) {
   if (group == NULL) {

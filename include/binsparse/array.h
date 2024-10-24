@@ -7,6 +7,7 @@
 #pragma once
 
 #include <assert.h>
+#include <binsparse/detail/allocator.h>
 #include <binsparse/detail/shm_tools.h>
 #include <binsparse/types.h>
 #include <stdlib.h>
@@ -16,15 +17,14 @@ typedef struct bsp_array_t {
   void* data;
   size_t size;
   bsp_type_t type;
-  bool shmat_memory;
-  bsp_shm_t shm;
+  bsp_allocator_t allocator;
 } bsp_array_t;
 
 bsp_array_t bsp_construct_default_array_t() {
   bsp_array_t array;
   array.data = NULL;
   array.size = 0;
-  array.shmat_memory = false;
+  array.allocator = bsp_default_allocator;
   return array;
 }
 
@@ -32,11 +32,11 @@ bsp_array_t bsp_construct_array_t(size_t size, bsp_type_t type) {
   size_t byte_size = size * bsp_type_size(type);
 
   bsp_array_t array;
-  array.data = malloc(byte_size);
+  array.allocator = bsp_default_allocator;
+  array.data = array.allocator.malloc(byte_size);
   assert(array.data != NULL);
   array.size = size;
   array.type = type;
-  array.shmat_memory = false;
 
   return array;
 }
@@ -55,6 +55,7 @@ bsp_array_t bsp_complex_array_to_fp(bsp_array_t other) {
   bsp_array_t array;
   array.data = other.data;
   array.size = other.size * 2;
+  array.allocator = other.allocator;
 
   if (other.type == BSP_COMPLEX_FLOAT32) {
     array.type = BSP_FLOAT32;
@@ -71,6 +72,7 @@ bsp_array_t bsp_fp_array_to_complex(bsp_array_t other) {
   bsp_array_t array;
   array.data = other.data;
   array.size = other.size / 2;
+  array.allocator = other.allocator;
 
   if (other.type == BSP_FLOAT32) {
     array.type = BSP_COMPLEX_FLOAT32;
@@ -82,11 +84,7 @@ bsp_array_t bsp_fp_array_to_complex(bsp_array_t other) {
 }
 
 void bsp_destroy_array_t(bsp_array_t array) {
-  if (array.shmat_memory == false) {
-    free(array.data);
-  } else {
-    bsp_shm_detach(array.data);
-  }
+  array.allocator.free(array.data);
 }
 
 bool bsp_array_equal(bsp_array_t x, bsp_array_t y) {
