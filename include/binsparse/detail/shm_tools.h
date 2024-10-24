@@ -20,7 +20,7 @@ typedef struct {
   size_t size;
 } bsp_shm_t;
 
-bsp_shm_t bsp_shm_new(size_t size) {
+inline bsp_shm_t bsp_shm_new(size_t size) {
   bsp_shm_t shm;
   shm.size = size;
 
@@ -32,11 +32,11 @@ bsp_shm_t bsp_shm_new(size_t size) {
   return shm;
 }
 
-void bsp_shm_delete(bsp_shm_t shm) {
+inline void bsp_shm_delete(bsp_shm_t shm) {
   shmctl(shm.id, IPC_RMID, 0);
 }
 
-void* bsp_shm_attach(bsp_shm_t shm) {
+inline void* bsp_shm_attach(bsp_shm_t shm) {
   void* data;
 
   if ((data = shmat(shm.id, NULL, 0)) == (void*) -1) {
@@ -46,11 +46,11 @@ void* bsp_shm_attach(bsp_shm_t shm) {
   return data;
 }
 
-void bsp_shm_detach(void* data) {
+inline void bsp_shm_detach(void* data) {
   shmdt(data);
 }
 
-void* bsp_shm_malloc(size_t size) {
+inline void* bsp_shm_malloc(size_t size) {
   bsp_shm_t shm_id = bsp_shm_new(size);
 
   void* ptr = bsp_shm_attach(shm_id);
@@ -60,7 +60,7 @@ void* bsp_shm_malloc(size_t size) {
   return ptr;
 }
 
-void bsp_shm_free(void* ptr) {
+inline void bsp_shm_free(void* ptr) {
   bsp_shm_detach(ptr);
 }
 
