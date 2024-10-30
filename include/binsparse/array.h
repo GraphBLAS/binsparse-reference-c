@@ -20,7 +20,7 @@ typedef struct bsp_array_t {
   bsp_allocator_t allocator;
 } bsp_array_t;
 
-bsp_array_t bsp_construct_default_array_t() {
+static inline bsp_array_t bsp_construct_default_array_t() {
   bsp_array_t array;
   array.data = NULL;
   array.size = 0;
@@ -28,7 +28,7 @@ bsp_array_t bsp_construct_default_array_t() {
   return array;
 }
 
-bsp_array_t bsp_construct_array_t(size_t size, bsp_type_t type) {
+static inline bsp_array_t bsp_construct_array_t(size_t size, bsp_type_t type) {
   size_t byte_size = size * bsp_type_size(type);
 
   bsp_array_t array;
@@ -41,14 +41,14 @@ bsp_array_t bsp_construct_array_t(size_t size, bsp_type_t type) {
   return array;
 }
 
-bsp_array_t bsp_copy_construct_array_t(bsp_array_t other) {
+static inline bsp_array_t bsp_copy_construct_array_t(bsp_array_t other) {
   bsp_array_t array = bsp_construct_array_t(other.size, other.type);
   memcpy(array.data, other.data, other.size * bsp_type_size(other.type));
 
   return array;
 }
 
-bsp_array_t bsp_complex_array_to_fp(bsp_array_t other) {
+static inline bsp_array_t bsp_complex_array_to_fp(bsp_array_t other) {
   assert(other.type == BSP_COMPLEX_FLOAT32 ||
          other.type == BSP_COMPLEX_FLOAT64);
 
@@ -66,7 +66,7 @@ bsp_array_t bsp_complex_array_to_fp(bsp_array_t other) {
   return array;
 }
 
-bsp_array_t bsp_fp_array_to_complex(bsp_array_t other) {
+static inline bsp_array_t bsp_fp_array_to_complex(bsp_array_t other) {
   assert(other.type == BSP_FLOAT32 || other.type == BSP_FLOAT64);
 
   bsp_array_t array;
@@ -83,11 +83,11 @@ bsp_array_t bsp_fp_array_to_complex(bsp_array_t other) {
   return array;
 }
 
-void bsp_destroy_array_t(bsp_array_t array) {
+static inline void bsp_destroy_array_t(bsp_array_t array) {
   array.allocator.free(array.data);
 }
 
-bool bsp_array_equal(bsp_array_t x, bsp_array_t y) {
+static inline bool bsp_array_equal(bsp_array_t x, bsp_array_t y) {
   if (x.size != y.size) {
     return false;
   }

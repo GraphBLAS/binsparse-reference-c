@@ -12,7 +12,7 @@
 
 #include <binsparse/matrix_market/matrix_market_type_t.h>
 
-void bsp_mmwrite(const char* file_path, bsp_matrix_t matrix) {
+static inline void bsp_mmwrite(const char* file_path, bsp_matrix_t matrix) {
   FILE* f = fopen(file_path, "w");
 
   assert(f != NULL);

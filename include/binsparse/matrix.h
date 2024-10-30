@@ -26,7 +26,7 @@ typedef struct bsp_matrix_t {
   bsp_structure_t structure;
 } bsp_matrix_t;
 
-bsp_matrix_t bsp_construct_default_matrix_t() {
+static inline bsp_matrix_t bsp_construct_default_matrix_t() {
   bsp_matrix_t mat;
   mat.values = bsp_construct_default_array_t();
   mat.indices_0 = bsp_construct_default_array_t();
@@ -38,14 +38,14 @@ bsp_matrix_t bsp_construct_default_matrix_t() {
   return mat;
 }
 
-void bsp_destroy_matrix_t(bsp_matrix_t matrix) {
+static inline void bsp_destroy_matrix_t(bsp_matrix_t matrix) {
   bsp_destroy_array_t(matrix.values);
   bsp_destroy_array_t(matrix.indices_0);
   bsp_destroy_array_t(matrix.indices_1);
   bsp_destroy_array_t(matrix.pointers_to_1);
 }
 
-size_t bsp_matrix_nbytes(bsp_matrix_t mat) {
+static inline size_t bsp_matrix_nbytes(bsp_matrix_t mat) {
   size_t nbytes = 0;
   if (mat.values.size > 0) {
     nbytes += mat.values.size * bsp_type_size(mat.values.type);
@@ -66,7 +66,7 @@ size_t bsp_matrix_nbytes(bsp_matrix_t mat) {
   return nbytes;
 }
 
-void bsp_print_matrix_info(bsp_matrix_t matrix) {
+static inline void bsp_print_matrix_info(bsp_matrix_t matrix) {
   printf("%lu x %lu matrix with %lu nnz.\n", matrix.nrows, matrix.ncols,
          matrix.nnz);
   printf("%s format with %s structure\n",

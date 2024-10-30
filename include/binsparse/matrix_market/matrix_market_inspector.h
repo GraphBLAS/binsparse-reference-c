@@ -32,7 +32,7 @@ typedef struct bsp_mm_metadata {
   char* comments;
 } bsp_mm_metadata;
 
-bsp_mm_metadata bsp_mmread_metadata(const char* file_path) {
+static inline bsp_mm_metadata bsp_mmread_metadata(const char* file_path) {
   FILE* f = fopen(file_path, "r");
 
   assert(f != NULL);

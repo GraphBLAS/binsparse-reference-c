@@ -11,7 +11,7 @@
 
 // Given a matrix `matrix`, store its values using the smallest type possible
 // without losing precision.
-bsp_matrix_t bsp_matrix_minimize_values(bsp_matrix_t matrix) {
+static inline bsp_matrix_t bsp_matrix_minimize_values(bsp_matrix_t matrix) {
   if (matrix.values.type == BSP_FLOAT64) {
     bool float32_representable = true;
 
