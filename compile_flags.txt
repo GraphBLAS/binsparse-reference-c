@@ -1,2 +1,4 @@
 -I./include
 -I./build/include
+-DBSP_USE_HDF5
+-I/usr/include/hdf5/serial

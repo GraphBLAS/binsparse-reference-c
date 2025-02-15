@@ -4,5 +4,6 @@
 
 target_sources(binsparse-rc PRIVATE
   src/read_matrix.c
+  src/read_tensor.c
   src/write_matrix.c
 )
