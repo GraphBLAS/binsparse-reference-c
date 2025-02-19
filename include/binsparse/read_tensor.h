@@ -4,6 +4,8 @@
 extern "C" {
 #endif
 
+char* key_with_index(const char* key, size_t index);
+
 #ifdef BSP_USE_HDF5
 #include <hdf5.h>
 

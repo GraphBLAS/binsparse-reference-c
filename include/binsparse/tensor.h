@@ -23,7 +23,7 @@ typedef struct {
 // corresponds to BSP_TENSOR_DENSE
 typedef struct {
   int rank;
-  bsp_array_t pointers_to;
+  bsp_array_t* pointers_to;
   bsp_array_t* indices;
   bsp_level_t* child;
 } bsp_sparse_t;
@@ -56,6 +56,8 @@ static inline bsp_tensor_t bsp_construct_default_tensor_t() {
 }
 
 static void bsp_destroy_level_t(bsp_level_t* level) {
+  if (level == NULL)
+    return;
   switch (level->kind) {
   case BSP_TENSOR_ELEMENT:;
     bsp_element_t* element = level->data;
@@ -69,8 +71,14 @@ static void bsp_destroy_level_t(bsp_level_t* level) {
     break;
   case BSP_TENSOR_SPARSE:;
     bsp_sparse_t* sparse = level->data;
-    bsp_destroy_array_t(*sparse->indices);
-    bsp_destroy_array_t(*sparse->pointers_to);
+
+    if (sparse->pointers_to != NULL)
+      bsp_destroy_array_t(*sparse->pointers_to);
+    if (sparse->indices != NULL) {
+      for (int i = 0; i < sparse->rank; i++) {
+        bsp_destroy_array_t(sparse->indices[i]);
+      }
+    }
     bsp_destroy_level_t(sparse->child);
     free(sparse);
     break;

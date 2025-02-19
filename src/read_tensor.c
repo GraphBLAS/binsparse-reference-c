@@ -13,10 +13,13 @@
 #include <math.h>
 #include <string.h>
 
-static char* key_with_index(const char* key, size_t index) {
+/*
+Returns "{key}-{index}"
+*/
+char* key_with_index(const char* key, size_t index) {
   int keylen = strlen(key);
   int strsize = keylen * sizeof(char) +
-                (int) ((ceil(log10(index + 1)) + 1) * sizeof(char));
+                (int) ((ceil(log10(index + 1)) + 1) * sizeof(char)) + 1;
   char* res = (char*) malloc(strsize);
   for (int i = 0; i < keylen; i++) {
     res[i] = key[i];
@@ -44,12 +47,6 @@ bsp_tensor_t bsp_read_tensor_from_group(hid_t f) {
   assert(version_ != NULL);
 
   assert(cJSON_IsString(version_));
-
-  // TODO: check version.
-
-  cJSON* format_ = cJSON_GetObjectItemCaseSensitive(binsparse, "format");
-  assert(format_ != NULL);
-  char* format_string = cJSON_GetStringValue(format_);
 
   // nnz computation
   cJSON* nnz_ =
@@ -117,22 +114,26 @@ bsp_tensor_t bsp_read_tensor_from_group(hid_t f) {
 
       cur_level->data = data;
       cur_level = data->child;
+
     } else if (strcmp(type, "sparse") == 0) {
       cur_level->kind = BSP_TENSOR_SPARSE;
 
       bsp_sparse_t* data = malloc(sizeof(bsp_sparse_t));
 
-      // initialize pointers_to.
-      {
+      // initialize pointers_to, but only if the depth is not zero.
+      if (depth != 0) {
         char* pointers_key = key_with_index("pointers_to_", depth);
-        data->pointers_to = bsp_read_array(f, pointers_key);
+        data->pointers_to = malloc(sizeof(bsp_array_t));
+        *data->pointers_to = bsp_read_array(f, pointers_key);
         free(pointers_key);
+      } else {
+        data->pointers_to = NULL;
       }
 
       // initialize indices
       data->indices = malloc(rank * sizeof(bsp_array_t));
       for (int idx = 0; idx < rank; idx++) {
-        char* indices_key = key_with_index("indices_", depth + rank);
+        char* indices_key = key_with_index("indices_", depth + idx);
         data->indices[idx] = bsp_read_array(f, indices_key);
         free(indices_key);
       }
@@ -146,6 +147,8 @@ bsp_tensor_t bsp_read_tensor_from_group(hid_t f) {
       assert(false);
     }
     // update the depth here.
+    json_level = cJSON_GetObjectItemCaseSensitive(json_level, "level");
+    assert(json_level != NULL);
     depth += rank;
   }
   if (cJSON_HasObjectItem(binsparse, "structure")) {
