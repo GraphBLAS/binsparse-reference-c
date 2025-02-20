@@ -86,6 +86,29 @@ static void bsp_destroy_level_t(bsp_level_t* level) {
   }
 }
 
+static bsp_array_t bsp_get_tensor_values(bsp_tensor_t tensor) {
+  bsp_level_t* level = tensor.level;
+  while (level != NULL) {
+    switch (level->kind) {
+    case BSP_TENSOR_ELEMENT:;
+      bsp_element_t* element = level->data;
+      return element->values;
+      break;
+    case BSP_TENSOR_SPARSE:;
+      bsp_sparse_t* sparse = level->data;
+      level = sparse->child;
+      break;
+    case BSP_TENSOR_DENSE:;
+      bsp_dense_t* dense = level->data;
+      level = dense->child;
+      break;
+    default:;
+    }
+  }
+  // this should never happen!
+  assert(false);
+}
+
 static inline void bsp_destroy_tensor_t(bsp_tensor_t tensor) {
   bsp_destroy_level_t(tensor.level);
   free(tensor.dims);
