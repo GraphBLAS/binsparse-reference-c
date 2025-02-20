@@ -86,7 +86,7 @@ int bsp_write_tensor_to_group(hid_t f, bsp_tensor_t tensor, cJSON* user_json,
   while (true) {
     int reached_end = 0;
     switch (level->kind) {
-    case BSP_TENSOR_SPARSE:;
+    case BSP_TENSOR_SPARSE: {
       bsp_sparse_t* sparse = level->data;
       size_t layer_rank = sparse->rank;
       cJSON_AddStringToObject(json_level, "level_kind", "sparse");
@@ -119,17 +119,20 @@ int bsp_write_tensor_to_group(hid_t f, bsp_tensor_t tensor, cJSON* user_json,
       rank += layer_rank;
       level = sparse->child;
       break;
-    case BSP_TENSOR_DENSE:;
+    }
+    case BSP_TENSOR_DENSE: {
       cJSON_AddStringToObject(json_level, "level_kind", "dense");
       cJSON_AddNumberToObject(json_level, "rank",
                               ((bsp_dense_t*) level->data)->rank);
       rank += ((bsp_dense_t*) level->data)->rank;
       level = ((bsp_dense_t*) level->data)->child;
       break;
-    case BSP_TENSOR_ELEMENT:;
+    }
+    case BSP_TENSOR_ELEMENT: {
       cJSON_AddStringToObject(json_level, "level_kind", "element");
       reached_end = 1;
       break;
+    }
     default:;
     }
 

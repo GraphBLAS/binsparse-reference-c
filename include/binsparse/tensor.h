@@ -59,18 +59,20 @@ static void bsp_destroy_level_t(bsp_level_t* level) {
   if (level == NULL)
     return;
   switch (level->kind) {
-  case BSP_TENSOR_ELEMENT:;
-    bsp_element_t* element = level->data;
+  case BSP_TENSOR_ELEMENT: {
+    bsp_element_t* element = (bsp_element_t*) level->data;
     bsp_destroy_array_t(element->values);
     free(element);
     break;
-  case BSP_TENSOR_DENSE:;
-    bsp_dense_t* dense = level->data;
+  }
+  case BSP_TENSOR_DENSE: {
+    bsp_dense_t* dense = (bsp_dense_t*) level->data;
     bsp_destroy_level_t(dense->child);
     free(dense);
     break;
-  case BSP_TENSOR_SPARSE:;
-    bsp_sparse_t* sparse = level->data;
+  }
+  case BSP_TENSOR_SPARSE: {
+    bsp_sparse_t* sparse = (bsp_sparse_t*) level->data;
 
     if (sparse->pointers_to != NULL)
       bsp_destroy_array_t(*sparse->pointers_to);
@@ -82,6 +84,7 @@ static void bsp_destroy_level_t(bsp_level_t* level) {
     bsp_destroy_level_t(sparse->child);
     free(sparse);
     break;
+  }
   default:;
   }
 }
@@ -90,18 +93,21 @@ static bsp_array_t bsp_get_tensor_values(bsp_tensor_t tensor) {
   bsp_level_t* level = tensor.level;
   while (level != NULL) {
     switch (level->kind) {
-    case BSP_TENSOR_ELEMENT:;
-      bsp_element_t* element = level->data;
+    case BSP_TENSOR_ELEMENT: {
+      bsp_element_t* element = (bsp_element_t*) level->data;
       return element->values;
       break;
-    case BSP_TENSOR_SPARSE:;
-      bsp_sparse_t* sparse = level->data;
+    }
+    case BSP_TENSOR_SPARSE: {
+      bsp_sparse_t* sparse = (bsp_sparse_t*) level->data;
       level = sparse->child;
       break;
-    case BSP_TENSOR_DENSE:;
-      bsp_dense_t* dense = level->data;
+    }
+    case BSP_TENSOR_DENSE: {
+      bsp_dense_t* dense = (bsp_dense_t*) level->data;
       level = dense->child;
       break;
+    }
     default:;
     }
   }
