@@ -11,9 +11,12 @@ static cJSON* init_tensor_json(bsp_tensor_t tensor, cJSON* user_json) {
   assert(j != NULL);
 
   cJSON* binsparse = cJSON_CreateObject();
-
   assert(binsparse != NULL);
 
+  cJSON* binsparse_tensor = cJSON_CreateObject();
+  assert(binsparse_tensor != NULL);
+
+  cJSON_AddItemToObject(binsparse, "tensor", binsparse_tensor);
   cJSON_AddItemToObject(j, "binsparse", binsparse);
 
   cJSON* userJsonItem;
@@ -43,8 +46,13 @@ int bsp_write_tensor_to_group(hid_t f, bsp_tensor_t tensor, cJSON* user_json,
                               int compression_level) {
   // bsp_matrix_t matrix;
   cJSON* j = init_tensor_json(tensor, user_json);
+  // tensor:
   cJSON* binsparse = cJSON_GetObjectItemCaseSensitive(j, "binsparse");
   assert(binsparse != NULL);
+  cJSON* binsparse_tensor =
+      cJSON_GetObjectItemCaseSensitive(binsparse, "tensor");
+  assert(binsparse_tensor != NULL);
+
   cJSON* data_types = cJSON_AddObjectToObject(binsparse, "data_types");
   bsp_array_t values = bsp_get_tensor_values(tensor);
 
@@ -74,11 +82,16 @@ int bsp_write_tensor_to_group(hid_t f, bsp_tensor_t tensor, cJSON* user_json,
 
   int rank = 0;
   bsp_level_t* level = tensor.level;
-  while (level->kind != BSP_TENSOR_ELEMENT) {
+  cJSON* json_level = cJSON_AddObjectToObject(binsparse_tensor, "level");
+  while (true) {
+    int reached_end = 0;
     switch (level->kind) {
     case BSP_TENSOR_SPARSE:;
       bsp_sparse_t* sparse = level->data;
       size_t layer_rank = sparse->rank;
+      cJSON_AddStringToObject(json_level, "level_kind", "sparse");
+      cJSON_AddNumberToObject(json_level, "rank", layer_rank);
+
       if (sparse->pointers_to != NULL) {
         cJSON_AddStringToObject(data_types,
                                 key_with_index("pointers_to_", rank),
@@ -107,11 +120,22 @@ int bsp_write_tensor_to_group(hid_t f, bsp_tensor_t tensor, cJSON* user_json,
       level = sparse->child;
       break;
     case BSP_TENSOR_DENSE:;
+      cJSON_AddStringToObject(json_level, "level_kind", "dense");
+      cJSON_AddNumberToObject(json_level, "rank",
+                              ((bsp_dense_t*) level->data)->rank);
       rank += ((bsp_dense_t*) level->data)->rank;
       level = ((bsp_dense_t*) level->data)->child;
       break;
+    case BSP_TENSOR_ELEMENT:;
+      cJSON_AddStringToObject(json_level, "level_kind", "element");
+      reached_end = 1;
+      break;
     default:;
     }
+
+    if (reached_end)
+      break;
+    json_level = cJSON_AddObjectToObject(json_level, "level");
   }
 
   char* json_string = cJSON_Print(j);
