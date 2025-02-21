@@ -1,10 +1,7 @@
 using Finch;
 using HDF5;
 
-# dir = @__DIR__();
 dir = pwd();
-
-print("Args:", ARGS, "\n");
 
 if length(ARGS) == 0
   tensor_test = joinpath(dir, "../../examples/tensor_test")
@@ -20,8 +17,9 @@ function tensortest(tensor::Tensor, input::AbstractString, output::AbstractStrin
   print("tensor_test ", input, " -> ", output, "\n")
   fwrite(input, tensor)
   run(`$tensor_test $input $output`)
-  new_tensor = fread(output)
-  # @assert new_tensor == tensor
+  # for whatever reason, fread returns a swizzlearray
+  new_tensor = fread(output).body
+  @assert new_tensor == tensor
 end
 
 tensortest(
