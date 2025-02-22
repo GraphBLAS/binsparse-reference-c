@@ -17,9 +17,8 @@ function tensortest(tensor::Tensor, input::AbstractString, output::AbstractStrin
   print("tensor_test ", input, " -> ", output, "\n")
   fwrite(input, tensor)
   run(`$tensor_test $input $output`)
-  # for whatever reason, fread returns a swizzlearray
-  new_tensor = fread(output).body
-  @assert new_tensor == tensor
+  output_tensor = fread(output)
+  @assert tensor == output_tensor
 end
 
 tensortest(

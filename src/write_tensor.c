@@ -13,10 +13,10 @@ static cJSON* init_tensor_json(bsp_tensor_t tensor, cJSON* user_json) {
   cJSON* binsparse = cJSON_CreateObject();
   assert(binsparse != NULL);
 
-  cJSON* binsparse_tensor = cJSON_CreateObject();
-  assert(binsparse_tensor != NULL);
+  cJSON* binsparse_custom = cJSON_CreateObject();
+  assert(binsparse_custom != NULL);
 
-  cJSON_AddItemToObject(binsparse, "tensor", binsparse_tensor);
+  cJSON_AddItemToObject(binsparse, "tensor", binsparse_custom);
   cJSON_AddItemToObject(j, "binsparse", binsparse);
 
   cJSON* userJsonItem;
@@ -30,6 +30,11 @@ static cJSON* init_tensor_json(bsp_tensor_t tensor, cJSON* user_json) {
   cJSON* shape = cJSON_AddArrayToObject(binsparse, "shape");
   for (int i = 0; i < tensor.rank; i++) {
     cJSON_AddItemToArray(shape, cJSON_CreateNumber(tensor.dims[i]));
+  }
+
+  cJSON* transpose = cJSON_AddArrayToObject(binsparse_custom, "transpose");
+  for (int i = 0; i < tensor.rank; i++) {
+    cJSON_AddItemToArray(transpose, cJSON_CreateNumber(tensor.transpose[i]));
   }
 
   cJSON_AddNumberToObject(binsparse, "number_of_stored_values", tensor.nnz);
@@ -49,9 +54,9 @@ int bsp_write_tensor_to_group(hid_t f, bsp_tensor_t tensor, cJSON* user_json,
   // tensor:
   cJSON* binsparse = cJSON_GetObjectItemCaseSensitive(j, "binsparse");
   assert(binsparse != NULL);
-  cJSON* binsparse_tensor =
+  cJSON* binsparse_custom =
       cJSON_GetObjectItemCaseSensitive(binsparse, "tensor");
-  assert(binsparse_tensor != NULL);
+  assert(binsparse_custom != NULL);
 
   cJSON* data_types = cJSON_AddObjectToObject(binsparse, "data_types");
   bsp_array_t values = bsp_get_tensor_values(tensor);
@@ -82,7 +87,7 @@ int bsp_write_tensor_to_group(hid_t f, bsp_tensor_t tensor, cJSON* user_json,
 
   int rank = 0;
   bsp_level_t* level = tensor.level;
-  cJSON* json_level = cJSON_AddObjectToObject(binsparse_tensor, "level");
+  cJSON* json_level = cJSON_AddObjectToObject(binsparse_custom, "level");
   while (true) {
     int reached_end = 0;
     switch (level->kind) {

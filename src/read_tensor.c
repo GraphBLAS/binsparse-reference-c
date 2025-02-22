@@ -70,11 +70,23 @@ bsp_tensor_t bsp_read_tensor_from_group(hid_t f) {
       cJSON_GetObjectItemCaseSensitive(binsparse, "data_types");
   assert(data_types_ != NULL);
 
-  cJSON* binsparse_tensor =
+  cJSON* binsparse_custom =
       cJSON_GetObjectItemCaseSensitive(binsparse, "tensor");
-  assert(binsparse_tensor != NULL);
+  assert(binsparse_custom != NULL);
+
+  cJSON* transpose_ =
+      cJSON_GetObjectItemCaseSensitive(binsparse_custom, "transpose");
+  if (transpose_ != NULL) {
+    size_t* transpose = (size_t*) malloc(tensor.rank * sizeof(size_t));
+    for (int idx = 0; idx < tensor.rank; idx++) {
+      transpose[idx] =
+          cJSON_GetNumberValue((cJSON_GetArrayItem(transpose_, idx)));
+    }
+    tensor.transpose = transpose;
+  }
+
   cJSON* json_level =
-      cJSON_GetObjectItemCaseSensitive(binsparse_tensor, "level");
+      cJSON_GetObjectItemCaseSensitive(binsparse_custom, "level");
   assert(json_level != NULL);
 
   bsp_level_t* cur_level = malloc(sizeof(bsp_level_t));

@@ -36,6 +36,7 @@ typedef struct {
 typedef struct {
   int rank;
   size_t* dims;
+  size_t* transpose;
   size_t nnz;
   bool is_iso;
 
@@ -50,6 +51,7 @@ static inline bsp_tensor_t bsp_construct_default_tensor_t() {
   tensor.is_iso = false;
   tensor.nnz = tensor.rank = 0;
   tensor.dims = NULL;
+  tensor.transpose = NULL;
 
   tensor.level = NULL;
   return tensor;
@@ -117,5 +119,6 @@ static bsp_array_t bsp_get_tensor_values(bsp_tensor_t tensor) {
 
 static inline void bsp_destroy_tensor_t(bsp_tensor_t tensor) {
   bsp_destroy_level_t(tensor.level);
-  free(tensor.dims);
+  if (tensor.dims != NULL) free(tensor.dims);
+  if (tensor.transpose != NULL) free(tensor.transpose);
 }
