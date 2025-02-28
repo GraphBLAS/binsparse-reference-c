@@ -71,7 +71,7 @@ bsp_tensor_t bsp_read_tensor_from_group(hid_t f) {
   assert(data_types_ != NULL);
 
   cJSON* binsparse_custom =
-      cJSON_GetObjectItemCaseSensitive(binsparse, "tensor");
+      cJSON_GetObjectItemCaseSensitive(binsparse, "custom");
   assert(binsparse_custom != NULL);
 
   cJSON* transpose_ =
@@ -97,7 +97,7 @@ bsp_tensor_t bsp_read_tensor_from_group(hid_t f) {
 
   while (depth < tensor.rank + 1) {
     cJSON* type_object =
-        cJSON_GetObjectItemCaseSensitive(json_level, "level_kind");
+        cJSON_GetObjectItemCaseSensitive(json_level, "level_desc");
     char* type = type_object ? cJSON_GetStringValue(type_object) : NULL;
     assert(type != NULL);
 

@@ -16,7 +16,7 @@ static cJSON* init_tensor_json(bsp_tensor_t tensor, cJSON* user_json) {
   cJSON* binsparse_custom = cJSON_CreateObject();
   assert(binsparse_custom != NULL);
 
-  cJSON_AddItemToObject(binsparse, "tensor", binsparse_custom);
+  cJSON_AddItemToObject(binsparse, "custom", binsparse_custom);
   cJSON_AddItemToObject(j, "binsparse", binsparse);
 
   cJSON* userJsonItem;
@@ -55,7 +55,7 @@ int bsp_write_tensor_to_group(hid_t f, bsp_tensor_t tensor, cJSON* user_json,
   cJSON* binsparse = cJSON_GetObjectItemCaseSensitive(j, "binsparse");
   assert(binsparse != NULL);
   cJSON* binsparse_custom =
-      cJSON_GetObjectItemCaseSensitive(binsparse, "tensor");
+      cJSON_GetObjectItemCaseSensitive(binsparse, "custom");
   assert(binsparse_custom != NULL);
 
   cJSON* data_types = cJSON_AddObjectToObject(binsparse, "data_types");
@@ -94,7 +94,7 @@ int bsp_write_tensor_to_group(hid_t f, bsp_tensor_t tensor, cJSON* user_json,
     case BSP_TENSOR_SPARSE: {
       bsp_sparse_t* sparse = level->data;
       size_t layer_rank = sparse->rank;
-      cJSON_AddStringToObject(json_level, "level_kind", "sparse");
+      cJSON_AddStringToObject(json_level, "level_desc", "sparse");
       cJSON_AddNumberToObject(json_level, "rank", layer_rank);
 
       if (sparse->pointers_to != NULL) {
@@ -126,7 +126,7 @@ int bsp_write_tensor_to_group(hid_t f, bsp_tensor_t tensor, cJSON* user_json,
       break;
     }
     case BSP_TENSOR_DENSE: {
-      cJSON_AddStringToObject(json_level, "level_kind", "dense");
+      cJSON_AddStringToObject(json_level, "level_desc", "dense");
       cJSON_AddNumberToObject(json_level, "rank",
                               ((bsp_dense_t*) level->data)->rank);
       rank += ((bsp_dense_t*) level->data)->rank;
@@ -134,7 +134,7 @@ int bsp_write_tensor_to_group(hid_t f, bsp_tensor_t tensor, cJSON* user_json,
       break;
     }
     case BSP_TENSOR_ELEMENT: {
-      cJSON_AddStringToObject(json_level, "level_kind", "element");
+      cJSON_AddStringToObject(json_level, "level_desc", "element");
       reached_end = 1;
       break;
     }
