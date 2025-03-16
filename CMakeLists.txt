@@ -13,7 +13,7 @@ set(CMAKE_CXX_STANDARD 20)
 
 set(CMAKE_C_FLAGS "-O3 -march=native")
 
-add_library(binsparse-rc STATIC)
+add_library(binsparse-rc SHARED)
 
 add_subdirectory(include)
 add_subdirectory(src)
