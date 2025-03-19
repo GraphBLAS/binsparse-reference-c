@@ -89,7 +89,10 @@ static inline bsp_matrix_t bsp_mmread_explicit_array(const char* file_path,
       double real_value, imaginary_value;
       sscanf(buf, "%lf %lf", &real_value, &imaginary_value);
 
-      double _Complex value = real_value + 1j * imaginary_value;
+      double _Complex value;
+
+      ((double*) &value)[0] = real_value;
+      ((double*) &value)[1] = imaginary_value;
 
       size_t i = count % matrix.ncols;
       size_t j = count / matrix.ncols;
@@ -203,12 +206,15 @@ bsp_mmread_explicit_coordinate(const char* file_path, bsp_type_t value_type,
       bsp_array_write(matrix.indices_1, count, j);
     } else if (mm_type == BSP_MM_COMPLEX) {
       unsigned long long i, j;
-      double real_value, complex_value;
-      sscanf(buf, "%llu %llu %lf %lf", &i, &j, &real_value, &complex_value);
+      double real_value, imaginary_value;
+      sscanf(buf, "%llu %llu %lf %lf", &i, &j, &real_value, &imaginary_value);
       i--;
       j--;
 
-      double _Complex value = real_value + 1j * complex_value;
+      double _Complex value;
+
+      ((double*) &value)[0] = real_value;
+      ((double*) &value)[1] = imaginary_value;
 
       bsp_array_write(matrix.values, count, value);
       bsp_array_write(matrix.indices_0, count, i);
