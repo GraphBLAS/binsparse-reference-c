@@ -23,7 +23,7 @@ end
 
 tensortest(
   Tensor(
-    Dense(SparseList(SparseList(Element(0.0)))),
+    Dense(SparseList{Int32}(SparseList{Int32}(Element{0.0,Float64,Int32}()))),
     fsprand(10, 10, 10, 0.1)
   ),
   joinpath(test_files, "input1.bsp.h5"),
@@ -42,7 +42,7 @@ tensortest(
 
 tensortest(
   Tensor(
-    Dense(Dense(Dense(Element(0.0)))),
+    Dense(Dense(Dense(Element{0.0,Float64,Int32}()))),
     fsprand(10, 10, 10, 0.1)
   ),
   joinpath(test_files, "input3.bsp.h5"),
