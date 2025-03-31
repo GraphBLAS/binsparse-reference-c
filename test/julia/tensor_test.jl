@@ -57,3 +57,35 @@ tensortest(
   joinpath(test_files, "input4.bsp.h5"),
   joinpath(test_files, "output4.bsp.h5")
 )
+
+tensortest(
+  Tensor(
+    Dense(SparseList{Int32}(Element{0.0,Float64,Int32}())),
+    [
+      0 1 0 3;
+      1 0 0 4;
+    ]
+  ),
+  joinpath(test_files, "inputcsr.bsp.h5"),
+  joinpath(test_files, "outputcsr.bsp.h5")
+)
+tensortest(
+  Tensor(
+    Dense(SparseList{Int32}(Element{0.0,Float64,Int32}())),
+    fsprand(10, 10, 0.1)
+  ),
+  joinpath(test_files, "inputcsr2.bsp.h5"),
+  joinpath(test_files, "outputcsr2.bsp.h5")
+)
+
+tensortest(
+  Tensor(
+    Dense(Dense(Element(0.0))),
+    [
+      1 1 2 3;
+      6 1 5 4;
+    ]
+  ),
+  joinpath(test_files, "inputdense.bsp.h5"),
+  joinpath(test_files, "outputdense.bsp.h5")
+)

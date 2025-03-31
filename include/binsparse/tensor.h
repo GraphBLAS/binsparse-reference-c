@@ -23,7 +23,11 @@ typedef struct {
 // corresponds to BSP_TENSOR_DENSE
 typedef struct {
   int rank;
+  // pointers_to, while it will only ever point to one bsp_array_t, must be kept
+  // as a pointer (rather than a struct) because there are cases where it MUST
+  // be null.
   bsp_array_t* pointers_to;
+  // indices is supposed to be an array of bsp_array_t's.
   bsp_array_t* indices;
   bsp_level_t* child;
 } bsp_sparse_t;
