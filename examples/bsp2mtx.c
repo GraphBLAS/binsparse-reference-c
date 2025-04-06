@@ -21,7 +21,10 @@ int main(int argc, char** argv) {
   printf(" === Reading file... ===\n");
   bsp_matrix_t matrix = bsp_read_matrix(input_fname, NULL);
   printf(" === Done writing. ===\n");
-  matrix = bsp_convert_matrix(matrix, BSP_COO);
+  if (matrix.format != BSP_COO){
+    matrix = bsp_convert_matrix(matrix, BSP_COO);
+  }
+  
   printf(" === Writing to %s... ===\n", output_fname);
   bsp_mmwrite(output_fname, matrix);
   printf(" === Done writing. ===\n");
