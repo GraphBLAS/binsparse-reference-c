@@ -12,7 +12,7 @@ extern "C" {
 
 // TODO: make cJSON optional.
 
-#include<binsparse/tensor.h>
+#include <binsparse/tensor.h>
 #include <cJSON/cJSON.h>
 
 #ifdef BSP_USE_HDF5

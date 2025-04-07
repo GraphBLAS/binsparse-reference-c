@@ -123,6 +123,8 @@ static bsp_array_t bsp_get_tensor_values(bsp_tensor_t tensor) {
 
 static inline void bsp_destroy_tensor_t(bsp_tensor_t tensor) {
   bsp_destroy_level_t(tensor.level);
-  if (tensor.dims != NULL) free(tensor.dims);
-  if (tensor.transpose != NULL) free(tensor.transpose);
+  if (tensor.dims != NULL)
+    free(tensor.dims);
+  if (tensor.transpose != NULL)
+    free(tensor.transpose);
 }

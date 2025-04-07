@@ -1,10 +1,11 @@
-#include <binsparse/tensor.h>
 #include <binsparse/read_tensor.h>
+#include <binsparse/tensor.h>
 #include <binsparse/write_tensor.h>
 
 int main(int argc, char** argv) {
   if (argc < 3) {
-    fprintf(stderr, "usage: ./tensor_test [file_name.h5] [output_file_name.h5]\n");
+    fprintf(stderr,
+            "usage: ./tensor_test [file_name.h5] [output_file_name.h5]\n");
     return 1;
   }
   char* file_name = argv[1];
