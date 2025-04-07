@@ -143,7 +143,6 @@ bsp_matrix_t bsp_read_matrix_from_group(hid_t f) {
 
   bsp_matrix_format_t format = bsp_get_matrix_format(format_string);
 
-  // isn't this never true?
   assert(format != 0);
 
   matrix.format = format;
