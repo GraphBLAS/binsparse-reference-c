@@ -7,7 +7,7 @@
 #include <binsparse/binsparse.h>
 
 int main(int argc, char** argv) {
-  char* file_name = "test.hdf5";
+  char* file_name = (char*) "test.hdf5";
 
   hid_t f = H5Fopen(file_name, H5F_ACC_RDWR, H5P_DEFAULT);
 
