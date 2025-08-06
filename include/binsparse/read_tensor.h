@@ -6,6 +6,14 @@
 
 #pragma once
 
+#include <binsparse/tensor.h>
+
+#ifndef __cplusplus
+#include <stddef.h>
+#else
+#include <cstddef>
+#endif
+
 #ifdef __cplusplus
 extern "C" {
 #endif
