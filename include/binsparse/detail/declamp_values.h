@@ -42,7 +42,12 @@ static inline void bsp_matrix_declamp_values(bsp_matrix_t matrix) {
       real_value = bsp_suitesparse_declamp_impl_(real_value);
       imaginary_value = bsp_suitesparse_declamp_impl_(imaginary_value);
 
-      values[i] = real_value + 1j * imaginary_value;
+      double _Complex complex_value;
+
+      ((double*) &complex_value)[0] = real_value;
+      ((double*) &complex_value)[1] = imaginary_value;
+
+      values[i] = complex_value;
     }
   }
 }

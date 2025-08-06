@@ -26,19 +26,33 @@ jobs:
 
   gcc:
     runs-on: 'ubuntu-latest'
-    strategy:
-      matrix:
-        cxx: [gcc, clang]
-    name: ${{ matrix.cxx }}
     env:
-      CXX: ${{ matrix.cxx }}
+      CXX: g++-12
+      CC: gcc-12
     steps:
     - uses: actions/checkout@v4
     - name: CMake
       run: |
         sudo apt-get update
-        sudo apt-get install libhdf5-dev g++-12
-        CXX=g++-12 cmake -B build
+        sudo apt-get install libhdf5-dev $CXX $CC
+        cmake -B build
+    - name: Build
+      run: VERBOSE=true make -C build -j `nproc`
+    - name: Test
+      run: ctest --test-dir ./build/test/bash
+
+  clang:
+    runs-on: 'ubuntu-latest'
+    env:
+      CXX: clang++
+      CC: clang
+    steps:
+    - uses: actions/checkout@v4
+    - name: CMake
+      run: |
+        sudo apt-get update
+        sudo apt-get install libhdf5-dev clang
+        cmake -B build
     - name: Build
       run: VERBOSE=true make -C build -j `nproc`
     - name: Test
