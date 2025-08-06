@@ -38,8 +38,14 @@ jobs:
         cmake -B build
     - name: Build
       run: VERBOSE=true make -C build -j `nproc`
-    - name: Test
+    - name: Test-Matrix
       run: ctest --test-dir ./build/test/bash
+    - name: Install-Julia
+      run: curl -fsSL https://install.julialang.org | sh
+    - name: Install-Finch
+      run: julia -e 'using Pkg; Pkg.add("Finch")'
+    - name: Test-Tensor
+      run: ctest --test-dir ./build/test/julia
 
   clang:
     runs-on: 'ubuntu-latest'
@@ -55,5 +61,11 @@ jobs:
         cmake -B build
     - name: Build
       run: VERBOSE=true make -C build -j `nproc`
-    - name: Test
+    - name: Test-Matrix
       run: ctest --test-dir ./build/test/bash
+    - name: Install-Julia
+      run: curl -fsSL https://install.julialang.org | sh
+    - name: Install-Finch
+      run: julia -e 'using Pkg; Pkg.add("Finch")'
+    - name: Test-Tensor
+      run: ctest --test-dir ./build/test/julia
