@@ -4,7 +4,7 @@
 
 function(add_example example_name)
   add_executable(${example_name}-cpp ${example_name}.cpp)
-  target_link_libraries(${example_name}-cpp binsparse-rc)
+  target_link_libraries(${example_name}-cpp binsparse)
 endfunction()
 
 add_example(simple_matrix_write)
