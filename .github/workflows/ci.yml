@@ -42,15 +42,17 @@ jobs:
     - name: CMake
       run: |
         sudo apt-get update
-        sudo apt-get install libhdf5-dev $CXX $CC
+        sudo apt-get install libhdf5-dev gcc-12 g++-12 clang
         cmake -B build
     - name: Build
       run: VERBOSE=true make -C build -j `nproc`
-    - name: Test-Matrix
+    - name: Matrix Tests
       run: ctest --test-dir ./build/test/bash
-    - name: Install-Julia
+    - name: Install Julia
       run: curl -fsSL https://install.julialang.org | sh -s -- -y
-    - name: Install-Finch
-      run: julia -e 'using Pkg; Pkg.add("Finch")'
-    - name: Test-Tensor
+    - name: Disable Julia precompilation
+      run: julia -e 'using PrecompileTools, Preferences; set_preferences!(PrecompileTools, "precompile_workloads" => false; force=true)'
+    - name: Install Julia Packages
+      run: julia -e 'using Pkg; Pkg.add(["Finch", "HDF5"])'
+    - name: Tensor Tests
       run: ctest --test-dir ./build/test/julia
