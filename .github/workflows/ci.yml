@@ -51,7 +51,7 @@ jobs:
     - name: Install Julia
       run: curl -fsSL https://install.julialang.org | sh -s -- -y
     - name: Disable Julia precompilation
-      run: julia -e 'using Pkg; Pkg.add("PrecompileTools"); using PrecompileTools, Preferences; set_preferences!(PrecompileTools, "precompile_workloads" => false; force=true)'
+      run: julia -e 'using Pkg; Pkg.add(["PrecompileTools", "Preferences"]); using PrecompileTools, Preferences; set_preferences!(PrecompileTools, "precompile_workloads" => false; force=true)'
     - name: Install Julia Packages
       run: julia -e 'using Pkg; Pkg.add(["Finch", "HDF5"])'
     - name: Tensor Tests
