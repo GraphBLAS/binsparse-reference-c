@@ -23,12 +23,20 @@ jobs:
     - run: pip install -r requirements.txt
     - name: Checks
       uses: pre-commit/action@v3.0.0
-
-  gcc:
+  
+  build:
     runs-on: 'ubuntu-latest'
+    strategy:
+      matrix:
+        include:
+          - cc:  gcc-12
+            cxx: g++-12
+          - cc:  clang
+            cxx: clang++
+    name: ${{ matrix.cc }}
     env:
-      CXX: g++-12
-      CC: gcc-12
+      CC: ${{ matrix.cc }}
+      CXX: ${{ matrix.cxx }}
     steps:
     - uses: actions/checkout@v4
     - name: CMake
@@ -41,30 +49,7 @@ jobs:
     - name: Test-Matrix
       run: ctest --test-dir ./build/test/bash
     - name: Install-Julia
-      run: curl -fsSL https://install.julialang.org | sh
-    - name: Install-Finch
-      run: julia -e 'using Pkg; Pkg.add("Finch")'
-    - name: Test-Tensor
-      run: ctest --test-dir ./build/test/julia
-
-  clang:
-    runs-on: 'ubuntu-latest'
-    env:
-      CXX: clang++
-      CC: clang
-    steps:
-    - uses: actions/checkout@v4
-    - name: CMake
-      run: |
-        sudo apt-get update
-        sudo apt-get install libhdf5-dev clang
-        cmake -B build
-    - name: Build
-      run: VERBOSE=true make -C build -j `nproc`
-    - name: Test-Matrix
-      run: ctest --test-dir ./build/test/bash
-    - name: Install-Julia
-      run: curl -fsSL https://install.julialang.org | sh
+      run: curl -fsSL https://install.julialang.org | sh -s -- -y
     - name: Install-Finch
       run: julia -e 'using Pkg; Pkg.add("Finch")'
     - name: Test-Tensor
