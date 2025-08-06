@@ -1,3 +1,9 @@
+/*
+ * SPDX-FileCopyrightText: 2024 Binsparse Developers
+ *
+ * SPDX-License-Identifier: BSD-3-Clause
+ */
+
 #include <binsparse/read_tensor.h>
 #include <binsparse/tensor.h>
 #include <binsparse/write_tensor.h>
