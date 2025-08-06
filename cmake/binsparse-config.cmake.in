@@ -1,0 +1,14 @@
+# SPDX-FileCopyrightText: 2024 Binsparse Developers
+#
+# SPDX-License-Identifier: BSD-3-Clause
+
+@PACKAGE_INIT@
+
+include("${CMAKE_CURRENT_LIST_DIR}/binsparse-targets.cmake")
+check_required_components(binsparse)
+
+# Include dependencies
+include(CMakeFindDependencyMacro)
+find_dependency(HDF5 COMPONENTS C)
+
+# cJSON is bundled with binsparse, no need to find it externally

@@ -2,4 +2,4 @@
 #
 # SPDX-License-Identifier: BSD-3-Clause
 
-target_include_directories(binsparse-rc PUBLIC .)
+# No need for target_include_directories here - moved to main CMakeLists.txt
