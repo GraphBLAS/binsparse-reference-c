@@ -46,11 +46,6 @@ target_include_directories(${PROJECT_NAME}
         $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
         ${HDF5_INCLUDE_DIRS})
 
-if(CMAKE_PROJECT_NAME STREQUAL PROJECT_NAME)
-  add_subdirectory(examples)
-  add_subdirectory(test)
-endif()
-
 # Installation rules - these are always needed when the library is built
 install(TARGETS binsparse
         EXPORT binsparse-targets
@@ -87,3 +82,8 @@ install(FILES
     "${CMAKE_CURRENT_BINARY_DIR}/binsparse-config.cmake"
     "${CMAKE_CURRENT_BINARY_DIR}/binsparse-config-version.cmake"
     DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/binsparse)
+
+if(CMAKE_PROJECT_NAME STREQUAL PROJECT_NAME)
+  add_subdirectory(examples)
+  add_subdirectory(test)
+endif()

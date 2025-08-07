@@ -4,5 +4,7 @@
 
 target_sources(binsparse PRIVATE
   read_matrix.c
+  read_tensor.c
   write_matrix.c
+  write_tensor.c
 )
