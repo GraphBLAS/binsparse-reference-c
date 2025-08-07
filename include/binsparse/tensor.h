@@ -26,7 +26,7 @@ typedef struct {
   bsp_array_t values;
 } bsp_element_t;
 
-// corresponds to BSP_TENSOR_DENSE
+// corresponds to BSP_TENSOR_SPARSE
 typedef struct {
   int rank;
   // pointers_to, while it will only ever point to one bsp_array_t, must be kept
@@ -38,6 +38,7 @@ typedef struct {
   bsp_level_t* child;
 } bsp_sparse_t;
 
+// corresponds to BSP_TENSOR_DENSE
 typedef struct {
   int rank;
   bsp_level_t* child;
