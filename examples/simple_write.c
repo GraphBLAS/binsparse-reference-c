@@ -11,7 +11,13 @@ int main(int argc, char** argv) {
 
   hid_t f = H5Fcreate(file_name, H5F_ACC_TRUNC, H5P_DEFAULT, H5P_DEFAULT);
 
-  bsp_array_t array = bsp_construct_array_t(1000, BSP_INT32);
+  bsp_array_t array;
+  bsp_error_t error = bsp_construct_array_t(&array, 1000, BSP_INT32);
+  if (error != BSP_SUCCESS) {
+    printf("Error: Failed to allocate array\n");
+    H5Fclose(f);
+    return 1;
+  }
 
   int* values = (int*) array.data;
 
@@ -22,7 +28,7 @@ int main(int argc, char** argv) {
   bsp_write_array(f, "test", array, 0);
 
   H5Fclose(f);
-  bsp_destroy_array_t(array);
+  bsp_destroy_array_t(&array);
 
   return 0;
 }

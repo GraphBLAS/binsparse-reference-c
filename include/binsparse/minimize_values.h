@@ -24,8 +24,12 @@ static inline bsp_matrix_t bsp_matrix_minimize_values(bsp_matrix_t matrix) {
     }
 
     if (float32_representable) {
-      bsp_array_t new_values =
-          bsp_construct_array_t(matrix.values.size, BSP_FLOAT32);
+      bsp_array_t new_values;
+      bsp_error_t error =
+          bsp_construct_array_t(&new_values, matrix.values.size, BSP_FLOAT32);
+      if (error != BSP_SUCCESS) {
+        return matrix; // Return original matrix on error
+      }
 
       float* n_values = (float*) new_values.data;
 
@@ -33,7 +37,7 @@ static inline bsp_matrix_t bsp_matrix_minimize_values(bsp_matrix_t matrix) {
         n_values[i] = values[i];
       }
 
-      bsp_destroy_array_t(matrix.values);
+      bsp_destroy_array_t(&matrix.values);
       matrix.values = new_values;
     }
   } else if (matrix.values.type == BSP_INT64) {
@@ -78,8 +82,12 @@ static inline bsp_matrix_t bsp_matrix_minimize_values(bsp_matrix_t matrix) {
         value_type = BSP_INT64;
       }
     }
-    bsp_array_t new_values =
-        bsp_construct_array_t(matrix.values.size, value_type);
+    bsp_array_t new_values;
+    bsp_error_t error =
+        bsp_construct_array_t(&new_values, matrix.values.size, value_type);
+    if (error != BSP_SUCCESS) {
+      return matrix; // Return original matrix on error
+    }
 
     for (size_t i = 0; i < matrix.values.size; i++) {
       int64_t value;
@@ -87,7 +95,7 @@ static inline bsp_matrix_t bsp_matrix_minimize_values(bsp_matrix_t matrix) {
       bsp_array_write(new_values, i, value);
     }
 
-    bsp_destroy_array_t(matrix.values);
+    bsp_destroy_array_t(&matrix.values);
     matrix.values = new_values;
   } else if (matrix.values.type == BSP_COMPLEX_FLOAT64) {
     bool float32_representable = true;
@@ -101,8 +109,12 @@ static inline bsp_matrix_t bsp_matrix_minimize_values(bsp_matrix_t matrix) {
     }
 
     if (float32_representable) {
-      bsp_array_t new_values =
-          bsp_construct_array_t(matrix.values.size, BSP_COMPLEX_FLOAT32);
+      bsp_array_t new_values;
+      bsp_error_t error = bsp_construct_array_t(&new_values, matrix.values.size,
+                                                BSP_COMPLEX_FLOAT32);
+      if (error != BSP_SUCCESS) {
+        return matrix; // Return original matrix on error
+      }
 
       float _Complex* n_values = (float _Complex*) new_values.data;
 
@@ -110,7 +122,7 @@ static inline bsp_matrix_t bsp_matrix_minimize_values(bsp_matrix_t matrix) {
         n_values[i] = values[i];
       }
 
-      bsp_destroy_array_t(matrix.values);
+      bsp_destroy_array_t(&matrix.values);
       matrix.values = new_values;
     }
   }

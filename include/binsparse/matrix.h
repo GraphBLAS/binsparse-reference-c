@@ -39,10 +39,10 @@ static inline bsp_matrix_t bsp_construct_default_matrix_t() {
 }
 
 static inline void bsp_destroy_matrix_t(bsp_matrix_t matrix) {
-  bsp_destroy_array_t(matrix.values);
-  bsp_destroy_array_t(matrix.indices_0);
-  bsp_destroy_array_t(matrix.indices_1);
-  bsp_destroy_array_t(matrix.pointers_to_1);
+  bsp_destroy_array_t(&matrix.values);
+  bsp_destroy_array_t(&matrix.indices_0);
+  bsp_destroy_array_t(&matrix.indices_1);
+  bsp_destroy_array_t(&matrix.pointers_to_1);
 }
 
 static inline size_t bsp_matrix_nbytes(bsp_matrix_t mat) {

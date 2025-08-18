@@ -38,7 +38,11 @@ static inline bsp_matrix_t bsp_mmread_explicit_array(const char* file_path,
   matrix.ncols = metadata.ncols;
   matrix.nnz = matrix.nrows * matrix.ncols;
 
-  matrix.values = bsp_construct_array_t(matrix.nnz, value_type);
+  bsp_error_t error =
+      bsp_construct_array_t(&matrix.values, matrix.nnz, value_type);
+  if (error != BSP_SUCCESS) {
+    return matrix; // Return empty matrix on error
+  }
 
   matrix.format = BSP_DMAT;
 
@@ -135,14 +139,33 @@ bsp_mmread_explicit_coordinate(const char* file_path, bsp_type_t value_type,
   matrix.ncols = metadata.ncols;
   matrix.nnz = metadata.nnz;
 
-  matrix.indices_0 = bsp_construct_array_t(matrix.nnz, index_type);
-  matrix.indices_1 = bsp_construct_array_t(matrix.nnz, index_type);
+  bsp_error_t error =
+      bsp_construct_array_t(&matrix.indices_0, matrix.nnz, index_type);
+  if (error != BSP_SUCCESS) {
+    return matrix;
+  }
+
+  error = bsp_construct_array_t(&matrix.indices_1, matrix.nnz, index_type);
+  if (error != BSP_SUCCESS) {
+    bsp_destroy_array_t(&matrix.indices_0);
+    return matrix;
+  }
 
   if (mm_type == BSP_MM_PATTERN) {
-    matrix.values = bsp_construct_array_t(1, value_type);
+    error = bsp_construct_array_t(&matrix.values, 1, value_type);
+    if (error != BSP_SUCCESS) {
+      bsp_destroy_array_t(&matrix.indices_0);
+      bsp_destroy_array_t(&matrix.indices_1);
+      return matrix;
+    }
     bsp_array_write(matrix.values, 0, true);
   } else {
-    matrix.values = bsp_construct_array_t(matrix.nnz, value_type);
+    error = bsp_construct_array_t(&matrix.values, matrix.nnz, value_type);
+    if (error != BSP_SUCCESS) {
+      bsp_destroy_array_t(&matrix.indices_0);
+      bsp_destroy_array_t(&matrix.indices_1);
+      return matrix;
+    }
   }
 
   matrix.format = BSP_COO;
@@ -235,13 +258,29 @@ bsp_mmread_explicit_coordinate(const char* file_path, bsp_type_t value_type,
   qsort(indices, matrix.nnz, sizeof(size_t),
         bsp_coo_comparison_row_sort_operator_impl_);
 
-  bsp_array_t rowind = bsp_copy_construct_array_t(matrix.indices_0);
-  bsp_array_t colind = bsp_copy_construct_array_t(matrix.indices_1);
+  bsp_array_t rowind;
+  bsp_array_t colind;
+
+  error = bsp_copy_construct_array_t(&rowind, matrix.indices_0);
+  if (error != BSP_SUCCESS) {
+    return matrix;
+  }
+
+  error = bsp_copy_construct_array_t(&colind, matrix.indices_1);
+  if (error != BSP_SUCCESS) {
+    bsp_destroy_array_t(&rowind);
+    return matrix;
+  }
 
   bsp_array_t values;
 
   if (!matrix.is_iso) {
-    values = bsp_copy_construct_array_t(matrix.values);
+    error = bsp_copy_construct_array_t(&values, matrix.values);
+    if (error != BSP_SUCCESS) {
+      bsp_destroy_array_t(&rowind);
+      bsp_destroy_array_t(&colind);
+      return matrix;
+    }
   }
 
   for (size_t i = 0; i < matrix.nnz; i++) {
@@ -252,13 +291,13 @@ bsp_mmread_explicit_coordinate(const char* file_path, bsp_type_t value_type,
     }
   }
 
-  bsp_destroy_array_t(matrix.indices_0);
-  bsp_destroy_array_t(matrix.indices_1);
+  bsp_destroy_array_t(&matrix.indices_0);
+  bsp_destroy_array_t(&matrix.indices_1);
   matrix.indices_0 = rowind;
   matrix.indices_1 = colind;
 
   if (!matrix.is_iso) {
-    bsp_destroy_array_t(matrix.values);
+    bsp_destroy_array_t(&matrix.values);
     matrix.values = values;
   }
 

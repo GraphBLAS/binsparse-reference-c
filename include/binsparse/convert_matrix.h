@@ -37,17 +37,30 @@ static inline bsp_matrix_t bsp_convert_matrix(bsp_matrix_t matrix,
 
       bsp_type_t index_type = bsp_pick_integer_type(max_dim);
 
-      result.values = bsp_copy_construct_array_t(matrix.values);
+      bsp_error_t error =
+          bsp_copy_construct_array_t(&result.values, matrix.values);
+      if (error != BSP_SUCCESS) {
+        return bsp_construct_default_matrix_t();
+      }
 
       // There is a corner case with tall and skinny matrices where we need a
       // higher width for rowind.  In order to keep rowind/colind the same type,
       // we might upcast.
 
       if (index_type == matrix.indices_1.type) {
-        result.indices_1 = bsp_copy_construct_array_t(matrix.indices_1);
+        error = bsp_copy_construct_array_t(&result.indices_1, matrix.indices_1);
+        if (error != BSP_SUCCESS) {
+          bsp_destroy_array_t(&result.values);
+          return bsp_construct_default_matrix_t();
+        }
       } else {
-        result.indices_1 =
-            bsp_construct_array_t(matrix.indices_1.size, index_type);
+        error = bsp_construct_array_t(&result.indices_1, matrix.indices_1.size,
+                                      index_type);
+        if (error != BSP_SUCCESS) {
+          bsp_destroy_array_t(&result.values);
+          return bsp_construct_default_matrix_t();
+        }
+
         for (size_t i = 0; i < matrix.indices_1.size; i++) {
           size_t index;
           bsp_array_read(matrix.indices_1, i, index);
@@ -55,7 +68,12 @@ static inline bsp_matrix_t bsp_convert_matrix(bsp_matrix_t matrix,
         }
       }
 
-      result.indices_0 = bsp_construct_array_t(matrix.nnz, index_type);
+      error = bsp_construct_array_t(&result.indices_0, matrix.nnz, index_type);
+      if (error != BSP_SUCCESS) {
+        bsp_destroy_array_t(&result.values);
+        bsp_destroy_array_t(&result.indices_1);
+        return bsp_construct_default_matrix_t();
+      }
 
       for (size_t i = 0; i < matrix.nrows; i++) {
         size_t row_begin, row_end;
@@ -109,12 +127,26 @@ static inline bsp_matrix_t bsp_convert_matrix(bsp_matrix_t matrix,
         // indices can be copied exactly.  Values' type will not change, but
         // column indices might, thus the extra branch.
 
-        result.values = bsp_copy_construct_array_t(matrix.values);
+        bsp_error_t error =
+            bsp_copy_construct_array_t(&result.values, matrix.values);
+        if (error != BSP_SUCCESS) {
+          return bsp_construct_default_matrix_t();
+        }
 
         if (index_type == matrix.indices_1.type) {
-          result.indices_1 = bsp_copy_construct_array_t(matrix.indices_1);
+          error =
+              bsp_copy_construct_array_t(&result.indices_1, matrix.indices_1);
+          if (error != BSP_SUCCESS) {
+            bsp_destroy_array_t(&result.values);
+            return bsp_construct_default_matrix_t();
+          }
         } else {
-          result.indices_1 = bsp_construct_array_t(matrix.nnz, index_type);
+          error =
+              bsp_construct_array_t(&result.indices_1, matrix.nnz, index_type);
+          if (error != BSP_SUCCESS) {
+            bsp_destroy_array_t(&result.values);
+            return bsp_construct_default_matrix_t();
+          }
 
           for (size_t i = 0; i < matrix.nnz; i++) {
             size_t index;
@@ -123,8 +155,13 @@ static inline bsp_matrix_t bsp_convert_matrix(bsp_matrix_t matrix,
           }
         }
 
-        result.pointers_to_1 =
-            bsp_construct_array_t(matrix.nrows + 1, index_type);
+        error = bsp_construct_array_t(&result.pointers_to_1, matrix.nrows + 1,
+                                      index_type);
+        if (error != BSP_SUCCESS) {
+          bsp_destroy_array_t(&result.values);
+          bsp_destroy_array_t(&result.indices_1);
+          return bsp_construct_default_matrix_t();
+        }
 
         bsp_array_t rowptr = result.pointers_to_1;
 

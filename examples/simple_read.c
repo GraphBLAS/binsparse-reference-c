@@ -19,7 +19,7 @@ int main(int argc, char** argv) {
     printf("%lu: %d\n", i, values[i]);
   }
 
-  bsp_destroy_array_t(array);
+  bsp_destroy_array_t(&array);
   H5Fclose(f);
 
   return 0;

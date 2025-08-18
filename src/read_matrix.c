@@ -83,7 +83,10 @@ bsp_matrix_t bsp_read_matrix_from_group_parallel(hid_t f, int num_threads) {
     }
 
     if (strlen(type_string) >= 8 && strncmp(type_string, "complex[", 8) == 0) {
-      matrix.values = bsp_fp_array_to_complex(matrix.values);
+      bsp_error_t error = bsp_fp_array_to_complex(&matrix.values);
+      if (error != BSP_SUCCESS) {
+        // Handle error - for now just continue with original array
+      }
     }
   }
 
@@ -188,7 +191,10 @@ bsp_matrix_t bsp_read_matrix_from_group(hid_t f) {
     }
 
     if (strlen(type_string) >= 8 && strncmp(type_string, "complex[", 8) == 0) {
-      matrix.values = bsp_fp_array_to_complex(matrix.values);
+      bsp_error_t error = bsp_fp_array_to_complex(&matrix.values);
+      if (error != BSP_SUCCESS) {
+        // Handle error - for now just continue with original array
+      }
     }
   }
 

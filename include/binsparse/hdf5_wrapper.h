@@ -24,7 +24,10 @@
 static inline int bsp_write_array(hid_t f, const char* label, bsp_array_t array,
                                   int compression_level) {
   if (array.type == BSP_COMPLEX_FLOAT32 || array.type == BSP_COMPLEX_FLOAT64) {
-    array = bsp_complex_array_to_fp(array);
+    bsp_error_t error = bsp_complex_array_to_fp(&array);
+    if (error != BSP_SUCCESS) {
+      return -3; // Type conversion error
+    }
   }
 
   hsize_t hsize[1];
@@ -198,12 +201,21 @@ static inline bsp_array_t bsp_read_array(hid_t f, const char* label) {
 
   bsp_type_t type = bsp_get_bsp_type(hdf5_type);
 
-  bsp_array_t array = bsp_construct_array_t(dims[0], type);
+  bsp_array_t array = bsp_construct_default_array_t();
+  bsp_error_t error = bsp_construct_array_t(&array, dims[0], type);
+  if (error != BSP_SUCCESS) {
+    H5Dclose(dset);
+    H5Sclose(fspace);
+    return bsp_construct_default_array_t();
+  }
 
   herr_t status = H5Dread(dset, bsp_get_hdf5_native_type(type), H5S_ALL,
                           H5S_ALL, H5P_DEFAULT, array.data);
 
   if (status < 0) {
+    bsp_destroy_array_t(&array);
+    H5Dclose(dset);
+    H5Sclose(fspace);
     return bsp_construct_default_array_t();
   }
 

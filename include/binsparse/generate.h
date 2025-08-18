@@ -74,9 +74,27 @@ static inline bsp_matrix_t bsp_generate_coo(size_t m, size_t n, size_t nnz,
   matrix.nrows = m;
   matrix.ncols = n;
   matrix.nnz = nnz;
-  matrix.values = bsp_construct_array_t(nnz, value_type);
-  matrix.indices_0 = bsp_construct_array_t(nnz, index_type);
-  matrix.indices_1 = bsp_construct_array_t(nnz, index_type);
+
+  bsp_error_t error;
+  error = bsp_construct_array_t(&matrix.values, nnz, value_type);
+  if (error != BSP_SUCCESS) {
+    // Return empty matrix on error
+    return matrix;
+  }
+
+  error = bsp_construct_array_t(&matrix.indices_0, nnz, index_type);
+  if (error != BSP_SUCCESS) {
+    bsp_destroy_array_t(&matrix.values);
+    return matrix;
+  }
+
+  error = bsp_construct_array_t(&matrix.indices_1, nnz, index_type);
+  if (error != BSP_SUCCESS) {
+    bsp_destroy_array_t(&matrix.values);
+    bsp_destroy_array_t(&matrix.indices_0);
+    return matrix;
+  }
+
   matrix.format = BSP_COO;
 
   bsp_array_fill_random(matrix.values, 100);

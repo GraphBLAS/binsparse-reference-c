@@ -11,6 +11,7 @@
 #include <binsparse/array.h>
 #include <binsparse/convert_matrix.h>
 #include <binsparse/detail/detail.h>
+#include <binsparse/error.h>
 #include <binsparse/generate.h>
 #include <binsparse/hdf5_wrapper.h>
 #include <binsparse/matrix.h>

@@ -6,9 +6,9 @@
 
 #pragma once
 
-#include <assert.h>
 #include <binsparse/detail/allocator.h>
 #include <binsparse/detail/shm_tools.h>
+#include <binsparse/error.h>
 #include <binsparse/types.h>
 #include <stdlib.h>
 #include <string.h>
@@ -28,63 +28,70 @@ static inline bsp_array_t bsp_construct_default_array_t() {
   return array;
 }
 
-static inline bsp_array_t bsp_construct_array_t(size_t size, bsp_type_t type) {
+static inline bsp_error_t bsp_construct_array_t(bsp_array_t* array, size_t size,
+                                                bsp_type_t type) {
   size_t byte_size = size * bsp_type_size(type);
 
-  bsp_array_t array;
-  array.allocator = bsp_default_allocator;
-  array.data = array.allocator.malloc(byte_size);
-  assert(array.data != NULL);
-  array.size = size;
-  array.type = type;
+  array->allocator = bsp_default_allocator;
+  array->data = array->allocator.malloc(byte_size);
 
-  return array;
-}
-
-static inline bsp_array_t bsp_copy_construct_array_t(bsp_array_t other) {
-  bsp_array_t array = bsp_construct_array_t(other.size, other.type);
-  memcpy(array.data, other.data, other.size * bsp_type_size(other.type));
-
-  return array;
-}
-
-static inline bsp_array_t bsp_complex_array_to_fp(bsp_array_t other) {
-  assert(other.type == BSP_COMPLEX_FLOAT32 ||
-         other.type == BSP_COMPLEX_FLOAT64);
-
-  bsp_array_t array;
-  array.data = other.data;
-  array.size = other.size * 2;
-  array.allocator = other.allocator;
-
-  if (other.type == BSP_COMPLEX_FLOAT32) {
-    array.type = BSP_FLOAT32;
-  } else {
-    array.type = BSP_FLOAT64;
+  if (array->data == NULL) {
+    return BSP_ERROR_MEMORY;
   }
 
-  return array;
+  array->size = size;
+  array->type = type;
+
+  return BSP_SUCCESS;
 }
 
-static inline bsp_array_t bsp_fp_array_to_complex(bsp_array_t other) {
-  assert(other.type == BSP_FLOAT32 || other.type == BSP_FLOAT64);
-
-  bsp_array_t array;
-  array.data = other.data;
-  array.size = other.size / 2;
-  array.allocator = other.allocator;
-
-  if (other.type == BSP_FLOAT32) {
-    array.type = BSP_COMPLEX_FLOAT32;
-  } else {
-    array.type = BSP_COMPLEX_FLOAT64;
+static inline bsp_error_t bsp_copy_construct_array_t(bsp_array_t* array,
+                                                     bsp_array_t other) {
+  bsp_error_t error = bsp_construct_array_t(array, other.size, other.type);
+  if (error != BSP_SUCCESS) {
+    return error;
   }
 
-  return array;
+  memcpy(array->data, other.data, other.size * bsp_type_size(other.type));
+
+  return BSP_SUCCESS;
 }
 
-static inline void bsp_destroy_array_t(bsp_array_t array) {
-  array.allocator.free(array.data);
+static inline bsp_error_t bsp_complex_array_to_fp(bsp_array_t* array) {
+  if (array->type != BSP_COMPLEX_FLOAT32 &&
+      array->type != BSP_COMPLEX_FLOAT64) {
+    return BSP_ERROR_TYPE;
+  }
+
+  array->size = array->size * 2;
+
+  if (array->type == BSP_COMPLEX_FLOAT32) {
+    array->type = BSP_FLOAT32;
+  } else {
+    array->type = BSP_FLOAT64;
+  }
+
+  return BSP_SUCCESS;
+}
+
+static inline bsp_error_t bsp_fp_array_to_complex(bsp_array_t* array) {
+  if (array->type != BSP_FLOAT32 && array->type != BSP_FLOAT64) {
+    return BSP_ERROR_TYPE;
+  }
+
+  if (array->type == BSP_FLOAT32) {
+    array->type = BSP_COMPLEX_FLOAT32;
+  } else {
+    array->type = BSP_COMPLEX_FLOAT64;
+  }
+
+  array->size = array->size / 2;
+
+  return BSP_SUCCESS;
+}
+
+static inline void bsp_destroy_array_t(bsp_array_t* array) {
+  array->allocator.free(array->data);
 }
 
 static inline bool bsp_array_equal(bsp_array_t x, bsp_array_t y) {
