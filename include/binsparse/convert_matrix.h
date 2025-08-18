@@ -20,7 +20,8 @@ static inline bsp_matrix_t bsp_convert_matrix(bsp_matrix_t matrix,
     // *Convert to COO* from another format.
     if (matrix.format == BSP_CSR) {
       // Convert CSR -> COOR
-      bsp_matrix_t result = bsp_construct_default_matrix_t();
+      bsp_matrix_t result;
+      bsp_construct_default_matrix_t(&result);
 
       result.format = BSP_COOR;
 
@@ -40,7 +41,9 @@ static inline bsp_matrix_t bsp_convert_matrix(bsp_matrix_t matrix,
       bsp_error_t error =
           bsp_copy_construct_array_t(&result.values, matrix.values);
       if (error != BSP_SUCCESS) {
-        return bsp_construct_default_matrix_t();
+        bsp_matrix_t empty_result;
+        bsp_construct_default_matrix_t(&empty_result);
+        return empty_result;
       }
 
       // There is a corner case with tall and skinny matrices where we need a
@@ -51,14 +54,18 @@ static inline bsp_matrix_t bsp_convert_matrix(bsp_matrix_t matrix,
         error = bsp_copy_construct_array_t(&result.indices_1, matrix.indices_1);
         if (error != BSP_SUCCESS) {
           bsp_destroy_array_t(&result.values);
-          return bsp_construct_default_matrix_t();
+          bsp_matrix_t empty_result;
+          bsp_construct_default_matrix_t(&empty_result);
+          return empty_result;
         }
       } else {
         error = bsp_construct_array_t(&result.indices_1, matrix.indices_1.size,
                                       index_type);
         if (error != BSP_SUCCESS) {
           bsp_destroy_array_t(&result.values);
-          return bsp_construct_default_matrix_t();
+          bsp_matrix_t empty_result;
+          bsp_construct_default_matrix_t(&empty_result);
+          return empty_result;
         }
 
         for (size_t i = 0; i < matrix.indices_1.size; i++) {
@@ -72,7 +79,9 @@ static inline bsp_matrix_t bsp_convert_matrix(bsp_matrix_t matrix,
       if (error != BSP_SUCCESS) {
         bsp_destroy_array_t(&result.values);
         bsp_destroy_array_t(&result.indices_1);
-        return bsp_construct_default_matrix_t();
+        bsp_matrix_t empty_result;
+        bsp_construct_default_matrix_t(&empty_result);
+        return empty_result;
       }
 
       for (size_t i = 0; i < matrix.nrows; i++) {
@@ -95,13 +104,14 @@ static inline bsp_matrix_t bsp_convert_matrix(bsp_matrix_t matrix,
     if (matrix.format != BSP_COOR) {
       bsp_matrix_t intermediate = bsp_convert_matrix(matrix, BSP_COOR);
       bsp_matrix_t result = bsp_convert_matrix(intermediate, format);
-      bsp_destroy_matrix_t(intermediate);
+      bsp_destroy_matrix_t(&intermediate);
       return result;
     } else {
       if (format == BSP_CSR) {
         // Convert COOR -> CSR
 
-        bsp_matrix_t result = bsp_construct_default_matrix_t();
+        bsp_matrix_t result;
+        bsp_construct_default_matrix_t(&result);
 
         result.format = BSP_CSR;
 
@@ -130,7 +140,9 @@ static inline bsp_matrix_t bsp_convert_matrix(bsp_matrix_t matrix,
         bsp_error_t error =
             bsp_copy_construct_array_t(&result.values, matrix.values);
         if (error != BSP_SUCCESS) {
-          return bsp_construct_default_matrix_t();
+          bsp_matrix_t empty_result;
+          bsp_construct_default_matrix_t(&empty_result);
+          return empty_result;
         }
 
         if (index_type == matrix.indices_1.type) {
@@ -138,14 +150,18 @@ static inline bsp_matrix_t bsp_convert_matrix(bsp_matrix_t matrix,
               bsp_copy_construct_array_t(&result.indices_1, matrix.indices_1);
           if (error != BSP_SUCCESS) {
             bsp_destroy_array_t(&result.values);
-            return bsp_construct_default_matrix_t();
+            bsp_matrix_t empty_result;
+            bsp_construct_default_matrix_t(&empty_result);
+            return empty_result;
           }
         } else {
           error =
               bsp_construct_array_t(&result.indices_1, matrix.nnz, index_type);
           if (error != BSP_SUCCESS) {
             bsp_destroy_array_t(&result.values);
-            return bsp_construct_default_matrix_t();
+            bsp_matrix_t empty_result;
+            bsp_construct_default_matrix_t(&empty_result);
+            return empty_result;
           }
 
           for (size_t i = 0; i < matrix.nnz; i++) {
@@ -160,7 +176,9 @@ static inline bsp_matrix_t bsp_convert_matrix(bsp_matrix_t matrix,
         if (error != BSP_SUCCESS) {
           bsp_destroy_array_t(&result.values);
           bsp_destroy_array_t(&result.indices_1);
-          return bsp_construct_default_matrix_t();
+          bsp_matrix_t empty_result;
+          bsp_construct_default_matrix_t(&empty_result);
+          return empty_result;
         }
 
         bsp_array_t rowptr = result.pointers_to_1;

@@ -32,7 +32,8 @@ static inline bsp_matrix_t bsp_mmread_explicit_array(const char* file_path,
     assert(false);
   }
 
-  bsp_matrix_t matrix = bsp_construct_default_matrix_t();
+  bsp_matrix_t matrix;
+  bsp_construct_default_matrix_t(&matrix);
 
   matrix.nrows = metadata.nrows;
   matrix.ncols = metadata.ncols;
@@ -129,7 +130,8 @@ bsp_mmread_explicit_coordinate(const char* file_path, bsp_type_t value_type,
     assert(false);
   }
 
-  bsp_matrix_t matrix = bsp_construct_default_matrix_t();
+  bsp_matrix_t matrix;
+  bsp_construct_default_matrix_t(&matrix);
 
   if (mm_type == BSP_MM_PATTERN) {
     matrix.is_iso = true;

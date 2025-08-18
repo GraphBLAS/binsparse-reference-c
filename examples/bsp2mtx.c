@@ -29,7 +29,7 @@ int main(int argc, char** argv) {
   bsp_mmwrite(output_fname, matrix);
   printf(" === Done writing. ===\n");
 
-  bsp_destroy_matrix_t(matrix);
+  bsp_destroy_matrix_t(&matrix);
 
   return 0;
 }

@@ -84,13 +84,17 @@ static inline bsp_array_t bsp_read_array_parallel(hid_t f, const char* label,
   hid_t dset = H5Dopen2(f, label, H5P_DEFAULT);
 
   if (dset == H5I_INVALID_HID) {
-    return bsp_construct_default_array_t();
+    bsp_array_t empty_array;
+    bsp_construct_default_array_t(&empty_array);
+    return empty_array;
   }
 
   hid_t fspace = H5Dget_space(dset);
 
   if (fspace == H5I_INVALID_HID) {
-    return bsp_construct_default_array_t();
+    bsp_array_t empty_array;
+    bsp_construct_default_array_t(&empty_array);
+    return empty_array;
   }
 
   hsize_t dims[3];
@@ -98,7 +102,9 @@ static inline bsp_array_t bsp_read_array_parallel(hid_t f, const char* label,
   int r = H5Sget_simple_extent_dims(fspace, dims, NULL);
 
   if (r < 0) {
-    return bsp_construct_default_array_t();
+    bsp_array_t empty_array;
+    bsp_construct_default_array_t(&empty_array);
+    return empty_array;
   }
 
   hid_t hdf5_type = H5Dget_type(dset);
@@ -180,13 +186,17 @@ static inline bsp_array_t bsp_read_array(hid_t f, const char* label) {
   hid_t dset = H5Dopen2(f, label, H5P_DEFAULT);
 
   if (dset == H5I_INVALID_HID) {
-    return bsp_construct_default_array_t();
+    bsp_array_t empty_array;
+    bsp_construct_default_array_t(&empty_array);
+    return empty_array;
   }
 
   hid_t fspace = H5Dget_space(dset);
 
   if (fspace == H5I_INVALID_HID) {
-    return bsp_construct_default_array_t();
+    bsp_array_t empty_array;
+    bsp_construct_default_array_t(&empty_array);
+    return empty_array;
   }
 
   hsize_t dims[3];
@@ -194,19 +204,26 @@ static inline bsp_array_t bsp_read_array(hid_t f, const char* label) {
   int r = H5Sget_simple_extent_dims(fspace, dims, NULL);
 
   if (r < 0) {
-    return bsp_construct_default_array_t();
+    bsp_array_t empty_array;
+    bsp_construct_default_array_t(&empty_array);
+    return empty_array;
   }
 
   hid_t hdf5_type = H5Dget_type(dset);
 
   bsp_type_t type = bsp_get_bsp_type(hdf5_type);
 
-  bsp_array_t array = bsp_construct_default_array_t();
+  bsp_array_t array;
+  bsp_construct_default_array_t(&array);
+
   bsp_error_t error = bsp_construct_array_t(&array, dims[0], type);
   if (error != BSP_SUCCESS) {
+    bsp_destroy_array_t(&array);
     H5Dclose(dset);
     H5Sclose(fspace);
-    return bsp_construct_default_array_t();
+    bsp_array_t empty_array;
+    bsp_construct_default_array_t(&empty_array);
+    return empty_array;
   }
 
   herr_t status = H5Dread(dset, bsp_get_hdf5_native_type(type), H5S_ALL,
@@ -216,7 +233,9 @@ static inline bsp_array_t bsp_read_array(hid_t f, const char* label) {
     bsp_destroy_array_t(&array);
     H5Dclose(dset);
     H5Sclose(fspace);
-    return bsp_construct_default_array_t();
+    bsp_array_t empty_array;
+    bsp_construct_default_array_t(&empty_array);
+    return empty_array;
   }
 
   H5Dclose(dset);

@@ -20,12 +20,11 @@ typedef struct bsp_array_t {
   bsp_allocator_t allocator;
 } bsp_array_t;
 
-static inline bsp_array_t bsp_construct_default_array_t() {
-  bsp_array_t array;
-  array.data = NULL;
-  array.size = 0;
-  array.allocator = bsp_default_allocator;
-  return array;
+static inline bsp_error_t bsp_construct_default_array_t(bsp_array_t* array) {
+  array->data = NULL;
+  array->size = 0;
+  array->allocator = bsp_default_allocator;
+  return BSP_SUCCESS;
 }
 
 static inline bsp_error_t bsp_construct_array_t(bsp_array_t* array, size_t size,

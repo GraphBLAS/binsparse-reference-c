@@ -12,7 +12,8 @@
 
 #if __STDC_VERSION__ >= 201112L
 bsp_matrix_t bsp_read_matrix_from_group_parallel(hid_t f, int num_threads) {
-  bsp_matrix_t matrix = bsp_construct_default_matrix_t();
+  bsp_matrix_t matrix;
+  bsp_construct_default_matrix_t(&matrix);
 
   char* json_string = bsp_read_attribute(f, (char*) "binsparse");
 
@@ -120,7 +121,8 @@ bsp_matrix_t bsp_read_matrix_from_group_parallel(hid_t f, int num_threads) {
 #endif
 
 bsp_matrix_t bsp_read_matrix_from_group(hid_t f) {
-  bsp_matrix_t matrix = bsp_construct_default_matrix_t();
+  bsp_matrix_t matrix;
+  bsp_construct_default_matrix_t(&matrix);
 
   char* json_string = bsp_read_attribute(f, (char*) "binsparse");
 

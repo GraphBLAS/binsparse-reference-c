@@ -151,7 +151,7 @@ int main(int argc, char** argv) {
   if (format != BSP_COOR) {
     begin = gettime();
     bsp_matrix_t converted_matrix = bsp_convert_matrix(matrix, format);
-    bsp_destroy_matrix_t(matrix);
+    bsp_destroy_matrix_t(&matrix);
     matrix = converted_matrix;
     end = gettime();
     duration = end - begin;
@@ -170,7 +170,7 @@ int main(int argc, char** argv) {
   printf("%lf seconds writing Binsparse file...\n", duration);
   printf(" === Done writing. ===\n");
 
-  bsp_destroy_matrix_t(matrix);
+  bsp_destroy_matrix_t(&matrix);
 
   return 0;
 }

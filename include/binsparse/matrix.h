@@ -7,6 +7,7 @@
 #pragma once
 
 #include <binsparse/array.h>
+#include <binsparse/error.h>
 #include <binsparse/matrix_formats.h>
 #include <binsparse/structure.h>
 #include <stdbool.h>
@@ -26,23 +27,21 @@ typedef struct bsp_matrix_t {
   bsp_structure_t structure;
 } bsp_matrix_t;
 
-static inline bsp_matrix_t bsp_construct_default_matrix_t() {
-  bsp_matrix_t mat;
-  mat.values = bsp_construct_default_array_t();
-  mat.indices_0 = bsp_construct_default_array_t();
-  mat.indices_1 = bsp_construct_default_array_t();
-  mat.pointers_to_1 = bsp_construct_default_array_t();
-  mat.nrows = mat.ncols = mat.nnz = 0;
-  mat.is_iso = false;
-  mat.structure = BSP_GENERAL;
-  return mat;
+static inline void bsp_construct_default_matrix_t(bsp_matrix_t* matrix) {
+  bsp_construct_default_array_t(&matrix->values);
+  bsp_construct_default_array_t(&matrix->indices_0);
+  bsp_construct_default_array_t(&matrix->indices_1);
+  bsp_construct_default_array_t(&matrix->pointers_to_1);
+  matrix->nrows = matrix->ncols = matrix->nnz = 0;
+  matrix->is_iso = false;
+  matrix->structure = BSP_GENERAL;
 }
 
-static inline void bsp_destroy_matrix_t(bsp_matrix_t matrix) {
-  bsp_destroy_array_t(&matrix.values);
-  bsp_destroy_array_t(&matrix.indices_0);
-  bsp_destroy_array_t(&matrix.indices_1);
-  bsp_destroy_array_t(&matrix.pointers_to_1);
+static inline void bsp_destroy_matrix_t(bsp_matrix_t* matrix) {
+  bsp_destroy_array_t(&matrix->values);
+  bsp_destroy_array_t(&matrix->indices_0);
+  bsp_destroy_array_t(&matrix->indices_1);
+  bsp_destroy_array_t(&matrix->pointers_to_1);
 }
 
 static inline size_t bsp_matrix_nbytes(bsp_matrix_t mat) {

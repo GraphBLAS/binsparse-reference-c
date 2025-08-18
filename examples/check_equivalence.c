@@ -128,13 +128,13 @@ int main(int argc, char** argv) {
   if (matrix1.format != matrix2.format) {
     if (matrix1.format != BSP_COOR) {
       bsp_matrix_t intermediate = bsp_convert_matrix(matrix1, BSP_COOR);
-      bsp_destroy_matrix_t(matrix1);
+      bsp_destroy_matrix_t(&matrix1);
       matrix1 = intermediate;
     }
 
     if (matrix2.format != BSP_COOR) {
       bsp_matrix_t intermediate = bsp_convert_matrix(matrix2, BSP_COOR);
-      bsp_destroy_matrix_t(matrix2);
+      bsp_destroy_matrix_t(&matrix2);
       matrix2 = intermediate;
     }
   }
