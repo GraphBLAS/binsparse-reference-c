@@ -32,7 +32,11 @@ char* key_with_index(const char* key, size_t index) {
 bsp_tensor_t bsp_read_tensor_from_group(hid_t f) {
   bsp_tensor_t tensor = bsp_construct_default_tensor_t();
 
-  char* json_string = bsp_read_attribute(f, (char*) "binsparse");
+  char* json_string;
+  bsp_error_t error = bsp_read_attribute(&json_string, f, (char*) "binsparse");
+  if (error != BSP_SUCCESS) {
+    return tensor;
+  }
 
   cJSON* j = cJSON_Parse(json_string);
 
@@ -103,7 +107,12 @@ bsp_tensor_t bsp_read_tensor_from_group(hid_t f) {
 
     // base case: working with an element.
     if (strcmp(type, "element") == 0) {
-      bsp_array_t values = bsp_read_array(f, (char*) "values");
+      bsp_array_t values;
+      bsp_error_t error = bsp_read_array(&values, f, (char*) "values");
+      if (error != BSP_SUCCESS) {
+        free(json_string);
+        return tensor;
+      }
       cur_level->kind = BSP_TENSOR_ELEMENT;
       bsp_element_t* data = malloc(sizeof(bsp_element_t));
       data->values = values;
@@ -136,7 +145,12 @@ bsp_tensor_t bsp_read_tensor_from_group(hid_t f) {
       if (depth != 0) {
         char* pointers_key = key_with_index("pointers_to_", depth);
         data->pointers_to = malloc(sizeof(bsp_array_t));
-        *data->pointers_to = bsp_read_array(f, pointers_key);
+        error = bsp_read_array(data->pointers_to, f, pointers_key);
+        if (error != BSP_SUCCESS) {
+          free(pointers_key);
+          free(json_string);
+          return tensor;
+        }
         free(pointers_key);
       } else {
         data->pointers_to = NULL;
@@ -146,7 +160,12 @@ bsp_tensor_t bsp_read_tensor_from_group(hid_t f) {
       data->indices = malloc(rank * sizeof(bsp_array_t));
       for (int idx = 0; idx < rank; idx++) {
         char* indices_key = key_with_index("indices_", depth + idx);
-        data->indices[idx] = bsp_read_array(f, indices_key);
+        error = bsp_read_array(&data->indices[idx], f, indices_key);
+        if (error != BSP_SUCCESS) {
+          free(indices_key);
+          free(json_string);
+          return tensor;
+        }
         free(indices_key);
       }
 

@@ -12,12 +12,7 @@ int main(int argc, char** argv) {
   hid_t f = H5Fcreate(file_name, H5F_ACC_TRUNC, H5P_DEFAULT, H5P_DEFAULT);
 
   bsp_array_t array;
-  bsp_error_t error = bsp_construct_array_t(&array, 1000, BSP_INT32);
-  if (error != BSP_SUCCESS) {
-    printf("Error: Failed to allocate array\n");
-    H5Fclose(f);
-    return 1;
-  }
+  bsp_construct_array_t(&array, 1000, BSP_INT32);
 
   int* values = (int*) array.data;
 

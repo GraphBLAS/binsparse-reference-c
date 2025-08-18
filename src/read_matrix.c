@@ -15,7 +15,11 @@ bsp_matrix_t bsp_read_matrix_from_group_parallel(hid_t f, int num_threads) {
   bsp_matrix_t matrix;
   bsp_construct_default_matrix_t(&matrix);
 
-  char* json_string = bsp_read_attribute(f, (char*) "binsparse");
+  char* json_string;
+  bsp_error_t error = bsp_read_attribute(&json_string, f, (char*) "binsparse");
+  if (error != BSP_SUCCESS) {
+    return matrix;
+  }
 
   cJSON* j = cJSON_Parse(json_string);
 
@@ -73,7 +77,12 @@ bsp_matrix_t bsp_read_matrix_from_group_parallel(hid_t f, int num_threads) {
   assert(data_types_ != NULL);
 
   if (cJSON_HasObjectItem(data_types_, "values")) {
-    matrix.values = bsp_read_array_parallel(f, (char*) "values", num_threads);
+    error = bsp_read_array_parallel(&matrix.values, f, (char*) "values",
+                                    num_threads);
+    if (error != BSP_SUCCESS) {
+      free(json_string);
+      return matrix;
+    }
 
     cJSON* value_type = cJSON_GetObjectItemCaseSensitive(data_types_, "values");
     char* type_string = cJSON_GetStringValue(value_type);
@@ -92,18 +101,36 @@ bsp_matrix_t bsp_read_matrix_from_group_parallel(hid_t f, int num_threads) {
   }
 
   if (cJSON_HasObjectItem(data_types_, "indices_0")) {
-    matrix.indices_0 =
-        bsp_read_array_parallel(f, (char*) "indices_0", num_threads);
+    error = bsp_read_array_parallel(&matrix.indices_0, f, (char*) "indices_0",
+                                    num_threads);
+    if (error != BSP_SUCCESS) {
+      free(json_string);
+      bsp_destroy_array_t(&matrix.values);
+      return matrix;
+    }
   }
 
   if (cJSON_HasObjectItem(data_types_, "indices_1")) {
-    matrix.indices_1 =
-        bsp_read_array_parallel(f, (char*) "indices_1", num_threads);
+    error = bsp_read_array_parallel(&matrix.indices_1, f, (char*) "indices_1",
+                                    num_threads);
+    if (error != BSP_SUCCESS) {
+      free(json_string);
+      bsp_destroy_array_t(&matrix.values);
+      bsp_destroy_array_t(&matrix.indices_0);
+      return matrix;
+    }
   }
 
   if (cJSON_HasObjectItem(data_types_, "pointers_to_1")) {
-    matrix.pointers_to_1 =
-        bsp_read_array_parallel(f, (char*) "pointers_to_1", num_threads);
+    error = bsp_read_array_parallel(&matrix.pointers_to_1, f,
+                                    (char*) "pointers_to_1", num_threads);
+    if (error != BSP_SUCCESS) {
+      free(json_string);
+      bsp_destroy_array_t(&matrix.values);
+      bsp_destroy_array_t(&matrix.indices_0);
+      bsp_destroy_array_t(&matrix.indices_1);
+      return matrix;
+    }
   }
 
   if (cJSON_HasObjectItem(binsparse, "structure")) {
@@ -124,7 +151,11 @@ bsp_matrix_t bsp_read_matrix_from_group(hid_t f) {
   bsp_matrix_t matrix;
   bsp_construct_default_matrix_t(&matrix);
 
-  char* json_string = bsp_read_attribute(f, (char*) "binsparse");
+  char* json_string;
+  bsp_error_t error = bsp_read_attribute(&json_string, f, (char*) "binsparse");
+  if (error != BSP_SUCCESS) {
+    return matrix;
+  }
 
   cJSON* j = cJSON_Parse(json_string);
 
@@ -182,7 +213,11 @@ bsp_matrix_t bsp_read_matrix_from_group(hid_t f) {
   assert(data_types_ != NULL);
 
   if (cJSON_HasObjectItem(data_types_, "values")) {
-    matrix.values = bsp_read_array(f, (char*) "values");
+    error = bsp_read_array(&matrix.values, f, (char*) "values");
+    if (error != BSP_SUCCESS) {
+      free(json_string);
+      return matrix;
+    }
 
     cJSON* value_type = cJSON_GetObjectItemCaseSensitive(data_types_, "values");
     char* type_string = cJSON_GetStringValue(value_type);
@@ -201,15 +236,33 @@ bsp_matrix_t bsp_read_matrix_from_group(hid_t f) {
   }
 
   if (cJSON_HasObjectItem(data_types_, "indices_0")) {
-    matrix.indices_0 = bsp_read_array(f, (char*) "indices_0");
+    error = bsp_read_array(&matrix.indices_0, f, (char*) "indices_0");
+    if (error != BSP_SUCCESS) {
+      free(json_string);
+      bsp_destroy_array_t(&matrix.values);
+      return matrix;
+    }
   }
 
   if (cJSON_HasObjectItem(data_types_, "indices_1")) {
-    matrix.indices_1 = bsp_read_array(f, (char*) "indices_1");
+    error = bsp_read_array(&matrix.indices_1, f, (char*) "indices_1");
+    if (error != BSP_SUCCESS) {
+      free(json_string);
+      bsp_destroy_array_t(&matrix.values);
+      bsp_destroy_array_t(&matrix.indices_0);
+      return matrix;
+    }
   }
 
   if (cJSON_HasObjectItem(data_types_, "pointers_to_1")) {
-    matrix.pointers_to_1 = bsp_read_array(f, (char*) "pointers_to_1");
+    error = bsp_read_array(&matrix.pointers_to_1, f, (char*) "pointers_to_1");
+    if (error != BSP_SUCCESS) {
+      free(json_string);
+      bsp_destroy_array_t(&matrix.values);
+      bsp_destroy_array_t(&matrix.indices_0);
+      bsp_destroy_array_t(&matrix.indices_1);
+      return matrix;
+    }
   }
 
   if (cJSON_HasObjectItem(binsparse, "structure")) {

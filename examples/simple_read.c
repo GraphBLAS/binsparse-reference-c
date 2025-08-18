@@ -11,7 +11,13 @@ int main(int argc, char** argv) {
 
   hid_t f = H5Fopen(file_name, H5F_ACC_RDWR, H5P_DEFAULT);
 
-  bsp_array_t array = bsp_read_array(f, "test");
+  bsp_array_t array;
+  bsp_error_t error = bsp_read_array(&array, f, "test");
+  if (error != BSP_SUCCESS) {
+    printf("Error reading array: %s\n", bsp_get_error_string(error));
+    H5Fclose(f);
+    return 1;
+  }
 
   int* values = (int*) array.data;
 
