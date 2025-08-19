@@ -203,6 +203,11 @@ int main(int argc, char** argv) {
     return 9;
   }
 
+  bsp_destroy_matrix_t(&matrix1);
+  bsp_destroy_matrix_t(&matrix2);
+  bsp_destroy_fdataset_info_t(&info1);
+  bsp_destroy_fdataset_info_t(&info2);
+
   printf("The files are equivalent.\n");
   printf("OK!\n");
 

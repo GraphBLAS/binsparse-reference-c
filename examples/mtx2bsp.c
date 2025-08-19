@@ -171,6 +171,9 @@ int main(int argc, char** argv) {
   printf(" === Done writing. ===\n");
 
   bsp_destroy_matrix_t(&matrix);
+  bsp_destroy_mm_metadata(&m);
+  bsp_destroy_fdataset_info_t(&info2);
+  cJSON_Delete(user_json);
 
   return 0;
 }

@@ -109,6 +109,8 @@ static inline bsp_matrix_t bsp_mmread_explicit_array(const char* file_path,
 
   fclose(f);
 
+  bsp_destroy_mm_metadata(&metadata);
+
   return matrix;
 }
 
@@ -306,6 +308,8 @@ bsp_mmread_explicit_coordinate(const char* file_path, bsp_type_t value_type,
   free(indices);
   fclose(f);
 
+  bsp_destroy_mm_metadata(&metadata);
+
   return matrix;
 }
 
@@ -315,8 +319,10 @@ static inline bsp_matrix_t bsp_mmread_explicit(const char* file_path,
   bsp_mm_metadata metadata = bsp_mmread_metadata(file_path);
 
   if (strcmp(metadata.format, "array") == 0) {
+    bsp_destroy_mm_metadata(&metadata);
     return bsp_mmread_explicit_array(file_path, value_type, index_type);
   } else if (strcmp(metadata.format, "coordinate") == 0) {
+    bsp_destroy_mm_metadata(&metadata);
     return bsp_mmread_explicit_coordinate(file_path, value_type, index_type);
   } else {
     assert(false);
@@ -344,6 +350,8 @@ static inline bsp_matrix_t bsp_mmread(const char* file_path) {
       (metadata.nrows > metadata.ncols) ? metadata.nrows : metadata.ncols;
 
   bsp_type_t index_type = bsp_pick_integer_type(max_dim);
+
+  bsp_destroy_mm_metadata(&metadata);
 
   return bsp_mmread_explicit(file_path, value_type, index_type);
 }

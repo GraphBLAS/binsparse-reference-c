@@ -11,6 +11,8 @@ set(CMAKE_C_STANDARD 11)
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_C_FLAGS "-O3 -march=native")
 
+option(ENABLE_SANITIZERS "Enable Clang sanitizers" OFF)
+
 include(GNUInstallDirs)
 
 add_library(binsparse STATIC)
@@ -84,6 +86,12 @@ install(FILES
     DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/binsparse)
 
 if(CMAKE_PROJECT_NAME STREQUAL PROJECT_NAME)
+  if (ENABLE_SANITIZERS)
+      set(SANITIZER_FLAGS "-fsanitize=address,undefined")
+      target_compile_options(binsparse INTERFACE ${SANITIZER_FLAGS} -g -O1 -fno-omit-frame-pointer)
+      target_link_options(binsparse INTERFACE ${SANITIZER_FLAGS})
+  endif()
+
   add_subdirectory(examples)
   add_subdirectory(test)
 endif()

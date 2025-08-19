@@ -22,7 +22,8 @@ char* bsp_generate_json(bsp_matrix_t matrix, cJSON* user_json) {
 
   cJSON* item;
   cJSON_ArrayForEach(item, user_json) {
-    cJSON_AddItemToObject(j, item->string, item);
+    cJSON* item_copy = cJSON_Duplicate(item, 1); // 1 = deep copy
+    cJSON_AddItemToObject(j, item->string, item_copy);
   }
 
   cJSON_AddStringToObject(binsparse, "version", BINSPARSE_VERSION);
