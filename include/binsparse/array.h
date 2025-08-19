@@ -20,18 +20,25 @@ typedef struct bsp_array_t {
   bsp_allocator_t allocator;
 } bsp_array_t;
 
-static inline bsp_error_t bsp_construct_default_array_t(bsp_array_t* array) {
+static inline bsp_error_t
+bsp_construct_default_array_t_allocator(bsp_array_t* array,
+                                        bsp_allocator_t allocator) {
   array->data = NULL;
   array->size = 0;
-  array->allocator = bsp_default_allocator;
+  array->allocator = allocator;
   return BSP_SUCCESS;
 }
 
-static inline bsp_error_t bsp_construct_array_t(bsp_array_t* array, size_t size,
-                                                bsp_type_t type) {
+static inline bsp_error_t bsp_construct_default_array_t(bsp_array_t* array) {
+  return bsp_construct_default_array_t_allocator(array, bsp_default_allocator);
+}
+
+static inline bsp_error_t
+bsp_construct_array_t_allocator(bsp_array_t* array, size_t size,
+                                bsp_type_t type, bsp_allocator_t allocator) {
   size_t byte_size = size * bsp_type_size(type);
 
-  array->allocator = bsp_default_allocator;
+  array->allocator = allocator;
   array->data = array->allocator.malloc(byte_size);
 
   if (array->data == NULL) {
@@ -42,6 +49,12 @@ static inline bsp_error_t bsp_construct_array_t(bsp_array_t* array, size_t size,
   array->type = type;
 
   return BSP_SUCCESS;
+}
+
+static inline bsp_error_t bsp_construct_array_t(bsp_array_t* array, size_t size,
+                                                bsp_type_t type) {
+  return bsp_construct_array_t_allocator(array, size, type,
+                                         bsp_default_allocator);
 }
 
 static inline bsp_error_t bsp_copy_construct_array_t(bsp_array_t* array,

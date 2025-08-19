@@ -5,6 +5,7 @@
  */
 
 #include <assert.h>
+#include <binsparse/detail/allocator.h>
 #include <binsparse/hdf5_wrapper.h>
 #include <binsparse/matrix.h>
 #include <binsparse/matrix_market/matrix_market_read.h>
@@ -147,12 +148,14 @@ bsp_matrix_t bsp_read_matrix_from_group_parallel(hid_t f, int num_threads) {
 }
 #endif
 
-bsp_matrix_t bsp_read_matrix_from_group(hid_t f) {
+bsp_matrix_t bsp_read_matrix_from_group_allocator(hid_t f,
+                                                  bsp_allocator_t allocator) {
   bsp_matrix_t matrix;
-  bsp_construct_default_matrix_t(&matrix);
+  bsp_construct_default_matrix_t_allocator(&matrix, allocator);
 
   char* json_string;
-  bsp_error_t error = bsp_read_attribute(&json_string, f, (char*) "binsparse");
+  bsp_error_t error = bsp_read_attribute_allocator(
+      &json_string, f, (char*) "binsparse", allocator);
   if (error != BSP_SUCCESS) {
     return matrix;
   }
@@ -213,7 +216,8 @@ bsp_matrix_t bsp_read_matrix_from_group(hid_t f) {
   assert(data_types_ != NULL);
 
   if (cJSON_HasObjectItem(data_types_, "values")) {
-    error = bsp_read_array(&matrix.values, f, (char*) "values");
+    error = bsp_read_array_allocator(&matrix.values, f, (char*) "values",
+                                     allocator);
     if (error != BSP_SUCCESS) {
       free(json_string);
       return matrix;
@@ -236,7 +240,8 @@ bsp_matrix_t bsp_read_matrix_from_group(hid_t f) {
   }
 
   if (cJSON_HasObjectItem(data_types_, "indices_0")) {
-    error = bsp_read_array(&matrix.indices_0, f, (char*) "indices_0");
+    error = bsp_read_array_allocator(&matrix.indices_0, f, (char*) "indices_0",
+                                     allocator);
     if (error != BSP_SUCCESS) {
       free(json_string);
       bsp_destroy_array_t(&matrix.values);
@@ -245,7 +250,8 @@ bsp_matrix_t bsp_read_matrix_from_group(hid_t f) {
   }
 
   if (cJSON_HasObjectItem(data_types_, "indices_1")) {
-    error = bsp_read_array(&matrix.indices_1, f, (char*) "indices_1");
+    error = bsp_read_array_allocator(&matrix.indices_1, f, (char*) "indices_1",
+                                     allocator);
     if (error != BSP_SUCCESS) {
       free(json_string);
       bsp_destroy_array_t(&matrix.values);
@@ -255,7 +261,8 @@ bsp_matrix_t bsp_read_matrix_from_group(hid_t f) {
   }
 
   if (cJSON_HasObjectItem(data_types_, "pointers_to_1")) {
-    error = bsp_read_array(&matrix.pointers_to_1, f, (char*) "pointers_to_1");
+    error = bsp_read_array_allocator(&matrix.pointers_to_1, f,
+                                     (char*) "pointers_to_1", allocator);
     if (error != BSP_SUCCESS) {
       free(json_string);
       bsp_destroy_array_t(&matrix.values);
@@ -276,6 +283,10 @@ bsp_matrix_t bsp_read_matrix_from_group(hid_t f) {
   free(json_string);
 
   return matrix;
+}
+
+bsp_matrix_t bsp_read_matrix_from_group(hid_t f) {
+  return bsp_read_matrix_from_group_allocator(f, bsp_default_allocator);
 }
 
 static inline size_t bsp_final_dot(const char* str) {
@@ -315,13 +326,14 @@ bsp_matrix_t bsp_read_matrix_parallel(const char* file_name, const char* group,
 }
 #endif
 
-bsp_matrix_t bsp_read_matrix(const char* file_name, const char* group) {
+bsp_matrix_t bsp_read_matrix_allocator(const char* file_name, const char* group,
+                                       bsp_allocator_t allocator) {
   if (group == NULL) {
     size_t idx = bsp_final_dot(file_name);
     if (strcmp(file_name + idx, ".hdf5") == 0 ||
         strcmp(file_name + idx, ".h5") == 0) {
       hid_t f = H5Fopen(file_name, H5F_ACC_RDONLY, H5P_DEFAULT);
-      bsp_matrix_t matrix = bsp_read_matrix_from_group(f);
+      bsp_matrix_t matrix = bsp_read_matrix_from_group_allocator(f, allocator);
       H5Fclose(f);
       return matrix;
     } else if (strcmp(file_name + idx, ".mtx") == 0) {
@@ -332,9 +344,13 @@ bsp_matrix_t bsp_read_matrix(const char* file_name, const char* group) {
   } else {
     hid_t f = H5Fopen(file_name, H5F_ACC_RDONLY, H5P_DEFAULT);
     hid_t g = H5Gopen1(f, group);
-    bsp_matrix_t matrix = bsp_read_matrix_from_group(g);
+    bsp_matrix_t matrix = bsp_read_matrix_from_group_allocator(g, allocator);
     H5Gclose(g);
     H5Fclose(f);
     return matrix;
   }
+}
+
+bsp_matrix_t bsp_read_matrix(const char* file_name, const char* group) {
+  return bsp_read_matrix_allocator(file_name, group, bsp_default_allocator);
 }

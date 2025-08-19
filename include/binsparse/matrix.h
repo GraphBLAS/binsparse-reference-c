@@ -27,14 +27,20 @@ typedef struct bsp_matrix_t {
   bsp_structure_t structure;
 } bsp_matrix_t;
 
-static inline void bsp_construct_default_matrix_t(bsp_matrix_t* matrix) {
+static inline void
+bsp_construct_default_matrix_t_allocator(bsp_matrix_t* matrix,
+                                         bsp_allocator_t allocator) {
   bsp_construct_default_array_t(&matrix->values);
-  bsp_construct_default_array_t(&matrix->indices_0);
-  bsp_construct_default_array_t(&matrix->indices_1);
-  bsp_construct_default_array_t(&matrix->pointers_to_1);
+  bsp_construct_default_array_t_allocator(&matrix->indices_0, allocator);
+  bsp_construct_default_array_t_allocator(&matrix->indices_1, allocator);
+  bsp_construct_default_array_t_allocator(&matrix->pointers_to_1, allocator);
   matrix->nrows = matrix->ncols = matrix->nnz = 0;
   matrix->is_iso = false;
   matrix->structure = BSP_GENERAL;
+}
+
+static inline void bsp_construct_default_matrix_t(bsp_matrix_t* matrix) {
+  bsp_construct_default_matrix_t_allocator(matrix, bsp_default_allocator);
 }
 
 static inline void bsp_destroy_matrix_t(bsp_matrix_t* matrix) {
