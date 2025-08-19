@@ -18,7 +18,8 @@ This library provides a C interface for reading and writing binsparse matrices. 
 #include <binsparse/binsparse.h>
 
 int main(int argc, char** argv) {
-  bsp_matrix_t mat = bsp_read_matrix("chesapeake.bsp.hdf5");
+  bsp_matrix_t mat;
+  bsp_read_matrix(&mat, "chesapeake.bsp.hdf5", NULL);
 
   if (mat.format == BSP_COO) {
     float* values = mat.values.data;
@@ -33,6 +34,7 @@ int main(int argc, char** argv) {
            bsp_get_matrix_format_string(mat.format));
   }
 
+  bsp_destroy_matrix_t(&mat);
   return 0;
 }
 ```

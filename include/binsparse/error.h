@@ -6,6 +6,9 @@
 
 #pragma once
 
+#include <stdio.h>
+#include <stdlib.h>
+
 typedef enum bsp_error_t {
   BSP_SUCCESS = 0,
 
@@ -60,3 +63,21 @@ static inline const char* bsp_get_error_string(bsp_error_t error) {
     return "Unknown error";
   }
 }
+
+/**
+ * BSP_CHECK macro - checks if a bsp_error_t is BSP_SUCCESS.
+ * If not, prints file, line number, and error message, then aborts.
+ *
+ * Usage: BSP_CHECK(bsp_read_matrix(&matrix, "file.hdf5", NULL));
+ *
+ * @param call The function call that returns a bsp_error_t
+ */
+#define BSP_CHECK(call)                                                        \
+  do {                                                                         \
+    bsp_error_t _bsp_error = (call);                                           \
+    if (_bsp_error != BSP_SUCCESS) {                                           \
+      fprintf(stderr, "BSP Error at %s:%d: %s\n", __FILE__, __LINE__,          \
+              bsp_get_error_string(_bsp_error));                               \
+      abort();                                                                 \
+    }                                                                          \
+  } while (0)

@@ -82,7 +82,8 @@ int main(int argc, char** argv) {
 
   // If running warm cache experiments, read once to warm cache.
   if (!cold_cache) {
-    bsp_matrix_t mat = bsp_read_matrix_parallel(file_name, NULL, num_threads);
+    bsp_matrix_t mat;
+    BSP_CHECK(bsp_read_matrix_parallel(&mat, file_name, NULL, num_threads));
     bsp_destroy_matrix_t(&mat);
   }
 
@@ -92,7 +93,8 @@ int main(int argc, char** argv) {
     }
     fflush(stdout);
     double begin = gettime();
-    bsp_matrix_t mat = bsp_read_matrix_parallel(file_name, NULL, num_threads);
+    bsp_matrix_t mat;
+    BSP_CHECK(bsp_read_matrix_parallel(&mat, file_name, NULL, num_threads));
     double end = gettime();
     durations[i] = end - begin;
     nbytes = bsp_matrix_nbytes(mat);

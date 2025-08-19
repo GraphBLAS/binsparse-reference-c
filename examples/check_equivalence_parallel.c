@@ -117,9 +117,10 @@ int main(int argc, char** argv) {
 
   fflush(stdout);
 
-  bsp_matrix_t matrix1 = bsp_read_matrix(info1.fname, info1.dataset);
-  bsp_matrix_t matrix2 =
-      bsp_read_matrix_parallel(info2.fname, info2.dataset, num_threads);
+  bsp_matrix_t matrix1, matrix2;
+  BSP_CHECK(bsp_read_matrix(&matrix1, info1.fname, info1.dataset));
+  BSP_CHECK(bsp_read_matrix_parallel(&matrix2, info2.fname, info2.dataset,
+                                     num_threads));
 
   bool perform_suitesparse_declamping = true;
   if (perform_suitesparse_declamping &&

@@ -97,7 +97,8 @@ int main(int argc, char** argv) {
 
   double durations[num_trials];
 
-  bsp_matrix_t mat = bsp_read_matrix(file_name, NULL);
+  bsp_matrix_t mat;
+  BSP_CHECK(bsp_read_matrix(&mat, file_name, NULL));
   size_t nbytes = bsp_matrix_nbytes(mat);
 
   char output_filename[2048];
@@ -124,7 +125,8 @@ int main(int argc, char** argv) {
     printf("Writing to file %s\n", output_filename);
 
     double begin = gettime();
-    bsp_write_matrix(output_filename, mat, NULL, NULL, compression_level);
+    BSP_CHECK(
+        bsp_write_matrix(output_filename, mat, NULL, NULL, compression_level));
 
     if (flush_each_write) {
       flush_writes();

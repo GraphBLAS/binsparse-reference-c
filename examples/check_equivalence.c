@@ -110,8 +110,9 @@ int main(int argc, char** argv) {
   printf("Matrix 2: %s and %s\n", info2.fname,
          (info2.dataset == NULL) ? "root" : info2.dataset);
 
-  bsp_matrix_t matrix1 = bsp_read_matrix(info1.fname, info1.dataset);
-  bsp_matrix_t matrix2 = bsp_read_matrix(info2.fname, info2.dataset);
+  bsp_matrix_t matrix1, matrix2;
+  BSP_CHECK(bsp_read_matrix(&matrix1, info1.fname, info1.dataset));
+  BSP_CHECK(bsp_read_matrix(&matrix2, info2.fname, info2.dataset));
 
   bool perform_suitesparse_declamping = true;
   if (perform_suitesparse_declamping &&

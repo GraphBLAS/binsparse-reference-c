@@ -163,8 +163,8 @@ int main(int argc, char** argv) {
 
   printf(" === Writing to %s... ===\n", output_fname);
   begin = gettime();
-  bsp_write_matrix(output_fname, matrix, group_name, user_json,
-                   compression_level);
+  BSP_CHECK(bsp_write_matrix(output_fname, matrix, group_name, user_json,
+                             compression_level));
   end = gettime();
   duration = end - begin;
   printf("%lf seconds writing Binsparse file...\n", duration);

@@ -9,7 +9,8 @@
 int main(int argc, char** argv) {
   const char* file_name = "test.hdf5";
 
-  bsp_matrix_t mat = bsp_read_matrix(file_name, NULL);
+  bsp_matrix_t mat;
+  BSP_CHECK(bsp_read_matrix(&mat, file_name, NULL));
 
   if (mat.format == BSP_COO) {
     float* values = (float*) mat.values.data;
