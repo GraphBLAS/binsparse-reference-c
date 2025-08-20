@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
-#include <binsparse/binsparse.h>
+#include <binsparse/binsparse_all.h>
 
 herr_t visit_group(hid_t loc_id, const char* name, const H5L_info_t* linfo,
                    void* opdata);

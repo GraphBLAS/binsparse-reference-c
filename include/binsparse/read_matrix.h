@@ -6,22 +6,11 @@
 
 #pragma once
 
+#include <binsparse/detail/allocator.h>
+#include <binsparse/matrix.h>
+
 #ifdef __cplusplus
 extern "C" {
-#endif
-
-#ifdef BSP_USE_HDF5
-#include <binsparse/detail/allocator.h>
-#include <hdf5.h>
-
-#if __STDC_VERSION__ >= 201112L
-bsp_error_t bsp_read_matrix_from_group_parallel(bsp_matrix_t* matrix, hid_t f,
-                                                int num_threads);
-#endif
-
-bsp_error_t bsp_read_matrix_from_group(bsp_matrix_t* matrix, hid_t f);
-bsp_error_t bsp_read_matrix_from_group_allocator(bsp_matrix_t* matrix, hid_t f,
-                                                 bsp_allocator_t allocator);
 #endif
 
 #if __STDC_VERSION__ >= 201112L

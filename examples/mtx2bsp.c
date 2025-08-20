@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
-#include <binsparse/binsparse.h>
+#include <binsparse/binsparse_all.h>
 #include <stdio.h>
 
 #include <time.h>
@@ -163,8 +163,8 @@ int main(int argc, char** argv) {
 
   printf(" === Writing to %s... ===\n", output_fname);
   begin = gettime();
-  BSP_CHECK(bsp_write_matrix(output_fname, matrix, group_name, user_json,
-                             compression_level));
+  BSP_CHECK(bsp_write_matrix_cjson(output_fname, matrix, group_name, user_json,
+                                   compression_level));
   end = gettime();
   duration = end - begin;
   printf("%lf seconds writing Binsparse file...\n", duration);

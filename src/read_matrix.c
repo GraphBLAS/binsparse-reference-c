@@ -5,6 +5,8 @@
  */
 
 #include <assert.h>
+#include <binsparse/binsparse_cJSON.h>
+#include <binsparse/binsparse_hdf5.h>
 #include <binsparse/detail/allocator.h>
 #include <binsparse/hdf5_wrapper.h>
 #include <binsparse/matrix.h>
@@ -24,8 +26,9 @@ bsp_error_t bsp_read_matrix_from_group_parallel(bsp_matrix_t* matrix, hid_t f,
 
   cJSON* j = cJSON_Parse(json_string);
 
-  assert(j != NULL);
-  assert(cJSON_IsObject(j));
+  if (j == NULL || !cJSON_IsObject(j)) {
+    return BSP_ERROR_FORMAT;
+  }
 
   cJSON* binsparse = cJSON_GetObjectItemCaseSensitive(j, "binsparse");
   assert(cJSON_IsObject(binsparse));
