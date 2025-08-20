@@ -15,11 +15,11 @@ function matrix = bsp_matrix_create(varargin)
 %
 % Fields:
 %   values       - MATLAB array of matrix values
-%   indices_0    - MATLAB array of first dimension indices  
+%   indices_0    - MATLAB array of first dimension indices
 %   indices_1    - MATLAB array of second dimension indices
 %   pointers_to_1 - MATLAB array of pointers for compressed formats
 %   nrows        - Number of rows (integer)
-%   ncols        - Number of columns (integer) 
+%   ncols        - Number of columns (integer)
 %   nnz          - Number of non-zeros (integer)
 %   is_iso       - Logical indicating if matrix has single value (logical)
 %   format       - Matrix format string ('CSR', 'CSC', 'COO', etc.)
@@ -28,10 +28,10 @@ function matrix = bsp_matrix_create(varargin)
 % Example:
 %   % Create empty matrix
 %   matrix = bsp_matrix_create();
-%   
+%
 %   % Create COO matrix
 %   values = [1.0, 2.0, 3.0];
-%   rows = [1, 2, 3];  
+%   rows = [1, 2, 3];
 %   cols = [1, 2, 3];
 %   matrix = bsp_matrix_create(values, rows, cols, [], 3, 3, 3, false, 'COO', 'general');
 
@@ -48,7 +48,7 @@ if nargin == 0
         'is_iso', false, ...
         'format', '', ...
         'structure', 'general');
-        
+
 elseif nargin == 10
     % Create matrix with all fields specified
     matrix = struct(...
@@ -62,7 +62,7 @@ elseif nargin == 10
         'is_iso', logical(varargin{8}), ...
         'format', char(varargin{9}), ...
         'structure', char(varargin{10}));
-        
+
 else
     error('bsp_matrix_create:InvalidArgs', ...
           'Expected 0 or 10 arguments, got %d', nargin);

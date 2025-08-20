@@ -31,7 +31,7 @@ try
     result1 = bsp_hello();
     fprintf('  Result: %s\n', result1);
     fprintf('  Status: PASS\n\n');
-    
+
     % Test 2: Version query
     fprintf('Test 2: Version query - bsp_hello(''version'')\n');
     [version, success] = bsp_hello('version');
@@ -42,7 +42,7 @@ try
     else
         fprintf('  Status: FAIL - Function reported error\n\n');
     end
-    
+
     % Test 3: Error handling - invalid mode
     fprintf('Test 3: Error handling - bsp_hello(''invalid'')\n');
     try
@@ -53,7 +53,7 @@ try
         fprintf('  Caught expected error: %s\n', lasterr_msg);
         fprintf('  Status: PASS\n\n');
     end
-    
+
     % Test 4: Type checking - numeric input
     fprintf('Test 4: Type checking - bsp_hello(42)\n');
     try
@@ -64,17 +64,17 @@ try
         fprintf('  Caught expected error: %s\n', lasterr_msg);
         fprintf('  Status: PASS\n\n');
     end
-    
+
     fprintf('=== All Tests Completed ===\n');
     fprintf('The Binsparse Octave bindings appear to be working correctly!\n\n');
-    
+
     % Display system information
     fprintf('System Information:\n');
     if exist('OCTAVE_VERSION', 'builtin')
         fprintf('  Octave Version: %s\n', OCTAVE_VERSION);
     end
     fprintf('  Platform: %s\n', computer());
-    
+
     % Check for mkoctfile
     [status, output] = system('mkoctfile --version 2>/dev/null || mkoctfile --version 2>nul');
     if status == 0
@@ -84,12 +84,12 @@ try
             fprintf('  mkoctfile: %s\n', strtrim(lines{1}));
         end
     end
-    
+
 catch
     lasterr_msg = lasterr();
     fprintf('=== TEST FAILED ===\n');
     fprintf('Error: %s\n', lasterr_msg);
-    
+
     % In Octave, we don't have ME.stack, so provide simpler error info
     fprintf('Last error occurred in test_bsp_hello_octave\n');
     rethrow(lasterr());
