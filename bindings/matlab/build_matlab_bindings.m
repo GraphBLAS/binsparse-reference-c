@@ -53,8 +53,9 @@ end
 compile_mex_functions(paths, verbose);
 
 fprintf('\n=== Build Complete ===\n');
-fprintf('Run the test function to verify the installation:\n');
-fprintf('  test_binsparse_read()\n\n');
+fprintf('Run the test functions to verify the installation:\n');
+fprintf('  test_binsparse_read()\n');
+fprintf('  test_binsparse_write()\n\n');
 
 end
 
@@ -93,7 +94,7 @@ function compile_mex_functions(paths, verbose)
     % Compile all MEX functions
 
     % List of MEX functions to compile
-    mex_files = {'binsparse_read.c'};
+    mex_files = {'binsparse_read.c', 'binsparse_write.c'};
 
     fprintf('Compiling MEX functions...\n');
 

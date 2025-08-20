@@ -137,7 +137,7 @@ if [ "$CLEAN" = true ]; then
 fi
 
 # List of MEX files to compile
-MEX_FILES=("binsparse_read.c")
+MEX_FILES=("binsparse_read.c" "binsparse_write.c")
 
 print_info "Compiling MEX functions..."
 
@@ -175,6 +175,7 @@ print_success "All MEX functions compiled successfully!"
 echo ""
 print_info "To test the functions, start Octave and run:"
 echo "  test_binsparse_read()"
+echo "  test_binsparse_write()"
 echo ""
 print_info "Or test from command line:"
 echo "  octave --eval \"test_binsparse_read()\""

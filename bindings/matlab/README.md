@@ -55,7 +55,8 @@ mkoctfile --version
 
 3. Test the installation:
    ```matlab
-   test_bsp_hello()
+   test_binsparse_read()
+   test_binsparse_write()
    ```
 
 #### Option 2: Octave (from within Octave)
@@ -72,7 +73,8 @@ mkoctfile --version
 
 3. Test the installation:
    ```octave
-   test_bsp_hello_octave()
+   test_binsparse_read()
+   test_binsparse_write()
    ```
 
 #### Option 3: Octave (from command line)
@@ -89,23 +91,56 @@ mkoctfile --version
 
 3. Test the installation:
    ```bash
-   octave --eval "test_bsp_hello_octave()"
+   octave --eval "test_binsparse_read()"
+   octave --eval "test_binsparse_write()"
    ```
 
 ## Usage Examples
 
-### Basic Usage
+### Reading Binsparse Files
 
 **In MATLAB or Octave:**
 
 ```matlab
-% Simple greeting
-result = bsp_hello()
-% Output: 'Binsparse MEX binding is working!'
+% Read a Binsparse matrix file
+matrix = binsparse_read('path/to/matrix.bsp.h5');
 
-% Get Binsparse version
-[version, success] = bsp_hello('version')
-% Output: version = '0.1', success = true
+% Read from a specific group
+matrix = binsparse_read('path/to/matrix.bsp.h5', 'group_name');
+
+% Matrix will be a struct with fields:
+% - values: array of matrix values
+% - indices_0, indices_1: row/column indices
+% - pointers_to_1: pointer array (for CSR/CSC formats)
+% - nrows, ncols, nnz: matrix dimensions
+% - is_iso: boolean for iso-value matrices
+% - format: string ('COO', 'CSR', 'CSC', etc.)
+% - structure: string ('general', 'symmetric', etc.)
+```
+
+### Writing Binsparse Files
+
+```matlab
+% Create a matrix struct (example: 3x3 COO matrix)
+matrix = struct();
+matrix.values = [1.0; 2.0; 3.0];
+matrix.indices_0 = uint64([0; 1; 2]);   % 0-based row indices
+matrix.indices_1 = uint64([0; 1; 2]);   % 0-based col indices
+matrix.pointers_to_1 = uint64([]);      % Empty for COO
+matrix.nrows = 3;
+matrix.ncols = 3;
+matrix.nnz = 3;
+matrix.is_iso = false;
+matrix.format = 'COO';
+matrix.structure = 'general';
+
+% Write to file
+binsparse_write('output.bsp.h5', matrix);
+
+% Write with optional parameters
+binsparse_write('output.bsp.h5', matrix, 'my_group');
+binsparse_write('output.bsp.h5', matrix, 'my_group', '{"author": "me"}');
+binsparse_write('output.bsp.h5', matrix, 'my_group', '{"author": "me"}', 6);
 ```
 
 ### Error Handling
@@ -114,7 +149,7 @@ The MEX functions include proper error handling:
 
 ```matlab
 try
-    result = bsp_hello('invalid_mode')
+    matrix = binsparse_read('nonexistent_file.bsp.h5')
 catch ME
     fprintf('Error: %s\n', ME.message)
 end
@@ -124,25 +159,32 @@ end
 
 | File | Description |
 |------|-------------|
-| `bsp_hello.c` | Simple MEX function demonstrating Binsparse integration |
+| `binsparse_read.c` | MEX function for reading Binsparse matrix files |
+| `binsparse_write.c` | MEX function for writing Binsparse matrix files |
 | `build_matlab_bindings.m` | Main build script for MATLAB MEX functions |
 | `build_octave_bindings.m` | Main build script for Octave MEX functions |
-| `compile_bsp_hello.m` | Simple compilation script for the demo function (MATLAB) |
+| `compile_binsparse_read.m` | Simple compilation script for read function (MATLAB) |
+| `compile_binsparse_write.m` | Simple compilation script for write function (MATLAB) |
+| `compile_binsparse_read_octave.m` | Simple compilation script for read function (Octave) |
+| `compile_binsparse_write_octave.m` | Simple compilation script for write function (Octave) |
 | `compile_octave.sh` | Shell script for building Octave MEX functions |
-| `test_bsp_hello.m` | Test script to verify functionality (MATLAB) |
-| `test_bsp_hello_octave.m` | Test script to verify functionality (Octave) |
+| `test_binsparse_read.m` | Test script for read functionality |
+| `test_binsparse_write.m` | Test script for write functionality |
+| `bsp_matrix_create.m` | Utility function for creating matrix structs |
+| `bsp_matrix_info.m` | Utility function for displaying matrix information |
 | `README.md` | This documentation file |
 
 ## Technical Details
 
 ### MEX Function Structure
 
-The `bsp_hello` MEX function demonstrates:
+The Binsparse MEX functions demonstrate:
 
 1. **Header inclusion**: Proper inclusion of `<binsparse/binsparse.h>`
-2. **Error handling**: Using Binsparse error types (`bsp_error_t`)
-3. **Memory management**: Safe allocation and cleanup
-4. **MATLAB interface**: Proper MEX function structure
+2. **Type conversion**: Complete mapping between MATLAB and Binsparse types
+3. **Error handling**: Using Binsparse error types (`bsp_error_t`)
+4. **Memory management**: Safe allocation and cleanup
+5. **MATLAB interface**: Proper MEX function structure with validation
 
 ### Build Process
 
@@ -222,14 +264,17 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {
 
 ## Development Status
 
-This is a minimal demonstration of MATLAB/Octave bindings for Binsparse. Currently implemented:
+This provides complete MATLAB/Octave bindings for Binsparse. Currently implemented:
 
-- ✅ Basic MEX function structure
-- ✅ Binsparse header inclusion
-- ✅ Error handling with Binsparse error types
+- ✅ Matrix reading (`binsparse_read`)
+- ✅ Matrix writing (`binsparse_write`)
+- ✅ Complete type support (all Binsparse types including complex numbers)
+- ✅ Optional parameters (groups, JSON metadata, compression)
+- ✅ Comprehensive error handling
 - ✅ Build system and testing framework
-- ⏳ Matrix reading/writing functions (future work)
-- ⏳ Advanced Binsparse features (future work)
+- ✅ Round-trip compatibility (read → write → read)
+- ⏳ Tensor support (future work)
+- ⏳ Advanced sparse matrix operations (future work)
 
 ## License
 
