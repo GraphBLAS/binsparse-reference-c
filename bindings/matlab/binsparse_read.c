@@ -32,52 +32,83 @@ mxArray* bsp_array_to_matlab(const bsp_array_t* array) {
 
   switch (array->type) {
   case BSP_FLOAT64:
-    mx_array = mxCreateDoubleMatrix(array->size, 1, mxREAL);
+    mx_array = mxCreateNumericMatrix(array->size, 1, mxDOUBLE_CLASS, mxREAL);
     memcpy(mxGetPr(mx_array), array->data, array->size * sizeof(double));
     break;
 
-  case BSP_FLOAT32: {
-    mx_array = mxCreateDoubleMatrix(array->size, 1, mxREAL);
-    double* out_data = mxGetPr(mx_array);
-    float* in_data = (float*) array->data;
-    for (size_t i = 0; i < array->size; i++) {
-      out_data[i] = (double) in_data[i];
-    }
+  case BSP_FLOAT32:
+    mx_array = mxCreateNumericMatrix(array->size, 1, mxSINGLE_CLASS, mxREAL);
+    memcpy(mxGetData(mx_array), array->data, array->size * sizeof(float));
     break;
-  }
 
-  case BSP_UINT64: {
+  case BSP_UINT64:
     mx_array = mxCreateNumericMatrix(array->size, 1, mxUINT64_CLASS, mxREAL);
     memcpy(mxGetData(mx_array), array->data, array->size * sizeof(uint64_t));
     break;
-  }
 
-  case BSP_UINT32: {
-    mx_array = mxCreateNumericMatrix(array->size, 1, mxUINT64_CLASS, mxREAL);
-    uint64_t* out_data = (uint64_t*) mxGetData(mx_array);
-    uint32_t* in_data = (uint32_t*) array->data;
+  case BSP_UINT32:
+    mx_array = mxCreateNumericMatrix(array->size, 1, mxUINT32_CLASS, mxREAL);
+    memcpy(mxGetData(mx_array), array->data, array->size * sizeof(uint32_t));
+    break;
+
+  case BSP_UINT16:
+    mx_array = mxCreateNumericMatrix(array->size, 1, mxUINT16_CLASS, mxREAL);
+    memcpy(mxGetData(mx_array), array->data, array->size * sizeof(uint16_t));
+    break;
+
+  case BSP_UINT8:
+    mx_array = mxCreateNumericMatrix(array->size, 1, mxUINT8_CLASS, mxREAL);
+    memcpy(mxGetData(mx_array), array->data, array->size * sizeof(uint8_t));
+    break;
+
+  case BSP_INT64:
+    mx_array = mxCreateNumericMatrix(array->size, 1, mxINT64_CLASS, mxREAL);
+    memcpy(mxGetData(mx_array), array->data, array->size * sizeof(int64_t));
+    break;
+
+  case BSP_INT32:
+    mx_array = mxCreateNumericMatrix(array->size, 1, mxINT32_CLASS, mxREAL);
+    memcpy(mxGetData(mx_array), array->data, array->size * sizeof(int32_t));
+    break;
+
+  case BSP_INT16:
+    mx_array = mxCreateNumericMatrix(array->size, 1, mxINT16_CLASS, mxREAL);
+    memcpy(mxGetData(mx_array), array->data, array->size * sizeof(int16_t));
+    break;
+
+  case BSP_INT8:
+    mx_array = mxCreateNumericMatrix(array->size, 1, mxINT8_CLASS, mxREAL);
+    memcpy(mxGetData(mx_array), array->data, array->size * sizeof(int8_t));
+    break;
+
+  case BSP_BINT8:
+    // Treat BSP_BINT8 as UINT8 as suggested
+    mx_array = mxCreateNumericMatrix(array->size, 1, mxUINT8_CLASS, mxREAL);
+    memcpy(mxGetData(mx_array), array->data, array->size * sizeof(int8_t));
+    break;
+
+  case BSP_COMPLEX_FLOAT64: {
+    mx_array = mxCreateNumericMatrix(array->size, 1, mxDOUBLE_CLASS, mxCOMPLEX);
+    double* in_data =
+        (double*) array->data; // Treat as array of adjacent real/imag pairs
+    double* real_data = mxGetPr(mx_array);
+    double* imag_data = mxGetPi(mx_array);
     for (size_t i = 0; i < array->size; i++) {
-      out_data[i] = (uint64_t) in_data[i];
+      real_data[i] = in_data[2 * i];     // Real part
+      imag_data[i] = in_data[2 * i + 1]; // Imaginary part
     }
     break;
   }
 
-  case BSP_UINT16: {
-    mx_array = mxCreateNumericMatrix(array->size, 1, mxUINT64_CLASS, mxREAL);
-    uint64_t* out_data = (uint64_t*) mxGetData(mx_array);
-    uint16_t* in_data = (uint16_t*) array->data;
+  case BSP_COMPLEX_FLOAT32: {
+    mx_array = mxCreateNumericMatrix(array->size, 1, mxSINGLE_CLASS, mxCOMPLEX);
+    float* in_data =
+        (float*) array->data; // Treat as array of adjacent real/imag pairs
+    float* real_data = (float*) mxGetData(mx_array);
+    float* imag_data = (float*) mxGetImagData(mx_array);
     for (size_t i = 0; i < array->size; i++) {
-      out_data[i] = (uint64_t) in_data[i];
-    }
-    break;
-  }
-
-  case BSP_UINT8: {
-    mx_array = mxCreateNumericMatrix(array->size, 1, mxUINT64_CLASS, mxREAL);
-    uint64_t* out_data = (uint64_t*) mxGetData(mx_array);
-    uint8_t* in_data = (uint8_t*) array->data;
-    for (size_t i = 0; i < array->size; i++) {
-      out_data[i] = (uint64_t) in_data[i];
+      real_data[i] = in_data[2 * i];     // Real part
+      imag_data[i] = in_data[2 * i + 1]; // Imaginary part
     }
     break;
   }
