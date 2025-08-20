@@ -4,7 +4,8 @@
 
 scripts
 venv
-build*
+build/
+build-*/
 compile_flags.txt
 ._*
 tensor_test_files

@@ -137,7 +137,7 @@ if [ "$CLEAN" = true ]; then
 fi
 
 # List of MEX files to compile
-MEX_FILES=("bsp_hello.c")
+MEX_FILES=("binsparse_read.c")
 
 print_info "Compiling MEX functions..."
 
@@ -150,8 +150,12 @@ for mex_file in "${MEX_FILES[@]}"; do
 
     print_info "Compiling $mex_file..."
 
-    # Build mkoctfile command
-    CMD="mkoctfile --mex -I\"$INCLUDE_DIR\" $mex_file"
+        # Build mkoctfile command with library linking
+    LIB_DIR="$BINSPARSE_ROOT/build"
+    LIB_PATH="$LIB_DIR/libbinsparse.a"
+    CJSON_LIB_DIR="$LIB_DIR/_deps/cjson-build"
+
+    CMD="mkoctfile --mex -fPIC -I\"$INCLUDE_DIR\" $mex_file -Wl,--whole-archive \"$LIB_PATH\" -Wl,--no-whole-archive -L\"$CJSON_LIB_DIR\" -lcjson -lhdf5_serial"
 
     if [ "$VERBOSE" = true ]; then
         CMD="$CMD --verbose"
@@ -170,7 +174,7 @@ done
 print_success "All MEX functions compiled successfully!"
 echo ""
 print_info "To test the functions, start Octave and run:"
-echo "  test_bsp_hello_octave()"
+echo "  test_binsparse_read()"
 echo ""
 print_info "Or test from command line:"
-echo "  octave --eval \"test_bsp_hello_octave()\""
+echo "  octave --eval \"test_binsparse_read()\""

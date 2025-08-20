@@ -28,6 +28,12 @@ find_package(HDF5 REQUIRED COMPONENTS C)
 target_link_libraries(binsparse PUBLIC ${HDF5_C_LIBRARIES})
 
 include(FetchContent)
+
+# Force cJSON to build as static library for MEX compatibility
+set(BUILD_SHARED_LIBS_BACKUP ${BUILD_SHARED_LIBS})
+set(BUILD_SHARED_LIBS OFF CACHE INTERNAL "Build cJSON as static library")
+set(ENABLE_CJSON_TEST OFF CACHE INTERNAL "Disable cJSON tests")
+
 FetchContent_Declare(
   cJSON
   # GIT_REPOSITORY https://github.com/DaveGamble/cJSON.git
@@ -36,8 +42,11 @@ FetchContent_Declare(
 )
 FetchContent_MakeAvailable(cJSON)
 
+# Restore original BUILD_SHARED_LIBS setting
+set(BUILD_SHARED_LIBS ${BUILD_SHARED_LIBS_BACKUP})
+
 configure_file(${cJSON_SOURCE_DIR}/cJSON.h ${CMAKE_BINARY_DIR}/include/cJSON/cJSON.h)
-target_link_libraries(${PROJECT_NAME} PUBLIC cjson)
+target_link_libraries(${PROJECT_NAME} PRIVATE cjson)
 
 # Set up include directories properly for both build and install
 target_include_directories(${PROJECT_NAME}
