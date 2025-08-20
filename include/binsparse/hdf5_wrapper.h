@@ -13,6 +13,7 @@
 
 #include <unistd.h>
 
+#include <binsparse/detail/hdf5_types.h>
 #include <binsparse/detail/shm_tools.h>
 
 #if __STDC_VERSION__ >= 201112L

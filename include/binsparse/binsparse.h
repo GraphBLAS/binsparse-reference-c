@@ -13,7 +13,6 @@
 #include <binsparse/detail/detail.h>
 #include <binsparse/error.h>
 #include <binsparse/generate.h>
-#include <binsparse/hdf5_wrapper.h>
 #include <binsparse/matrix.h>
 #include <binsparse/matrix_market/matrix_market_inspector.h>
 #include <binsparse/matrix_market/matrix_market_read.h>
