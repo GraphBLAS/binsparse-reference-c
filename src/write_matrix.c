@@ -6,6 +6,7 @@
 
 #include <assert.h>
 #include <binsparse/binsparse_all.h>
+#include <binsparse/hdf5_wrapper.h>
 #include <binsparse/matrix.h>
 #include <cJSON/cJSON.h>
 #include <unistd.h>

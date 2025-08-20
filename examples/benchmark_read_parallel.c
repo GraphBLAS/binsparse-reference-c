@@ -7,6 +7,7 @@
 #include <binsparse/binsparse.h>
 #include <stdlib.h>
 #include <time.h>
+#include <unistd.h>
 
 double gettime() {
   struct timespec time;

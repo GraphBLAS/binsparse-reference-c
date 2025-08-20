@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
-#include <binsparse/binsparse.h>
+#include <binsparse/binsparse_all.h>
 
 int main(int argc, char** argv) {
   const char* file_name = "test.hdf5";

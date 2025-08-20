@@ -4,13 +4,15 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
+#include <binsparse/binsparse.h>
+#include <binsparse/hdf5_wrapper.h>
+#include <binsparse/read_tensor.h>
+
 #include <assert.h>
-#include <binsparse/tensor.h>
 #include <unistd.h>
 
-#include <binsparse/binsparse.h>
-#include <binsparse/read_tensor.h>
 #include <cJSON/cJSON.h>
+#include <hdf5.h>
 
 static cJSON* init_tensor_json(bsp_tensor_t tensor, cJSON* user_json) {
   cJSON* j = cJSON_CreateObject();

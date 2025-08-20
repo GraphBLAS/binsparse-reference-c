@@ -9,6 +9,8 @@
 #include <binsparse/detail/allocator.h>
 #include <binsparse/matrix.h>
 
+#include <binsparse/hdf5_wrapper.h>
+
 #include <hdf5.h>
 
 #ifndef BSP_BINSPARSE_HDF5_H

@@ -7,6 +7,8 @@
 #pragma once
 
 #include <assert.h>
+#include <stdbool.h>
+#include <stdint.h>
 
 typedef enum bsp_type_t {
   BSP_UINT8 = 0,
