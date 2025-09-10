@@ -19,107 +19,112 @@
 #include <binsparse/binsparse.h>
 #include <string.h>
 
-/**
- * Convert bsp_array_t to MATLAB array
- */
-mxArray* bsp_array_to_matlab(const bsp_array_t* array) {
+static inline void* bsp_matlab_malloc(size_t size) {
+  void* ptr = mxMalloc(size);
+  mexMakeMemoryPersistent(ptr);
+  return ptr;
+}
+
+static const bsp_allocator_t bsp_matlab_allocator = {
+    .malloc = bsp_matlab_malloc, .free = mxFree};
+
+static inline mxClassID get_mxClassID(bsp_type_t type) {
+  switch (type) {
+  case BSP_UINT8:
+    return mxUINT8_CLASS;
+  case BSP_UINT16:
+    return mxUINT16_CLASS;
+  case BSP_UINT32:
+    return mxUINT32_CLASS;
+  case BSP_UINT64:
+    return mxUINT64_CLASS;
+  case BSP_INT8:
+    return mxINT8_CLASS;
+  case BSP_INT16:
+    return mxINT16_CLASS;
+  case BSP_INT32:
+    return mxINT32_CLASS;
+  case BSP_INT64:
+    return mxINT64_CLASS;
+  case BSP_FLOAT32:
+    return mxSINGLE_CLASS;
+  case BSP_FLOAT64:
+    return mxDOUBLE_CLASS;
+  case BSP_BINT8: // Treat BSP_BINT8 as UINT8
+    return mxUINT8_CLASS;
+  case BSP_COMPLEX_FLOAT32:
+    return mxSINGLE_CLASS;
+  case BSP_COMPLEX_FLOAT64:
+    return mxDOUBLE_CLASS;
+  default:
+    return mxUNKNOWN_CLASS;
+  }
+}
+
+static inline mxComplexity get_mxComplexity(bsp_type_t type) {
+  if (type == BSP_COMPLEX_FLOAT32 || type == BSP_COMPLEX_FLOAT64) {
+    return mxCOMPLEX;
+  } else {
+    return mxREAL;
+  }
+}
+
+mxArray* bsp_array_to_matlab(bsp_array_t* array) {
   if (array->data == NULL || array->size == 0) {
     // Return empty array
-    return mxCreateDoubleMatrix(0, 1, mxREAL);
+    return mxCreateDoubleMatrix(1, 1, mxREAL);
+  }
+
+  if (get_mxClassID(array->type) == mxUNKNOWN_CLASS) {
+    mexWarnMsgIdAndTxt("BinSparse:UnsupportedType",
+                       "Unsupported array type %d, returning empty array",
+                       (int) array->type);
+    return mxCreateDoubleMatrix(1, 1, mxREAL);
   }
 
   mxArray* mx_array = NULL;
 
-  switch (array->type) {
-  case BSP_FLOAT64:
-    mx_array = mxCreateNumericMatrix(array->size, 1, mxDOUBLE_CLASS, mxREAL);
-    memcpy(mxGetPr(mx_array), array->data, array->size * sizeof(double));
-    break;
+  if ((array->allocator.malloc == bsp_matlab_allocator.malloc &&
+       array->allocator.free == bsp_matlab_allocator.free) &&
+      get_mxComplexity(array->type) == mxREAL) {
+    // Create mx_array in a zero-copy fashion.
 
-  case BSP_FLOAT32:
-    mx_array = mxCreateNumericMatrix(array->size, 1, mxSINGLE_CLASS, mxREAL);
-    memcpy(mxGetData(mx_array), array->data, array->size * sizeof(float));
-    break;
+    mx_array = mxCreateNumericMatrix(0, 1, get_mxClassID(array->type),
+                                     get_mxComplexity(array->type));
 
-  case BSP_UINT64:
-    mx_array = mxCreateNumericMatrix(array->size, 1, mxUINT64_CLASS, mxREAL);
-    memcpy(mxGetData(mx_array), array->data, array->size * sizeof(uint64_t));
-    break;
+    mxSetData(mx_array, array->data);
+    mxSetM(mx_array, array->size);
 
-  case BSP_UINT32:
-    mx_array = mxCreateNumericMatrix(array->size, 1, mxUINT32_CLASS, mxREAL);
-    memcpy(mxGetData(mx_array), array->data, array->size * sizeof(uint32_t));
-    break;
+    array->data = NULL;
+    array->size = 0;
+  } else {
+    mx_array = mxCreateNumericMatrix(array->size, 1, get_mxClassID(array->type),
+                                     get_mxComplexity(array->type));
 
-  case BSP_UINT16:
-    mx_array = mxCreateNumericMatrix(array->size, 1, mxUINT16_CLASS, mxREAL);
-    memcpy(mxGetData(mx_array), array->data, array->size * sizeof(uint16_t));
-    break;
-
-  case BSP_UINT8:
-    mx_array = mxCreateNumericMatrix(array->size, 1, mxUINT8_CLASS, mxREAL);
-    memcpy(mxGetData(mx_array), array->data, array->size * sizeof(uint8_t));
-    break;
-
-  case BSP_INT64:
-    mx_array = mxCreateNumericMatrix(array->size, 1, mxINT64_CLASS, mxREAL);
-    memcpy(mxGetData(mx_array), array->data, array->size * sizeof(int64_t));
-    break;
-
-  case BSP_INT32:
-    mx_array = mxCreateNumericMatrix(array->size, 1, mxINT32_CLASS, mxREAL);
-    memcpy(mxGetData(mx_array), array->data, array->size * sizeof(int32_t));
-    break;
-
-  case BSP_INT16:
-    mx_array = mxCreateNumericMatrix(array->size, 1, mxINT16_CLASS, mxREAL);
-    memcpy(mxGetData(mx_array), array->data, array->size * sizeof(int16_t));
-    break;
-
-  case BSP_INT8:
-    mx_array = mxCreateNumericMatrix(array->size, 1, mxINT8_CLASS, mxREAL);
-    memcpy(mxGetData(mx_array), array->data, array->size * sizeof(int8_t));
-    break;
-
-  case BSP_BINT8:
-    // Treat BSP_BINT8 as UINT8 as suggested
-    mx_array = mxCreateNumericMatrix(array->size, 1, mxUINT8_CLASS, mxREAL);
-    memcpy(mxGetData(mx_array), array->data, array->size * sizeof(int8_t));
-    break;
-
-  case BSP_COMPLEX_FLOAT64: {
-    mx_array = mxCreateNumericMatrix(array->size, 1, mxDOUBLE_CLASS, mxCOMPLEX);
-    double* in_data =
-        (double*) array->data; // Treat as array of adjacent real/imag pairs
-    double* real_data = mxGetPr(mx_array);
-    double* imag_data = mxGetPi(mx_array);
-    for (size_t i = 0; i < array->size; i++) {
-      real_data[i] = in_data[2 * i];     // Real part
-      imag_data[i] = in_data[2 * i + 1]; // Imaginary part
+    if (get_mxComplexity(array->type) == mxREAL) {
+      memcpy(mxGetData(mx_array), array->data,
+             array->size * bsp_type_size(array->type));
+    } else {
+      if (array->type == BSP_COMPLEX_FLOAT32) {
+        float* in_data =
+            (float*) array->data; // Treat as array of adjacent real/imag pairs
+        float* real_data = (float*) mxGetData(mx_array);
+        float* imag_data = (float*) mxGetImagData(mx_array);
+        for (size_t i = 0; i < array->size; i++) {
+          real_data[i] = in_data[2 * i];     // Real part
+          imag_data[i] = in_data[2 * i + 1]; // Imaginary part
+        }
+      } else {
+        double* in_data =
+            (double*) array->data; // Treat as array of adjacent real/imag pairs
+        double* real_data = mxGetPr(mx_array);
+        double* imag_data = mxGetPi(mx_array);
+        for (size_t i = 0; i < array->size; i++) {
+          real_data[i] = in_data[2 * i];     // Real part
+          imag_data[i] = in_data[2 * i + 1]; // Imaginary part
+        }
+      }
     }
-    break;
-  }
-
-  case BSP_COMPLEX_FLOAT32: {
-    mx_array = mxCreateNumericMatrix(array->size, 1, mxSINGLE_CLASS, mxCOMPLEX);
-    float* in_data =
-        (float*) array->data; // Treat as array of adjacent real/imag pairs
-    float* real_data = (float*) mxGetData(mx_array);
-    float* imag_data = (float*) mxGetImagData(mx_array);
-    for (size_t i = 0; i < array->size; i++) {
-      real_data[i] = in_data[2 * i];     // Real part
-      imag_data[i] = in_data[2 * i + 1]; // Imaginary part
-    }
-    break;
-  }
-
-  default:
-    // Fallback: create empty array
-    mx_array = mxCreateDoubleMatrix(0, 1, mxREAL);
-    mexWarnMsgIdAndTxt("BinSparse:UnsupportedType",
-                       "Unsupported array type %d, returning empty array",
-                       (int) array->type);
-    break;
   }
 
   return mx_array;
@@ -128,7 +133,7 @@ mxArray* bsp_array_to_matlab(const bsp_array_t* array) {
 /**
  * Convert bsp_matrix_t to MATLAB struct
  */
-mxArray* bsp_matrix_to_matlab_struct(const bsp_matrix_t* matrix) {
+mxArray* bsp_matrix_to_matlab_struct(bsp_matrix_t* matrix) {
   const char* field_names[] = {
       "values", "indices_0", "indices_1", "pointers_to_1", "nrows",
       "ncols",  "nnz",       "is_iso",    "format",        "structure"};
@@ -210,7 +215,8 @@ void mexFunction(int nlhs, mxArray* plhs[], int nrhs, const mxArray* prhs[]) {
   }
 
   // Read the matrix using Binsparse
-  error = bsp_read_matrix(&matrix, filename, group);
+  error =
+      bsp_read_matrix_allocator(&matrix, filename, group, bsp_matlab_allocator);
 
   if (error != BSP_SUCCESS) {
     // Clean up
@@ -228,6 +234,7 @@ void mexFunction(int nlhs, mxArray* plhs[], int nrhs, const mxArray* prhs[]) {
 
   // Clean up
   bsp_destroy_matrix_t(&matrix);
+
   if (filename)
     mxFree(filename);
   if (group)
