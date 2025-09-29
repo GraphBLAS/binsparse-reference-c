@@ -5,6 +5,7 @@
  */
 
 #include <binsparse/binsparse.h>
+#include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
 #include <unistd.h>
@@ -70,9 +71,10 @@ void flush_writes() {
 }
 
 void delete_file(const char* file_name) {
-  char command[2048];
-  snprintf(command, 2047, "rm %s", file_name);
-  int rv = system(command);
+  int rv = remove(file_name);
+  if (rv != 0) {
+    perror("delete_file");
+  }
 }
 
 int main(int argc, char** argv) {
