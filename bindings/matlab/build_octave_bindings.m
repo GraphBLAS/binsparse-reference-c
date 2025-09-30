@@ -60,7 +60,8 @@ compile_octave_functions(paths, verbose);
 fprintf('\n=== Build Complete ===\n');
 fprintf('Run the test functions to verify the installation:\n');
 fprintf('  test_binsparse_read()\n');
-fprintf('  test_binsparse_write()\n\n');
+fprintf('  test_binsparse_write()\n');
+fprintf('  test_write_binsparse_from_matlab()\n\n');
 
 end
 
@@ -103,7 +104,7 @@ function compile_octave_functions(paths, verbose)
     % Compile all MEX functions using mkoctfile
 
     % List of MEX functions to compile
-    mex_files = {'binsparse_read.c', 'binsparse_write.c'};
+    mex_files = {'binsparse_read.c', 'binsparse_write.c', 'write_binsparse_from_matlab.c'};
 
     fprintf('Compiling MEX functions with mkoctfile...\n');
 

@@ -57,6 +57,7 @@ mkoctfile --version
    ```matlab
    test_binsparse_read()
    test_binsparse_write()
+   test_write_binsparse_from_matlab()
    ```
 
 #### Option 2: Octave (from within Octave)
@@ -75,6 +76,7 @@ mkoctfile --version
    ```octave
    test_binsparse_read()
    test_binsparse_write()
+   test_write_binsparse_from_matlab()
    ```
 
 #### Option 3: Octave (from command line)
@@ -93,6 +95,7 @@ mkoctfile --version
    ```bash
    octave --eval "test_binsparse_read()"
    octave --eval "test_binsparse_write()"
+   octave --eval "test_write_binsparse_from_matlab()"
    ```
 
 ## Usage Examples
@@ -143,6 +146,25 @@ binsparse_write('output.bsp.h5', matrix, 'my_group', '{"author": "me"}');
 binsparse_write('output.bsp.h5', matrix, 'my_group', '{"author": "me"}', 6);
 ```
 
+### Writing from SuiteSparse Matrix Collection Format
+
+```matlab
+% Create a SuiteSparse Matrix Collection problem struct
+Problem = struct();
+Problem.name = 'test_matrix';
+Problem.A = sparse([1 2 3], [1 2 3], [1.5 2.5 3.5], 4, 4);
+Problem.title = 'Test Matrix';
+Problem.kind = 'artificial/test';
+
+% Write directly from SuiteSparse format to Binsparse
+write_binsparse_from_matlab(Problem, 'output.bsp.h5');
+
+% Write with optional parameters
+write_binsparse_from_matlab(Problem, 'output.bsp.h5', 'my_group');
+write_binsparse_from_matlab(Problem, 'output.bsp.h5', 'my_group', '{"test": "metadata"}');
+write_binsparse_from_matlab(Problem, 'output.bsp.h5', 'my_group', '{"test": "metadata"}', 6);
+```
+
 ### Error Handling
 
 The MEX functions include proper error handling:
@@ -161,15 +183,19 @@ end
 |------|-------------|
 | `binsparse_read.c` | MEX function for reading Binsparse matrix files |
 | `binsparse_write.c` | MEX function for writing Binsparse matrix files |
+| `write_binsparse_from_matlab.c` | MEX function for writing from SuiteSparse Matrix Collection format |
 | `build_matlab_bindings.m` | Main build script for MATLAB MEX functions |
 | `build_octave_bindings.m` | Main build script for Octave MEX functions |
 | `compile_binsparse_read.m` | Simple compilation script for read function (MATLAB) |
 | `compile_binsparse_write.m` | Simple compilation script for write function (MATLAB) |
+| `compile_write_binsparse_from_matlab.m` | Simple compilation script for SuiteSparse write function (MATLAB) |
 | `compile_binsparse_read_octave.m` | Simple compilation script for read function (Octave) |
 | `compile_binsparse_write_octave.m` | Simple compilation script for write function (Octave) |
+| `compile_write_binsparse_from_matlab_octave.m` | Simple compilation script for SuiteSparse write function (Octave) |
 | `compile_octave.sh` | Shell script for building Octave MEX functions |
 | `test_binsparse_read.m` | Test script for read functionality |
 | `test_binsparse_write.m` | Test script for write functionality |
+| `test_write_binsparse_from_matlab.m` | Test script for SuiteSparse write functionality |
 | `bsp_matrix_create.m` | Utility function for creating matrix structs |
 | `bsp_matrix_info.m` | Utility function for displaying matrix information |
 | `README.md` | This documentation file |

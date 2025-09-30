@@ -30,7 +30,7 @@ typedef struct bsp_matrix_t {
 static inline void
 bsp_construct_default_matrix_t_allocator(bsp_matrix_t* matrix,
                                          bsp_allocator_t allocator) {
-  bsp_construct_default_array_t(&matrix->values);
+  bsp_construct_default_array_t_allocator(&matrix->values, allocator);
   bsp_construct_default_array_t_allocator(&matrix->indices_0, allocator);
   bsp_construct_default_array_t_allocator(&matrix->indices_1, allocator);
   bsp_construct_default_array_t_allocator(&matrix->pointers_to_1, allocator);
