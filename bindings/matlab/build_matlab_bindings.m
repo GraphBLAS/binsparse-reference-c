@@ -68,7 +68,8 @@ function success = check_mex_compiler()
         if success
             fprintf('MEX compiler found: %s\n', cc(1).Name);
         end
-    catch
+    catch me
+        me
         success = false;
     end
 end
@@ -108,19 +109,34 @@ function compile_mex_functions(paths, verbose)
         fprintf('  Compiling %s... ', mex_file);
 
         % Prepare MEX command with library linking
+        % FIXME: use .so not .a
         lib_dir = fullfile(paths.binsparse_root, 'build');
-        lib_path = fullfile(lib_dir, 'libbinsparse.a');
-        cjson_lib = fullfile(lib_dir, '_deps', 'cjson-build', 'libcjson.so');
+        lib_path = fullfile(lib_dir, 'libbinsparse_dynamic.so');
+        cjson_lib = fullfile(lib_dir, '_deps', 'cjson-build', 'libcjson.a');
+        if (ismac)
+            rpath = '-rpath ' ;
+        elseif (isunix)
+            rpath = '-rpath=' ;
+        end
+        rpath = sprintf (' -Wl,%s''''%s'''' ', rpath, lib_dir) ;
+        rpath = [' LDFLAGS=''$LDFLAGS -fPIC ' rpath ' '' '] ;
 
-        mex_args = {'-I', paths.include_dir, mex_file, lib_path, cjson_lib, '-lhdf5_serial'};
-        if verbose
-            mex_args = [mex_args, {'-v'}];
+%       mex_args = {'-I', paths.include_dir, mex_file, lib_path, cjson_lib, '-lhdf5_serial'};
+        paths.include_dir
+        mex_args = sprintf ('mex -g -I%s %s %s %s %s -lhdf5_serial', ...
+            paths.include_dir, rpath, lib_path, mex_file, cjson_lib) ;
+%       if verbose
+        if 0
+%           mex_args = [mex_args, {'-v'}];
+            mex_args = [mex_args, ' -v'] ;
         end
 
         try
-            mex(mex_args{:});
+            mex_args
+            eval (mex_args) ;
             fprintf('SUCCESS\n');
-        catch ME
+        catch me
+            me
             fprintf('FAILED\n');
             fprintf('    Error: %s\n', ME.message);
         end

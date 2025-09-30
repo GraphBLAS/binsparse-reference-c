@@ -154,12 +154,15 @@ bsp_error_t bsp_read_matrix_from_group_parallel(bsp_matrix_t* matrix, hid_t f,
 
 bsp_error_t bsp_read_matrix_from_group_allocator(bsp_matrix_t* matrix, hid_t f,
                                                  bsp_allocator_t allocator) {
+  printf ("construct default allocator:\n") ;
   bsp_construct_default_matrix_t_allocator(matrix, allocator);
 
   char* json_string;
+  printf ("read attr allocator:\n") ;
   bsp_error_t error = bsp_read_attribute_allocator(
       &json_string, f, (char*) "binsparse", allocator);
   if (error != BSP_SUCCESS) {
+    printf ("fail here!:\n") ;
     return error;
   }
 
