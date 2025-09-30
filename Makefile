@@ -27,7 +27,7 @@ local:
 global:
 	( cd build && cmake $(F) $(CMAKE_OPTIONS) -USUITESPARSE_PKGFILEDIR -DSUITESPARSE_LOCAL_INSTALL=0 .. && cmake --build . --config Release -j${JOBS} )
 
-# compile with -g 
+# compile with -g
 debug:
 	( cd build && cmake -DCMAKE_BUILD_TYPE=Debug $(F) $(CMAKE_OPTIONS) .. && cmake --build . --config Debug -j$(JOBS) )
 
@@ -67,4 +67,3 @@ purge: distclean
 # remove all files not in the distribution
 distclean:
 	- rm -rf build/*
-

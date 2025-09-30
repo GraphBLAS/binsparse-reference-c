@@ -15,4 +15,3 @@ target_sources(binsparse_dynamic PRIVATE
   write_matrix.c
   write_tensor.c
 )
-
