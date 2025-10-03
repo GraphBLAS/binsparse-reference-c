@@ -225,7 +225,7 @@ bsp_error_t bsp_read_matrix_from_group_allocator(bsp_matrix_t* matrix, hid_t f,
     error = bsp_read_array_allocator(&matrix->values, f, (char*) "values",
                                      allocator);
     if (error != BSP_SUCCESS) {
-      free(json_string);
+      allocator.free(json_string);
       return error;
     }
 
@@ -250,7 +250,7 @@ bsp_error_t bsp_read_matrix_from_group_allocator(bsp_matrix_t* matrix, hid_t f,
     error = bsp_read_array_allocator(&matrix->indices_0, f, (char*) "indices_0",
                                      allocator);
     if (error != BSP_SUCCESS) {
-      free(json_string);
+      allocator.free(json_string);
       bsp_destroy_array_t(&matrix->values);
       return error;
     }
@@ -260,7 +260,7 @@ bsp_error_t bsp_read_matrix_from_group_allocator(bsp_matrix_t* matrix, hid_t f,
     error = bsp_read_array_allocator(&matrix->indices_1, f, (char*) "indices_1",
                                      allocator);
     if (error != BSP_SUCCESS) {
-      free(json_string);
+      allocator.free(json_string);
       bsp_destroy_array_t(&matrix->values);
       bsp_destroy_array_t(&matrix->indices_0);
       return error;
@@ -271,7 +271,7 @@ bsp_error_t bsp_read_matrix_from_group_allocator(bsp_matrix_t* matrix, hid_t f,
     error = bsp_read_array_allocator(&matrix->pointers_to_1, f,
                                      (char*) "pointers_to_1", allocator);
     if (error != BSP_SUCCESS) {
-      free(json_string);
+      allocator.free(json_string);
       bsp_destroy_array_t(&matrix->values);
       bsp_destroy_array_t(&matrix->indices_0);
       bsp_destroy_array_t(&matrix->indices_1);
@@ -287,7 +287,7 @@ bsp_error_t bsp_read_matrix_from_group_allocator(bsp_matrix_t* matrix, hid_t f,
   }
 
   cJSON_Delete(j);
-  free(json_string);
+  allocator.free(json_string);
 
   return BSP_SUCCESS;
 }
