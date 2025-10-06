@@ -287,7 +287,7 @@ void mexFunction(int nlhs, mxArray* plhs[], int nrhs, const mxArray* prhs[]) {
 
   mxArray* mx_problem = mxGetField(prhs[0], 0, "Problem");
 
-  if (!mxIsStruct(mx_problem)) {
+  if ((mx_problem == NULL) || !mxIsStruct(mx_problem)) {
     mexErrMsgIdAndTxt("BinSparse:InvalidProblemStruct",
                       "First argument must be a SuiteSparse Matrix Collection "
                       "problem struct");

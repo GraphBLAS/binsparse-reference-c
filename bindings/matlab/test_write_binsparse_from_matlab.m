@@ -50,6 +50,7 @@ try
     % Test 4: Create a basic SuiteSparse Matrix Collection problem struct
     fprintf('Test 4: Testing with basic SuiteSparse problem struct\n');
     problem = create_basic_problem_struct();
+    problem
 
     fprintf('Testing skeleton implementation with basic problem struct:\n');
     write_binsparse_from_matlab(problem, 'test_basic.bsp.h5');
