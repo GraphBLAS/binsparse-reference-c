@@ -10,8 +10,7 @@
 int main(int argc, char** argv) {
 
   if (argc < 3) {
-    printf(
-        "usage: ./bsp2mtx [inputfile_name.mtx] [outputfile_name.bsp.hdf5]\n");
+    printf("usage: ./bsp2mtx [inputfile_name.bsp.h5] [outputfile_name.mtx]\n");
     return 1;
   }
 

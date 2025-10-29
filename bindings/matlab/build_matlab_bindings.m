@@ -139,7 +139,7 @@ function compile_mex_functions(paths, verbose)
         catch me
             me
             fprintf('FAILED\n');
-            fprintf('    Error: %s\n', ME.message);
+            fprintf('    Error: %s\n', me.message);
         end
     end
 end

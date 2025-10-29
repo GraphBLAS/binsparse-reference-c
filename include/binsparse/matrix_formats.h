@@ -35,6 +35,8 @@ static inline char* bsp_get_matrix_format_string(bsp_matrix_format_t format) {
     return (char*) "CVEC";
   } else if (format == BSP_CSR) {
     return (char*) "CSR";
+  } else if (format == BSP_CSC) {
+    return (char*) "CSC";
   } else if (format == BSP_DCSR) {
     return (char*) "DCSR";
   } else if (format == BSP_DCSC) {

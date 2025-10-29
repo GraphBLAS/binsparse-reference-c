@@ -45,3 +45,24 @@ static int bsp_coo_comparison_row_sort_operator_impl_(const void* x,
     return bsp_compare_int_impl_(x_j, y_j);
   }
 }
+
+static int bsp_coo_comparison_col_sort_operator_impl_(const void* x,
+                                                      const void* y) {
+  size_t x_index = *((const size_t*) x);
+  size_t y_index = *((const size_t*) y);
+
+  size_t x_i, x_j;
+  size_t y_i, y_j;
+
+  bsp_array_read(bsp_coo_indices_.rowind, x_index, x_i);
+  bsp_array_read(bsp_coo_indices_.colind, x_index, x_j);
+
+  bsp_array_read(bsp_coo_indices_.rowind, y_index, y_i);
+  bsp_array_read(bsp_coo_indices_.colind, y_index, y_j);
+
+  if (x_j != y_j) {
+    return bsp_compare_int_impl_(x_j, y_j);
+  } else {
+    return bsp_compare_int_impl_(x_i, y_i);
+  }
+}
