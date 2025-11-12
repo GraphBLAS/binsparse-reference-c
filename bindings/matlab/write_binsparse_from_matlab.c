@@ -44,6 +44,16 @@ static inline void* bsp_matlab_malloc(size_t size) {
 static const bsp_allocator_t bsp_matlab_allocator = {
     .malloc = bsp_matlab_malloc, .free = mxFree};
 
+static inline void my_mxFree (void **p)
+{
+    if (p == NULL) return ;
+    if (*p != NULL)
+    {
+        mxFree (*p) ;
+        (*p) = NULL ;
+    }
+}
+
 typedef struct {
   double* values;
   mwIndex* rowind;
@@ -232,7 +242,7 @@ void print_problem_info(const mxArray* problem_struct) {
         char* str_value = mxArrayToString(field_value);
         if (str_value) {
           mexPrintf("      (string): \"%s\"\n", str_value);
-          mxFree(str_value);
+          // my_mxFree ((void **) &str_value);
         }
       } else if (mxIsSparse(field_value)) {
         mexPrintf("      (sparse matrix): %dx%d with %d non-zeros\n",
@@ -282,15 +292,20 @@ void mexFunction(int nlhs, mxArray* plhs[], int nrhs, const mxArray* prhs[]) {
   if (!mxIsStruct(prhs[0])) {
     mexErrMsgIdAndTxt("BinSparse:InvalidProblemStruct",
                       "First argument must be a SuiteSparse Matrix Collection "
-                      "problem struct");
+                      "problem struct (input is not a struct)");
   }
 
-  mxArray* mx_problem = mxGetField(prhs[0], 0, "Problem");
+  // for Octave? 
+  const mxArray* mx_problem = mxGetField(prhs[0], 0, "Problem");
+  if (mx_problem == NULL)
+  { 
+    mx_problem = prhs [0] ;
+  }
 
   if ((mx_problem == NULL) || !mxIsStruct(mx_problem)) {
     mexErrMsgIdAndTxt("BinSparse:InvalidProblemStruct",
                       "First argument must be a SuiteSparse Matrix Collection "
-                      "problem struct");
+                      "problem struct (input is not a Problem struct)");
   }
 
   // Extract sparse matrix from problem.A field
@@ -299,7 +314,7 @@ void mexFunction(int nlhs, mxArray* plhs[], int nrhs, const mxArray* prhs[]) {
   if (!mx_matrix) {
     mexErrMsgIdAndTxt("BinSparse:InvalidProblemStruct",
                       "First argument must be a SuiteSparse Matrix Collection "
-                      "problem struct");
+                      "problem struct (Problem.A does not exist)");
   }
 
   if (!mxIsSparse(mx_matrix)) {
@@ -363,14 +378,14 @@ void mexFunction(int nlhs, mxArray* plhs[], int nrhs, const mxArray* prhs[]) {
   // Get optional group name (third argument)
   if (nrhs >= 3 && !mxIsEmpty(prhs[2])) {
     if (!mxIsChar(prhs[2])) {
-      mxFree(filename);
+      // my_mxFree ((void **) &filename);
       mexErrMsgIdAndTxt("BinSparse:InvalidGroup",
                         "Group name must be a string");
     }
 
     group = mxArrayToString(prhs[2]);
     if (!group) {
-      mxFree(filename);
+      // my_mxFree ((void **) &filename);
       mexErrMsgIdAndTxt("BinSparse:MemoryError",
                         "Failed to convert group string");
     }
@@ -382,18 +397,16 @@ void mexFunction(int nlhs, mxArray* plhs[], int nrhs, const mxArray* prhs[]) {
   // Get optional JSON metadata (fourth argument)
   if (nrhs >= 4 && !mxIsEmpty(prhs[3])) {
     if (!mxIsChar(prhs[3])) {
-      if (group)
-        mxFree(group);
-      mxFree(filename);
+      // my_mxFree ((void **) &group);
+      // my_mxFree ((void **) &filename);
       mexErrMsgIdAndTxt("BinSparse:InvalidJSON",
                         "JSON metadata must be a string");
     }
 
     json_metadata = mxArrayToString(prhs[3]);
     if (!json_metadata) {
-      if (group)
-        mxFree(group);
-      mxFree(filename);
+      // my_mxFree ((void **) &group);
+      // my_mxFree ((void **) &filename);
       mexErrMsgIdAndTxt("BinSparse:MemoryError",
                         "Failed to convert JSON metadata string");
     }
@@ -406,11 +419,9 @@ void mexFunction(int nlhs, mxArray* plhs[], int nrhs, const mxArray* prhs[]) {
   if (nrhs >= 5 && !mxIsEmpty(prhs[4])) {
     if (!mxIsNumeric(prhs[4]) || mxIsComplex(prhs[4]) ||
         mxGetNumberOfElements(prhs[4]) != 1) {
-      if (json_metadata)
-        mxFree(json_metadata);
-      if (group)
-        mxFree(group);
-      mxFree(filename);
+      // my_mxFree ((void **) &json_metadata);
+      // my_mxFree ((void **) &group);
+      // my_mxFree ((void **) &filename);
       mexErrMsgIdAndTxt("BinSparse:InvalidCompression",
                         "Compression level must be a scalar integer");
     }
@@ -467,10 +478,7 @@ void mexFunction(int nlhs, mxArray* plhs[], int nrhs, const mxArray* prhs[]) {
   mexPrintf("Function completed successfully (skeleton mode)\n");
 
   // Clean up allocated strings
-  if (json_metadata)
-    mxFree(json_metadata);
-  if (group)
-    mxFree(group);
-  if (filename)
-    mxFree(filename);
+  // my_mxFree ((void **) &json_metadata);
+  // my_mxFree ((void **) &group);
+  // my_mxFree ((void **) &filename);
 }
