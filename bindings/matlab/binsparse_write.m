@@ -14,5 +14,3 @@ function binsparse_write(filename, matrix, group, json_string, compression_level
 % SPDX-License-Identifier: BSD-3-Clause
 
 error ('binsparse_write mexFunction not found; compile with build_matlab_bindings first') ;
-
-

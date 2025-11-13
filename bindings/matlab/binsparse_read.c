@@ -95,7 +95,6 @@ mxArray* bsp_array_to_matlab(bsp_array_t* array) {
     mx_array = mxCreateNumericMatrix(0, 1, get_mxClassID(array->type),
                                      get_mxComplexity(array->type));
 
-
     mxSetData(mx_array, array->data);
     mxSetM(mx_array, array->size);
 

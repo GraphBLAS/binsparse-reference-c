@@ -3,7 +3,6 @@
 # SPDX-License-Identifier: BSD-3-Clause
 
 function(download_data url file_name)
-  message ( STATUS "Downloading test data: ${file_name}" )
   set(DATASET_ARCHIVE ${CMAKE_BINARY_DIR}/data/${file_name})
 
   file(DOWNLOAD

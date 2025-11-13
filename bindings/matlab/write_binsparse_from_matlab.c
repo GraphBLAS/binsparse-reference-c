@@ -38,16 +38,8 @@
 #include <stdlib.h>
 #include <string.h>
 
-#if 0
-static inline void* bsp_matlab_malloc(size_t size) {
-  void* ptr = mxMalloc(size);
-  mexMakeMemoryPersistent(ptr);
-  return ptr;
-}
-#endif
-
-static const bsp_allocator_t bsp_matlab_allocator = {
-    .malloc = mxMalloc, .free = mxFree};
+static const bsp_allocator_t bsp_matlab_allocator = {.malloc = mxMalloc,
+                                                     .free = mxFree};
 
 typedef struct {
   double* values;
@@ -204,7 +196,8 @@ bsp_matrix_t merge_csc_with_zeros(matlab_csc_t matrix, matlab_csc_t zeros) {
 
     for (mwIndex zeros_i_ptr = zeros.colptr[j];
          zeros_i_ptr < zeros.colptr[j + 1]; zeros_i_ptr++) {
-      result_values[result_i_ptr] = zeros.values[zeros_i_ptr];  // FIXME: should be 0
+      result_values[result_i_ptr] =
+          zeros.values[zeros_i_ptr]; // FIXME: should be 0
       result_rowind[result_i_ptr] = zeros.rowind[zeros_i_ptr];
 
       result_i_ptr++;
@@ -246,7 +239,7 @@ void print_problem_info(const mxArray* problem_struct) {
         char* str_value = mxArrayToString(field_value);
         if (str_value) {
           mexPrintf("      (string): \"%s\"\n", str_value);
-          mxFree (str_value);
+          mxFree(str_value);
         }
       } else if (mxIsSparse(field_value)) {
         mexPrintf("      (sparse matrix): %dx%d with %d non-zeros\n",
@@ -296,21 +289,15 @@ void mexFunction(int nlhs, mxArray* plhs[], int nrhs, const mxArray* prhs[]) {
   if (!mxIsStruct(prhs[0])) {
     mexErrMsgIdAndTxt("BinSparse:InvalidProblemStruct",
                       "First argument must be a SuiteSparse Matrix Collection "
-                      "problem struct (input is not a struct)");
+                      "problem struct");
   }
 
-  // for Octave: the struct contains "Problem", which must be dereferences
-  const mxArray* mx_problem = mxGetField(prhs[0], 0, "Problem");
-  if (mx_problem == NULL)
-  { 
-    // for MATLAB: the struct is the Problem already, and contains .A, etc
-    mx_problem = prhs [0] ;
-  }
+  mxArray* mx_problem = mxGetField(prhs[0], 0, "Problem");
 
   if ((mx_problem == NULL) || !mxIsStruct(mx_problem)) {
     mexErrMsgIdAndTxt("BinSparse:InvalidProblemStruct",
                       "First argument must be a SuiteSparse Matrix Collection "
-                      "problem struct (input is not a Problem struct)");
+                      "problem struct");
   }
 
   // Extract sparse matrix from problem.A field
@@ -319,7 +306,7 @@ void mexFunction(int nlhs, mxArray* plhs[], int nrhs, const mxArray* prhs[]) {
   if (!mx_matrix) {
     mexErrMsgIdAndTxt("BinSparse:InvalidProblemStruct",
                       "First argument must be a SuiteSparse Matrix Collection "
-                      "problem struct (Problem.A does not exist)");
+                      "problem struct");
   }
 
   if (!mxIsSparse(mx_matrix)) {
@@ -474,7 +461,7 @@ void mexFunction(int nlhs, mxArray* plhs[], int nrhs, const mxArray* prhs[]) {
   mexPrintf("Function completed successfully (skeleton mode)\n");
 
   // Clean up allocated strings
-  mxFree (json_metadata);
-  mxFree (group);
-  mxFree (filename);
+  mxFree(json_metadata);
+  mxFree(group);
+  mxFree(filename);
 }
