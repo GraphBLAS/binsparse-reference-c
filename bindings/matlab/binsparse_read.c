@@ -84,6 +84,9 @@ mxArray* bsp_array_to_matlab(bsp_array_t* array) {
 
   mxArray* mx_array = NULL;
 
+  // FIXME: do not use seperate real/imag arrays. Use the new MATLAB interleaved
+  // complex API.
+
   if ((array->allocator.malloc == bsp_matlab_allocator.malloc &&
        array->allocator.free == bsp_matlab_allocator.free) &&
       get_mxComplexity(array->type) == mxREAL) {
@@ -91,6 +94,7 @@ mxArray* bsp_array_to_matlab(bsp_array_t* array) {
 
     mx_array = mxCreateNumericMatrix(0, 1, get_mxClassID(array->type),
                                      get_mxComplexity(array->type));
+
 
     mxSetData(mx_array, array->data);
     mxSetM(mx_array, array->size);

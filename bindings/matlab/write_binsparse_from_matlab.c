@@ -19,13 +19,16 @@
  * compression_level)
  *
  * Arguments:
- *   problem_struct    - SuiteSparse Matrix Collection problem struct with
- * fields: .name - Problem name (string) .A - Sparse matrix (MATLAB sparse
- * matrix) .title - Problem title (optional) .kind - Problem kind (optional)
- *                      .notes - Additional notes (optional)
- *   filename         - Output filename for the Binsparse file
- *   group           - Optional HDF5 group name (default: 'default')
- *   json_metadata   - Optional JSON metadata string
+ *   problem_struct - SuiteSparse Matrix Collection problem struct with fields:
+ *      .name - Problem name (string)
+ *      .A - Sparse matrix (MATLAB sparse matrix)
+ *      .Zeros - Sparse matrix with pattern of explicit zeros in the problem
+ *      .title - Problem title (optional)
+ *      .kind - Problem kind (optional)
+ *      .notes - Additional notes (optional)
+ *   filename          - Output filename for the Binsparse file
+ *   group             - Optional HDF5 group name (default: 'default')
+ *   json_metadata     - Optional JSON metadata string
  *   compression_level - Optional compression level (0-9, default: 1)
  */
 
@@ -35,24 +38,16 @@
 #include <stdlib.h>
 #include <string.h>
 
+#if 0
 static inline void* bsp_matlab_malloc(size_t size) {
   void* ptr = mxMalloc(size);
   mexMakeMemoryPersistent(ptr);
   return ptr;
 }
+#endif
 
 static const bsp_allocator_t bsp_matlab_allocator = {
-    .malloc = bsp_matlab_malloc, .free = mxFree};
-
-static inline void my_mxFree (void **p)
-{
-    if (p == NULL) return ;
-    if (*p != NULL)
-    {
-        mxFree (*p) ;
-        (*p) = NULL ;
-    }
-}
+    .malloc = mxMalloc, .free = mxFree};
 
 typedef struct {
   double* values;
@@ -135,8 +130,14 @@ bsp_matrix_t merge_csc_with_zeros(matlab_csc_t matrix, matlab_csc_t zeros) {
                                     bsp_matlab_allocator);
 
     double* result_values = (double*) result.values.data;
+    /*
+    OLD:
     mwIndex* result_rowind = (mwIndex*) result.pointers_to_1.data;
     mwIndex* result_colptr = (mwIndex*) result.indices_1.data;
+    */
+    // NEW:
+    mwIndex* result_rowind = (mwIndex*) result.indices_1.data;
+    mwIndex* result_colptr = (mwIndex*) result.pointers_to_1.data;
 
     for (size_t i = 0; i < result.values.size; i++) {
       result_values[i] = matrix.values[i];
@@ -187,6 +188,9 @@ bsp_matrix_t merge_csc_with_zeros(matlab_csc_t matrix, matlab_csc_t zeros) {
     result_colptr[j] = result_colptr[j - 1] + row_nnz_matrix + row_nnz_zeros;
   }
 
+  // FIXME: this produces a bsp_matrix_t with row indices out of order.
+  // Is that OK?
+
   for (mwIndex j = 0; j < result.ncols; j++) {
     mwIndex result_i_ptr = result_colptr[j];
 
@@ -200,7 +204,7 @@ bsp_matrix_t merge_csc_with_zeros(matlab_csc_t matrix, matlab_csc_t zeros) {
 
     for (mwIndex zeros_i_ptr = zeros.colptr[j];
          zeros_i_ptr < zeros.colptr[j + 1]; zeros_i_ptr++) {
-      result_values[result_i_ptr] = zeros.values[zeros_i_ptr];
+      result_values[result_i_ptr] = zeros.values[zeros_i_ptr];  // FIXME: should be 0
       result_rowind[result_i_ptr] = zeros.rowind[zeros_i_ptr];
 
       result_i_ptr++;
@@ -242,7 +246,7 @@ void print_problem_info(const mxArray* problem_struct) {
         char* str_value = mxArrayToString(field_value);
         if (str_value) {
           mexPrintf("      (string): \"%s\"\n", str_value);
-          // my_mxFree ((void **) &str_value);
+          mxFree (str_value);
         }
       } else if (mxIsSparse(field_value)) {
         mexPrintf("      (sparse matrix): %dx%d with %d non-zeros\n",
@@ -295,10 +299,11 @@ void mexFunction(int nlhs, mxArray* plhs[], int nrhs, const mxArray* prhs[]) {
                       "problem struct (input is not a struct)");
   }
 
-  // for Octave? 
+  // for Octave: the struct contains "Problem", which must be dereferences
   const mxArray* mx_problem = mxGetField(prhs[0], 0, "Problem");
   if (mx_problem == NULL)
   { 
+    // for MATLAB: the struct is the Problem already, and contains .A, etc
     mx_problem = prhs [0] ;
   }
 
@@ -378,14 +383,12 @@ void mexFunction(int nlhs, mxArray* plhs[], int nrhs, const mxArray* prhs[]) {
   // Get optional group name (third argument)
   if (nrhs >= 3 && !mxIsEmpty(prhs[2])) {
     if (!mxIsChar(prhs[2])) {
-      // my_mxFree ((void **) &filename);
       mexErrMsgIdAndTxt("BinSparse:InvalidGroup",
                         "Group name must be a string");
     }
 
     group = mxArrayToString(prhs[2]);
     if (!group) {
-      // my_mxFree ((void **) &filename);
       mexErrMsgIdAndTxt("BinSparse:MemoryError",
                         "Failed to convert group string");
     }
@@ -397,16 +400,12 @@ void mexFunction(int nlhs, mxArray* plhs[], int nrhs, const mxArray* prhs[]) {
   // Get optional JSON metadata (fourth argument)
   if (nrhs >= 4 && !mxIsEmpty(prhs[3])) {
     if (!mxIsChar(prhs[3])) {
-      // my_mxFree ((void **) &group);
-      // my_mxFree ((void **) &filename);
       mexErrMsgIdAndTxt("BinSparse:InvalidJSON",
                         "JSON metadata must be a string");
     }
 
     json_metadata = mxArrayToString(prhs[3]);
     if (!json_metadata) {
-      // my_mxFree ((void **) &group);
-      // my_mxFree ((void **) &filename);
       mexErrMsgIdAndTxt("BinSparse:MemoryError",
                         "Failed to convert JSON metadata string");
     }
@@ -419,9 +418,6 @@ void mexFunction(int nlhs, mxArray* plhs[], int nrhs, const mxArray* prhs[]) {
   if (nrhs >= 5 && !mxIsEmpty(prhs[4])) {
     if (!mxIsNumeric(prhs[4]) || mxIsComplex(prhs[4]) ||
         mxGetNumberOfElements(prhs[4]) != 1) {
-      // my_mxFree ((void **) &json_metadata);
-      // my_mxFree ((void **) &group);
-      // my_mxFree ((void **) &filename);
       mexErrMsgIdAndTxt("BinSparse:InvalidCompression",
                         "Compression level must be a scalar integer");
     }
@@ -478,7 +474,7 @@ void mexFunction(int nlhs, mxArray* plhs[], int nrhs, const mxArray* prhs[]) {
   mexPrintf("Function completed successfully (skeleton mode)\n");
 
   // Clean up allocated strings
-  // my_mxFree ((void **) &json_metadata);
-  // my_mxFree ((void **) &group);
-  // my_mxFree ((void **) &filename);
+  mxFree (json_metadata);
+  mxFree (group);
+  mxFree (filename);
 }

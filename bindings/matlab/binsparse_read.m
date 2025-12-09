@@ -7,5 +7,8 @@ function matrix = binsparse_read (filename, group)
 % FIXME: add documentation here
 %
 % Example:
+%   FIXME
 
-error ('binsparse mexFunction not found; compile with build_matlab_bindings first') ;
+% FIXME add copyright
+
+error ('binsparse_read mexFunction not found; compile with build_matlab_bindings first') ;

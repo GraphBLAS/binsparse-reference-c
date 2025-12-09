@@ -140,7 +140,7 @@ function problem = create_sparse_problem_struct()
     problem.notes = sprintf('Random %dx%d pentadiagonal matrix with %d non-zeros', ...
                            n, n, nnz(problem.A));
 
-    % Add matrix properties
+    % Add matrix properties: FIXME: why?
     problem.num_rows = n;
     problem.num_cols = n;
     problem.nnz = nnz(problem.A);
