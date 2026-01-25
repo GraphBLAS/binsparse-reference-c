@@ -1,3 +1,7 @@
+% SPDX-FileCopyrightText: 2024 Binsparse Developers
+%
+% SPDX-License-Identifier: BSD-3-Clause
+
 function matrix = binsparse_from_ssmc (A, Zeros, format)
 %BINSPARSE_FROM_SSMC convert SuiteSparse A+Zeros to a Binsparse matrix struct
 %
