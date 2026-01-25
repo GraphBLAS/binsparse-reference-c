@@ -2,7 +2,7 @@
 %
 % SPDX-License-Identifier: BSD-3-Clause
 
-function test_binsparse_roundtrip_dir(root_dir)
+function test_binsparse_roundtrip_dir(root_dir, temp_dir)
 % TEST_BINSPARSE_ROUNDTRIP_DIR - Round-trip binsparse files in a directory.
 %
 % This function scans a directory (recursively) for .h5 files, reads each
@@ -10,7 +10,7 @@ function test_binsparse_roundtrip_dir(root_dir)
 % reads back and checks for equivalence.
 
 if nargin < 1 || isempty(root_dir)
-    error('Usage: test_binsparse_roundtrip_dir(root_dir)');
+    error('Usage: test_binsparse_roundtrip_dir(root_dir, [temp_dir])');
 end
 
 if ~isfolder(root_dir)
@@ -23,6 +23,14 @@ end
 
 if ~exist('binsparse_write', 'file')
     error('binsparse_write MEX function not found. Build it first.');
+end
+
+if nargin < 2 || isempty(temp_dir)
+    temp_dir = '';
+end
+
+if ~isempty(temp_dir) && ~isfolder(temp_dir)
+    error('Temp directory not found: %s', temp_dir);
 end
 
 files = list_h5_files(root_dir);
@@ -41,7 +49,11 @@ for idx = 1:numel(files)
     try
         matrix = binsparse_read(file_path);
 
-        temp_file = [tempname(), '.bsp.h5'];
+        if isempty(temp_dir)
+            temp_file = [tempname(), '.bsp.h5'];
+        else
+            temp_file = [tempname(temp_dir), '.bsp.h5'];
+        end
         cleanup = onCleanup(@() cleanup_temp_file(temp_file));
 
         binsparse_write(temp_file, matrix);
