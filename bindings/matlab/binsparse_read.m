@@ -1,3 +1,7 @@
+% SPDX-FileCopyrightText: 2024 Binsparse Developers
+%
+% SPDX-License-Identifier: BSD-3-Clause
+
 function matrix = binsparse_read (filename, group)
 %BINSPARSE_READ read a sparse matrix from a binsparse hd5 file
 %
