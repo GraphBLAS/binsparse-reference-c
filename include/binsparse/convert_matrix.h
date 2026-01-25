@@ -10,9 +10,24 @@
 #include <binsparse/matrix.h>
 #include <binsparse/matrix_market/coo_sort_tools.h>
 #include <stdlib.h>
+#include <string.h>
 
-static inline bsp_matrix_t bsp_convert_matrix(bsp_matrix_t matrix,
-                                              bsp_matrix_format_t format) {
+static inline bsp_error_t
+bsp_copy_construct_array_t_allocator(bsp_array_t* array, bsp_array_t other,
+                                     bsp_allocator_t allocator) {
+  bsp_error_t error =
+      bsp_construct_array_t_allocator(array, other.size, other.type, allocator);
+  if (error != BSP_SUCCESS) {
+    return error;
+  }
+
+  memcpy(array->data, other.data, other.size * bsp_type_size(other.type));
+  return BSP_SUCCESS;
+}
+
+static inline bsp_matrix_t
+bsp_convert_matrix_allocator(bsp_matrix_t matrix, bsp_matrix_format_t format,
+                             bsp_allocator_t allocator) {
   // Throw an error if matrix already in desired format.
   if (matrix.format == format) {
     assert(false);
@@ -23,7 +38,7 @@ static inline bsp_matrix_t bsp_convert_matrix(bsp_matrix_t matrix,
     if (matrix.format == BSP_CSR) {
       // Convert CSR -> COOR
       bsp_matrix_t result;
-      bsp_construct_default_matrix_t(&result);
+      bsp_construct_default_matrix_t_allocator(&result, allocator);
 
       result.format = BSP_COOR;
 
@@ -40,11 +55,11 @@ static inline bsp_matrix_t bsp_convert_matrix(bsp_matrix_t matrix,
 
       bsp_type_t index_type = bsp_pick_integer_type(max_dim);
 
-      bsp_error_t error =
-          bsp_copy_construct_array_t(&result.values, matrix.values);
+      bsp_error_t error = bsp_copy_construct_array_t_allocator(
+          &result.values, matrix.values, allocator);
       if (error != BSP_SUCCESS) {
         bsp_matrix_t empty_result;
-        bsp_construct_default_matrix_t(&empty_result);
+        bsp_construct_default_matrix_t_allocator(&empty_result, allocator);
         return empty_result;
       }
 
@@ -53,20 +68,21 @@ static inline bsp_matrix_t bsp_convert_matrix(bsp_matrix_t matrix,
       // we might upcast.
 
       if (index_type == matrix.indices_1.type) {
-        error = bsp_copy_construct_array_t(&result.indices_1, matrix.indices_1);
+        error = bsp_copy_construct_array_t_allocator(
+            &result.indices_1, matrix.indices_1, allocator);
         if (error != BSP_SUCCESS) {
           bsp_destroy_array_t(&result.values);
           bsp_matrix_t empty_result;
-          bsp_construct_default_matrix_t(&empty_result);
+          bsp_construct_default_matrix_t_allocator(&empty_result, allocator);
           return empty_result;
         }
       } else {
-        error = bsp_construct_array_t(&result.indices_1, matrix.indices_1.size,
-                                      index_type);
+        error = bsp_construct_array_t_allocator(
+            &result.indices_1, matrix.indices_1.size, index_type, allocator);
         if (error != BSP_SUCCESS) {
           bsp_destroy_array_t(&result.values);
           bsp_matrix_t empty_result;
-          bsp_construct_default_matrix_t(&empty_result);
+          bsp_construct_default_matrix_t_allocator(&empty_result, allocator);
           return empty_result;
         }
 
@@ -77,12 +93,13 @@ static inline bsp_matrix_t bsp_convert_matrix(bsp_matrix_t matrix,
         }
       }
 
-      error = bsp_construct_array_t(&result.indices_0, matrix.nnz, index_type);
+      error = bsp_construct_array_t_allocator(&result.indices_0, matrix.nnz,
+                                              index_type, allocator);
       if (error != BSP_SUCCESS) {
         bsp_destroy_array_t(&result.values);
         bsp_destroy_array_t(&result.indices_1);
         bsp_matrix_t empty_result;
-        bsp_construct_default_matrix_t(&empty_result);
+        bsp_construct_default_matrix_t_allocator(&empty_result, allocator);
         return empty_result;
       }
 
@@ -98,7 +115,7 @@ static inline bsp_matrix_t bsp_convert_matrix(bsp_matrix_t matrix,
     } else if (matrix.format == BSP_CSC) {
       // Convert CSC -> COOR
       bsp_matrix_t result;
-      bsp_construct_default_matrix_t(&result);
+      bsp_construct_default_matrix_t_allocator(&result, allocator);
 
       result.format = BSP_COOR;
 
@@ -115,30 +132,31 @@ static inline bsp_matrix_t bsp_convert_matrix(bsp_matrix_t matrix,
 
       bsp_type_t index_type = bsp_pick_integer_type(max_dim);
 
-      bsp_error_t error =
-          bsp_copy_construct_array_t(&result.values, matrix.values);
+      bsp_error_t error = bsp_copy_construct_array_t_allocator(
+          &result.values, matrix.values, allocator);
       if (error != BSP_SUCCESS) {
         bsp_matrix_t empty_result;
-        bsp_construct_default_matrix_t(&empty_result);
+        bsp_construct_default_matrix_t_allocator(&empty_result, allocator);
         return empty_result;
       }
 
       // Copy row indices from CSC to become row indices in COOR.
       if (index_type == matrix.indices_1.type) {
-        error = bsp_copy_construct_array_t(&result.indices_0, matrix.indices_1);
+        error = bsp_copy_construct_array_t_allocator(
+            &result.indices_0, matrix.indices_1, allocator);
         if (error != BSP_SUCCESS) {
           bsp_destroy_array_t(&result.values);
           bsp_matrix_t empty_result;
-          bsp_construct_default_matrix_t(&empty_result);
+          bsp_construct_default_matrix_t_allocator(&empty_result, allocator);
           return empty_result;
         }
       } else {
-        error = bsp_construct_array_t(&result.indices_0, matrix.indices_1.size,
-                                      index_type);
+        error = bsp_construct_array_t_allocator(
+            &result.indices_0, matrix.indices_1.size, index_type, allocator);
         if (error != BSP_SUCCESS) {
           bsp_destroy_array_t(&result.values);
           bsp_matrix_t empty_result;
-          bsp_construct_default_matrix_t(&empty_result);
+          bsp_construct_default_matrix_t_allocator(&empty_result, allocator);
           return empty_result;
         }
 
@@ -150,12 +168,13 @@ static inline bsp_matrix_t bsp_convert_matrix(bsp_matrix_t matrix,
       }
 
       // Generate column indices by expanding column pointers.
-      error = bsp_construct_array_t(&result.indices_1, matrix.nnz, index_type);
+      error = bsp_construct_array_t_allocator(&result.indices_1, matrix.nnz,
+                                              index_type, allocator);
       if (error != BSP_SUCCESS) {
         bsp_destroy_array_t(&result.values);
         bsp_destroy_array_t(&result.indices_0);
         bsp_matrix_t empty_result;
-        bsp_construct_default_matrix_t(&empty_result);
+        bsp_construct_default_matrix_t_allocator(&empty_result, allocator);
         return empty_result;
       }
 
@@ -175,7 +194,7 @@ static inline bsp_matrix_t bsp_convert_matrix(bsp_matrix_t matrix,
         bsp_destroy_array_t(&result.indices_0);
         bsp_destroy_array_t(&result.indices_1);
         bsp_matrix_t empty_result;
-        bsp_construct_default_matrix_t(&empty_result);
+        bsp_construct_default_matrix_t_allocator(&empty_result, allocator);
         return empty_result;
       }
 
@@ -192,18 +211,20 @@ static inline bsp_matrix_t bsp_convert_matrix(bsp_matrix_t matrix,
       bsp_array_t rowind;
       bsp_array_t colind;
 
-      error = bsp_copy_construct_array_t(&rowind, result.indices_0);
+      error = bsp_copy_construct_array_t_allocator(&rowind, result.indices_0,
+                                                   allocator);
       if (error != BSP_SUCCESS) {
         free(indices);
         bsp_destroy_array_t(&result.values);
         bsp_destroy_array_t(&result.indices_0);
         bsp_destroy_array_t(&result.indices_1);
         bsp_matrix_t empty_result;
-        bsp_construct_default_matrix_t(&empty_result);
+        bsp_construct_default_matrix_t_allocator(&empty_result, allocator);
         return empty_result;
       }
 
-      error = bsp_copy_construct_array_t(&colind, result.indices_1);
+      error = bsp_copy_construct_array_t_allocator(&colind, result.indices_1,
+                                                   allocator);
       if (error != BSP_SUCCESS) {
         bsp_destroy_array_t(&rowind);
         free(indices);
@@ -211,14 +232,15 @@ static inline bsp_matrix_t bsp_convert_matrix(bsp_matrix_t matrix,
         bsp_destroy_array_t(&result.indices_0);
         bsp_destroy_array_t(&result.indices_1);
         bsp_matrix_t empty_result;
-        bsp_construct_default_matrix_t(&empty_result);
+        bsp_construct_default_matrix_t_allocator(&empty_result, allocator);
         return empty_result;
       }
 
       bsp_array_t values;
 
       if (!result.is_iso) {
-        error = bsp_copy_construct_array_t(&values, result.values);
+        error = bsp_copy_construct_array_t_allocator(&values, result.values,
+                                                     allocator);
         if (error != BSP_SUCCESS) {
           bsp_destroy_array_t(&rowind);
           bsp_destroy_array_t(&colind);
@@ -227,7 +249,7 @@ static inline bsp_matrix_t bsp_convert_matrix(bsp_matrix_t matrix,
           bsp_destroy_array_t(&result.indices_0);
           bsp_destroy_array_t(&result.indices_1);
           bsp_matrix_t empty_result;
-          bsp_construct_default_matrix_t(&empty_result);
+          bsp_construct_default_matrix_t_allocator(&empty_result, allocator);
           return empty_result;
         }
       }
@@ -261,8 +283,10 @@ static inline bsp_matrix_t bsp_convert_matrix(bsp_matrix_t matrix,
     // Currently only support COOR -> X.
     // If matrix is not COOR, convert to COOR.
     if (matrix.format != BSP_COOR) {
-      bsp_matrix_t intermediate = bsp_convert_matrix(matrix, BSP_COOR);
-      bsp_matrix_t result = bsp_convert_matrix(intermediate, format);
+      bsp_matrix_t intermediate =
+          bsp_convert_matrix_allocator(matrix, BSP_COOR, allocator);
+      bsp_matrix_t result =
+          bsp_convert_matrix_allocator(intermediate, format, allocator);
       bsp_destroy_matrix_t(&intermediate);
       return result;
     } else {
@@ -270,7 +294,7 @@ static inline bsp_matrix_t bsp_convert_matrix(bsp_matrix_t matrix,
         // Convert COOR -> CSR
 
         bsp_matrix_t result;
-        bsp_construct_default_matrix_t(&result);
+        bsp_construct_default_matrix_t_allocator(&result, allocator);
 
         result.format = BSP_CSR;
 
@@ -296,30 +320,30 @@ static inline bsp_matrix_t bsp_convert_matrix(bsp_matrix_t matrix,
         // indices can be copied exactly.  Values' type will not change, but
         // column indices might, thus the extra branch.
 
-        bsp_error_t error =
-            bsp_copy_construct_array_t(&result.values, matrix.values);
+        bsp_error_t error = bsp_copy_construct_array_t_allocator(
+            &result.values, matrix.values, allocator);
         if (error != BSP_SUCCESS) {
           bsp_matrix_t empty_result;
-          bsp_construct_default_matrix_t(&empty_result);
+          bsp_construct_default_matrix_t_allocator(&empty_result, allocator);
           return empty_result;
         }
 
         if (index_type == matrix.indices_1.type) {
-          error =
-              bsp_copy_construct_array_t(&result.indices_1, matrix.indices_1);
+          error = bsp_copy_construct_array_t_allocator(
+              &result.indices_1, matrix.indices_1, allocator);
           if (error != BSP_SUCCESS) {
             bsp_destroy_array_t(&result.values);
             bsp_matrix_t empty_result;
-            bsp_construct_default_matrix_t(&empty_result);
+            bsp_construct_default_matrix_t_allocator(&empty_result, allocator);
             return empty_result;
           }
         } else {
-          error =
-              bsp_construct_array_t(&result.indices_1, matrix.nnz, index_type);
+          error = bsp_construct_array_t_allocator(&result.indices_1, matrix.nnz,
+                                                  index_type, allocator);
           if (error != BSP_SUCCESS) {
             bsp_destroy_array_t(&result.values);
             bsp_matrix_t empty_result;
-            bsp_construct_default_matrix_t(&empty_result);
+            bsp_construct_default_matrix_t_allocator(&empty_result, allocator);
             return empty_result;
           }
 
@@ -330,13 +354,13 @@ static inline bsp_matrix_t bsp_convert_matrix(bsp_matrix_t matrix,
           }
         }
 
-        error = bsp_construct_array_t(&result.pointers_to_1, matrix.nrows + 1,
-                                      index_type);
+        error = bsp_construct_array_t_allocator(
+            &result.pointers_to_1, matrix.nrows + 1, index_type, allocator);
         if (error != BSP_SUCCESS) {
           bsp_destroy_array_t(&result.values);
           bsp_destroy_array_t(&result.indices_1);
           bsp_matrix_t empty_result;
-          bsp_construct_default_matrix_t(&empty_result);
+          bsp_construct_default_matrix_t_allocator(&empty_result, allocator);
           return empty_result;
         }
 
@@ -370,7 +394,7 @@ static inline bsp_matrix_t bsp_convert_matrix(bsp_matrix_t matrix,
         size_t* indices = (size_t*) malloc(sizeof(size_t) * matrix.nnz);
         if (indices == NULL) {
           bsp_matrix_t empty_result;
-          bsp_construct_default_matrix_t(&empty_result);
+          bsp_construct_default_matrix_t_allocator(&empty_result, allocator);
           return empty_result;
         }
 
@@ -385,7 +409,7 @@ static inline bsp_matrix_t bsp_convert_matrix(bsp_matrix_t matrix,
               bsp_coo_comparison_col_sort_operator_impl_);
 
         bsp_matrix_t result;
-        bsp_construct_default_matrix_t(&result);
+        bsp_construct_default_matrix_t_allocator(&result, allocator);
 
         result.format = BSP_CSC;
 
@@ -404,12 +428,12 @@ static inline bsp_matrix_t bsp_convert_matrix(bsp_matrix_t matrix,
         bsp_type_t index_type = bsp_pick_integer_type(max_value);
 
         // Reorder values according to column-major sort.
-        bsp_error_t error = bsp_construct_array_t(
-            &result.values, matrix.values.size, matrix.values.type);
+        bsp_error_t error = bsp_construct_array_t_allocator(
+            &result.values, matrix.values.size, matrix.values.type, allocator);
         if (error != BSP_SUCCESS) {
           free(indices);
           bsp_matrix_t empty_result;
-          bsp_construct_default_matrix_t(&empty_result);
+          bsp_construct_default_matrix_t_allocator(&empty_result, allocator);
           return empty_result;
         }
 
@@ -419,13 +443,13 @@ static inline bsp_matrix_t bsp_convert_matrix(bsp_matrix_t matrix,
         }
 
         // Reorder row indices according to column-major sort.
-        error =
-            bsp_construct_array_t(&result.indices_1, matrix.nnz, index_type);
+        error = bsp_construct_array_t_allocator(&result.indices_1, matrix.nnz,
+                                                index_type, allocator);
         if (error != BSP_SUCCESS) {
           bsp_destroy_array_t(&result.values);
           free(indices);
           bsp_matrix_t empty_result;
-          bsp_construct_default_matrix_t(&empty_result);
+          bsp_construct_default_matrix_t_allocator(&empty_result, allocator);
           return empty_result;
         }
 
@@ -434,14 +458,14 @@ static inline bsp_matrix_t bsp_convert_matrix(bsp_matrix_t matrix,
         }
 
         // Build column pointers.
-        error = bsp_construct_array_t(&result.pointers_to_1, matrix.ncols + 1,
-                                      index_type);
+        error = bsp_construct_array_t_allocator(
+            &result.pointers_to_1, matrix.ncols + 1, index_type, allocator);
         if (error != BSP_SUCCESS) {
           bsp_destroy_array_t(&result.values);
           bsp_destroy_array_t(&result.indices_1);
           free(indices);
           bsp_matrix_t empty_result;
-          bsp_construct_default_matrix_t(&empty_result);
+          bsp_construct_default_matrix_t_allocator(&empty_result, allocator);
           return empty_result;
         }
 
@@ -473,4 +497,9 @@ static inline bsp_matrix_t bsp_convert_matrix(bsp_matrix_t matrix,
       }
     }
   }
+}
+
+static inline bsp_matrix_t bsp_convert_matrix(bsp_matrix_t matrix,
+                                              bsp_matrix_format_t format) {
+  return bsp_convert_matrix_allocator(matrix, format, bsp_default_allocator);
 }

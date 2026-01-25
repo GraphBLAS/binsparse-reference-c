@@ -19,14 +19,8 @@
 #include <binsparse/binsparse.h>
 #include <string.h>
 
-static inline void* bsp_matlab_malloc(size_t size) {
-  void* ptr = mxMalloc(size);
-  mexMakeMemoryPersistent(ptr);
-  return ptr;
-}
-
-static const bsp_allocator_t bsp_matlab_allocator = {
-    .malloc = bsp_matlab_malloc, .free = mxFree};
+static const bsp_allocator_t bsp_matlab_allocator = {.malloc = mxMalloc,
+                                                     .free = mxFree};
 
 static inline mxClassID get_mxClassID(bsp_type_t type) {
   switch (type) {
@@ -71,15 +65,19 @@ static inline mxComplexity get_mxComplexity(bsp_type_t type) {
 
 mxArray* bsp_array_to_matlab(bsp_array_t* array) {
   if (array->data == NULL || array->size == 0) {
-    // Return empty array
-    return mxCreateDoubleMatrix(1, 1, mxREAL);
+    // Return empty array of the correct class
+    mxClassID class_id = get_mxClassID(array->type);
+    if (class_id == mxUNKNOWN_CLASS) {
+      class_id = mxDOUBLE_CLASS;
+    }
+    return mxCreateNumericMatrix(0, 1, class_id, get_mxComplexity(array->type));
   }
 
   if (get_mxClassID(array->type) == mxUNKNOWN_CLASS) {
     mexWarnMsgIdAndTxt("BinSparse:UnsupportedType",
                        "Unsupported array type %d, returning empty array",
                        (int) array->type);
-    return mxCreateDoubleMatrix(1, 1, mxREAL);
+    return mxCreateNumericMatrix(0, 1, mxDOUBLE_CLASS, mxREAL);
   }
 
   mxArray* mx_array = NULL;

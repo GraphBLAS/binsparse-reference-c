@@ -49,7 +49,6 @@ static void minimize_iso_values(bsp_matrix_t* matrix) {
       uint64_t current = 0;
       bsp_array_read((*values), i, current);
       if (current != first) {
-        mexPrintf("%lu != %lu\n", current, first);
         all_equal = false;
         break;
       }
@@ -93,7 +92,6 @@ static void minimize_iso_values(bsp_matrix_t* matrix) {
       int64_t current = 0;
       bsp_array_read((*values), i, current);
       if (current != first) {
-        mexPrintf("%lu != %lu\n", current, first);
         all_equal = false;
         break;
       }
@@ -133,7 +131,6 @@ static void minimize_iso_values(bsp_matrix_t* matrix) {
       float current = 0.0f;
       bsp_array_read((*values), i, current);
       if (current != first) {
-        mexPrintf("%lu != %lu\n", current, first);
         all_equal = false;
         break;
       }
@@ -162,7 +159,6 @@ static void minimize_iso_values(bsp_matrix_t* matrix) {
       double current = 0.0;
       bsp_array_read((*values), i, current);
       if (current != first) {
-        mexPrintf("%lu != %lu\n", current, first);
         all_equal = false;
         break;
       }
@@ -226,8 +222,6 @@ static void minimize_iso_values(bsp_matrix_t* matrix) {
     if (!all_equal) {
       return;
     }
-
-    mexPrintf("All equal!\n");
 
     bsp_array_t new_values;
     bsp_error_t error = bsp_construct_array_t_allocator(
@@ -495,7 +489,6 @@ static void minimize_index_array(bsp_array_t* array, const char* name) {
 }
 
 void mexFunction(int nlhs, mxArray* plhs[], int nrhs, const mxArray* prhs[]) {
-  mexPrintf("Running binsparse_minimize_types\n");
   if (nrhs != 1) {
     mexErrMsgIdAndTxt("BinSparse:InvalidArgs",
                       "Usage: matrix = binsparse_minimize_types(matrix)");
@@ -523,7 +516,6 @@ void mexFunction(int nlhs, mxArray* plhs[], int nrhs, const mxArray* prhs[]) {
   minimize_index_array(&matrix.indices_0, "indices_0");
   minimize_index_array(&matrix.indices_1, "indices_1");
   minimize_index_array(&matrix.pointers_to_1, "pointers_to_1");
-  mexPrintf("Minimizing ISO values:\n");
   minimize_iso_values(&matrix);
 
   plhs[0] = bsp_matrix_to_matlab_struct(&matrix);

@@ -333,7 +333,8 @@ void mexFunction(int nlhs, mxArray* plhs[], int nrhs, const mxArray* prhs[]) {
 
   bsp_matrix_t result = csc_matrix;
   if (target_format != BSP_CSC) {
-    result = bsp_convert_matrix(csc_matrix, target_format);
+    result = bsp_convert_matrix_allocator(csc_matrix, target_format,
+                                          bsp_matlab_allocator);
     bsp_destroy_matrix_t(&csc_matrix);
 
     if (result.format != target_format) {

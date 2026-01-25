@@ -64,9 +64,7 @@ static inline int extract_matlab_csc(const mxArray* mx_matrix,
 static inline bsp_error_t
 matlab_to_bsp_array_allocator(const mxArray* mx_array, bsp_array_t* array,
                               bsp_allocator_t allocator) {
-  if (mxIsEmpty(mx_array)) {
-    return bsp_construct_default_array_t_allocator(array, allocator);
-  }
+  bool is_empty = mxIsEmpty(mx_array);
 
   size_t size = mxGetNumberOfElements(mx_array);
   mxClassID class_id = mxGetClassID(mx_array);
@@ -130,6 +128,14 @@ matlab_to_bsp_array_allocator(const mxArray* mx_array, bsp_array_t* array,
     default:
       return BSP_INVALID_TYPE;
     }
+  }
+
+  if (is_empty) {
+    array->data = NULL;
+    array->size = 0;
+    array->type = bsp_type;
+    array->allocator = allocator;
+    return BSP_SUCCESS;
   }
 
   bsp_error_t error =
@@ -372,14 +378,24 @@ static inline mxComplexity get_mxComplexity(bsp_type_t type) {
 
 static inline mxArray* bsp_array_to_matlab(bsp_array_t* array) {
   if (!array || array->data == NULL || array->size == 0) {
-    return mxCreateDoubleMatrix(0, 0, mxREAL);
+    bsp_type_t type = array ? array->type : BSP_FLOAT64;
+    mxClassID class_id = get_mxClassID(type);
+    if (class_id == mxUNKNOWN_CLASS) {
+      class_id = mxDOUBLE_CLASS;
+      type = BSP_FLOAT64;
+    }
+    mxArray* empty_array =
+        mxCreateNumericMatrix(0, 1, class_id, get_mxComplexity(type));
+    return empty_array;
   }
 
   if (get_mxClassID(array->type) == mxUNKNOWN_CLASS) {
     mexWarnMsgIdAndTxt("BinSparse:UnsupportedType",
                        "Unsupported array type %d, returning empty array",
                        (int) array->type);
-    return mxCreateDoubleMatrix(0, 0, mxREAL);
+    mxArray* empty_array = mxCreateNumericMatrix(
+        0, 1, get_mxClassID(array->type), get_mxComplexity(array->type));
+    return empty_array;
   }
 
   mxArray* mx_array = NULL;

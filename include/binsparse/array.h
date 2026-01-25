@@ -25,6 +25,7 @@ bsp_construct_default_array_t_allocator(bsp_array_t* array,
                                         bsp_allocator_t allocator) {
   array->data = NULL;
   array->size = 0;
+  array->type = BSP_INVALID_TYPE;
   array->allocator = allocator;
   return BSP_SUCCESS;
 }
