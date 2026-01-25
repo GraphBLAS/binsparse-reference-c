@@ -34,7 +34,8 @@ fprintf('  libcjson.so: %s\n', cjson_lib);
 
 try
     % Compile with linking
-    mex('-I', include_dir, 'binsparse_write.c', lib_path, cjson_lib, '-lhdf5_serial', '-v');
+    mex('-I', include_dir, 'binsparse_write.c', lib_path, cjson_lib, ...
+        '-lhdf5_serial', '-v');
     fprintf('Successfully compiled binsparse_write!\n');
 
     % Test if it loads

@@ -104,7 +104,9 @@ function compile_octave_functions(paths, verbose)
     % Compile all MEX functions using mkoctfile
 
     % List of MEX functions to compile
-    mex_files = {'binsparse_read.c', 'binsparse_write.c', 'write_binsparse_from_matlab.c'};
+    mex_files = {'binsparse_read.c', 'binsparse_write.c', ...
+        'binsparse_from_ssmc.c', 'binsparse_minimize_types.c', ...
+        'write_binsparse_from_matlab.c'};
 
     fprintf('Compiling MEX functions with mkoctfile...\n');
 
