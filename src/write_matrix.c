@@ -21,10 +21,12 @@ char* bsp_generate_json(bsp_matrix_t matrix, cJSON* user_json) {
 
   cJSON_AddItemToObject(j, "binsparse", binsparse);
 
-  cJSON* item;
-  cJSON_ArrayForEach(item, user_json) {
-    cJSON* item_copy = cJSON_Duplicate(item, 1); // 1 = deep copy
-    cJSON_AddItemToObject(j, item->string, item_copy);
+  if (user_json != NULL) {
+    cJSON* item;
+    cJSON_ArrayForEach(item, user_json) {
+      cJSON* item_copy = cJSON_Duplicate(item, 1); // 1 = deep copy
+      cJSON_AddItemToObject(j, item->string, item_copy);
+    }
   }
 
   cJSON_AddStringToObject(binsparse, "version", BINSPARSE_VERSION);
@@ -136,7 +138,13 @@ bsp_error_t bsp_write_matrix_to_group_cjson(hid_t f, bsp_matrix_t matrix,
 bsp_error_t bsp_write_matrix_to_group(hid_t f, bsp_matrix_t matrix,
                                       const char* user_json,
                                       int compression_level) {
-  cJSON* user_json_cjson = cJSON_Parse(user_json);
+  cJSON* user_json_cjson = NULL;
+  if (user_json != NULL) {
+    user_json_cjson = cJSON_Parse(user_json);
+  }
+  if (user_json_cjson == NULL) {
+    user_json_cjson = cJSON_CreateObject();
+  }
   bsp_error_t error = bsp_write_matrix_to_group_cjson(
       f, matrix, user_json_cjson, compression_level);
   cJSON_Delete(user_json_cjson);
@@ -181,7 +189,13 @@ bsp_error_t bsp_write_matrix_cjson(const char* fname, bsp_matrix_t matrix,
 bsp_error_t bsp_write_matrix(const char* fname, bsp_matrix_t matrix,
                              const char* group, const char* user_json,
                              int compression_level) {
-  cJSON* user_json_cjson = cJSON_Parse(user_json);
+  cJSON* user_json_cjson = NULL;
+  if (user_json != NULL) {
+    user_json_cjson = cJSON_Parse(user_json);
+  }
+  if (user_json_cjson == NULL) {
+    user_json_cjson = cJSON_CreateObject();
+  }
 
   bsp_error_t error = bsp_write_matrix_cjson(
       fname, matrix, group, user_json_cjson, compression_level);

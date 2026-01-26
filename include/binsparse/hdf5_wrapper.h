@@ -293,6 +293,7 @@ bsp_read_attribute_allocator(char** string, hid_t f, const char* label,
   *string = (char*) allocator.malloc(size + 1);
 
   H5Aread(attribute, strtype, *string);
+  (*string)[size] = '\0';
 
   H5Aclose(attribute);
   H5Tclose(strtype);
