@@ -85,6 +85,8 @@ function mat = bsp_to_matlab(bsp)
             end
             mat = full(sparse(rows, cols, vals, bsp.nrows, bsp.ncols));
         case 'DMAT'
+            mat = reshape(bsp.values, [bsp.ncols, bsp.nrows]).';
+        case 'DMATC'
             mat = reshape(bsp.values, [bsp.nrows, bsp.ncols]);
         case 'DVEC'
             mat = reshape(bsp.values, [bsp.nrows, 1]);

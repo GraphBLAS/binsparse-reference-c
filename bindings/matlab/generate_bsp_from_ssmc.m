@@ -119,7 +119,7 @@ function fmt = dense_format_for(value)
     if isvector(value)
         fmt = 'DVEC';
     else
-        fmt = 'DMAT';
+        fmt = 'DMATC';
     end
 end
 

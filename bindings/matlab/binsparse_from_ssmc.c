@@ -186,9 +186,10 @@ static bsp_matrix_format_t parse_format(int nrhs, const mxArray* prhs[]) {
   mxFree(format_str);
 
   if (format != BSP_CSC && format != BSP_CSR && format != BSP_COO &&
-      format != BSP_COOR && format != BSP_DMAT && format != BSP_DVEC) {
+      format != BSP_COOR && format != BSP_DMAT && format != BSP_DMATC &&
+      format != BSP_DVEC) {
     mexErrMsgIdAndTxt("BinSparse:InvalidFormat",
-                      "Supported formats: CSC, CSR, COO, DMAT, DVEC");
+                      "Supported formats: CSC, CSR, COO, DMAT, DMATC, DVEC");
   }
 
   return format;
@@ -252,9 +253,9 @@ static void build_dense_matrix(const mxArray* mx_a, bsp_matrix_t* out,
                       "Dense vector requires DVEC format");
   }
 
-  if (!is_vector && format != BSP_DMAT) {
+  if (!is_vector && format != BSP_DMAT && format != BSP_DMATC) {
     mexErrMsgIdAndTxt("BinSparse:InvalidFormat",
-                      "Dense matrix requires DMAT format");
+                      "Dense matrix requires DMAT or DMATC format");
   }
 
   bsp_construct_default_matrix_t_allocator(out, bsp_matlab_allocator);
