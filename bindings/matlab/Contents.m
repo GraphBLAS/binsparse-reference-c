@@ -6,6 +6,7 @@
 %
 % Files
 %   binsparse_read                             - read a sparse matrix from a binsparse hd5 file
+%   convert_to_problem_struct                  - convert a Binsparse problem to an SSMC Problem
 %   binsparse_write                            - write a matrix to a file in binsparse hd5 format
 %   binsparse_from_ssmc                        - convert SSMC A+Zeros to a Binsparse matrix struct
 %   binsparse_minimize_types                   - minimize value/index types in a Binsparse struct
@@ -23,6 +24,7 @@
 %   compile_write_binsparse_from_matlab        - SPDX-FileCopyrightText: 2024 Binsparse Developers
 %   compile_write_binsparse_from_matlab_octave - SPDX-FileCopyrightText: 2024 Binsparse Developers
 %   test_binsparse_read                        - SPDX-FileCopyrightText: 2024 Binsparse Developers
+%   test_convert_to_problem_struct             - test Binsparse Problem conversion
 %   test_binsparse_write                       - SPDX-FileCopyrightText: 2024 Binsparse Developers
 %   test_bsp_matrix_struct                     - SPDX-FileCopyrightText: 2024 Binsparse Developers
 %   test_binsparse_from_ssmc                   - SPDX-FileCopyrightText: 2024 Binsparse Developers
