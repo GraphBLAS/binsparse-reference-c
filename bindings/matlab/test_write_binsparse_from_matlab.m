@@ -3,147 +3,98 @@
 % SPDX-License-Identifier: BSD-3-Clause
 
 function test_write_binsparse_from_matlab()
-% TEST_WRITE_BINSPARSE_FROM_MATLAB - Test the write_binsparse_from_matlab MEX function
-%
-% This function tests the write_binsparse_from_matlab MEX function by creating
-% sample SuiteSparse Matrix Collection problem structs and attempting to write
-% them to Binsparse format files.
+% TEST_WRITE_BINSPARSE_FROM_MATLAB - End-to-end test for the SSMC writer MEX
 
 fprintf('=== Testing write_binsparse_from_matlab MEX function ===\n\n');
 
+required = {'write_binsparse_from_matlab', 'binsparse_read'};
+for i = 1:numel(required)
+    if exist(required{i}, 'file') ~= 3
+        error('%s MEX function not found. Please compile it first.', required{i});
+    end
+end
+
 try
-    % Test 1: Check if MEX function exists and is callable
-    fprintf('Test 1: Checking MEX function availability\n');
-    if exist('write_binsparse_from_matlab', 'file') ~= 3
-        error('write_binsparse_from_matlab MEX function not found. Please compile it first.');
-    end
-    fprintf('✓ MEX function found\n\n');
-
-    % Test 2: Test with minimal arguments (should fail)
-    fprintf('Test 2: Testing error handling with insufficient arguments\n');
-    try
-        write_binsparse_from_matlab();
-        error('Expected error for insufficient arguments');
-    catch ME
-        if ~isempty(strfind(ME.identifier, 'BinSparse:InvalidArgs'))
-            fprintf('✓ Correctly handled insufficient arguments\n');
-        else
-            fprintf('✗ Unexpected error: %s\n', ME.message);
-        end
-    end
-    fprintf('\n');
-
-    % Test 3: Test with invalid problem struct
-    fprintf('Test 3: Testing error handling with invalid problem struct\n');
-    try
-        write_binsparse_from_matlab(42, 'test.bsp.h5');
-        error('Expected error for invalid problem struct');
-    catch ME
-        if ~isempty(strfind(ME.identifier, 'BinSparse:InvalidProblemStruct'))
-            fprintf('✓ Correctly handled invalid problem struct\n');
-        else
-            fprintf('✗ Unexpected error: %s\n', ME.message);
-        end
-    end
-    fprintf('\n');
-
-    % Test 4: Create a basic SuiteSparse Matrix Collection problem struct
-    fprintf('Test 4: Testing with basic SuiteSparse problem struct\n');
-    problem = create_basic_problem_struct();
-    problem
-
-    fprintf('Testing skeleton implementation with basic problem struct:\n');
-    write_binsparse_from_matlab(problem, 'test_basic.bsp.h5');
-    fprintf('✓ Basic test completed successfully\n\n');
-
-    % Test 5: Test with all optional arguments
-    fprintf('Test 5: Testing with all optional arguments\n');
-    problem_extended = create_extended_problem_struct();
-
-    fprintf('Testing with all arguments:\n');
-    write_binsparse_from_matlab(problem_extended, 'test_extended.bsp.h5', ...
-                                'my_group', '{"test": "metadata"}', 6);
-    fprintf('✓ Extended test completed successfully\n\n');
-
-    % Test 6: Test with real sparse matrix
-    fprintf('Test 6: Testing with real sparse matrix\n');
-    problem_sparse = create_sparse_problem_struct();
-
-    fprintf('Testing with sparse matrix:\n');
-    write_binsparse_from_matlab(problem_sparse, 'test_sparse.bsp.h5');
-    fprintf('✓ Sparse matrix test completed successfully\n\n');
-
-    fprintf('=== All tests passed! ===\n');
-    fprintf('Note: This is testing the skeleton implementation only.\n');
-    fprintf('The actual file writing functionality needs to be implemented.\n\n');
-
+    write_binsparse_from_matlab();
+    error('Expected insufficient-argument error');
 catch ME
-    fprintf('✗ Test failed: %s\n', ME.message);
-    fprintf('Stack trace:\n');
-    for i = 1:length(ME.stack)
-        fprintf('  %s (line %d)\n', ME.stack(i).name, ME.stack(i).line);
+    assert(strcmp(ME.identifier, 'BinSparse:InvalidArgs'), ...
+           'Unexpected identifier: %s', ME.identifier);
+end
+
+try
+    write_binsparse_from_matlab(42, 'invalid.bsp.h5');
+    error('Expected invalid-problem error');
+catch ME
+    assert(strcmp(ME.identifier, 'BinSparse:InvalidProblem'), ...
+           'Unexpected identifier: %s', ME.identifier);
+end
+
+Problem = struct();
+Problem.name = 'test_basic_matrix';
+Problem.title = 'Basic Test Matrix';
+Problem.kind = 'test matrix';
+Problem.A = sparse([1 3], [1 2], [5 7], 3, 3);
+Problem.Zeros = sparse(2, 3, 1, 3, 3);
+Problem.b = [1; 2; 3];
+Problem.aux = struct();
+Problem.aux.D = [10 20; 30 40];
+
+out_file = [tempname() '.bsp.h5'];
+cleanup_file = onCleanup(@() delete_if_exists(out_file));
+
+write_binsparse_from_matlab(struct('Problem', Problem), out_file, 'COO', [], 0);
+
+primary = bsp_to_matlab(binsparse_read(out_file));
+assert(isequal(double(primary), full(Problem.A)), 'Primary matrix mismatch');
+
+b = bsp_to_matlab(binsparse_read(out_file, 'b'));
+assert(isequal(double(b), Problem.b), 'b vector mismatch');
+
+D = bsp_to_matlab(binsparse_read(out_file, 'D'));
+assert(isequal(double(D), Problem.aux.D), 'aux.D mismatch');
+
+legacy_out_file = [tempname() '.bsp.h5'];
+cleanup_legacy = onCleanup(@() delete_if_exists(legacy_out_file));
+write_binsparse_from_matlab(Problem, legacy_out_file, 'legacy_group', '{}', 0);
+assert(exist(legacy_out_file, 'file') == 2, 'Legacy call did not create file');
+
+fprintf('Test passed.\n');
+
+end
+
+function mat = bsp_to_matlab(bsp)
+    fmt = upper(bsp.format);
+    switch fmt
+        case 'COO'
+            rows = double(bsp.indices_0) + 1;
+            cols = double(bsp.indices_1) + 1;
+            vals = bsp.values;
+            mat = full(sparse(rows, cols, vals, bsp.nrows, bsp.ncols));
+        case 'CSC'
+            colptr = double(bsp.pointers_to_1);
+            rowind = double(bsp.indices_1);
+            rows = [];
+            cols = [];
+            vals = [];
+            for j = 1:bsp.ncols
+                idx = (colptr(j) + 1):colptr(j + 1);
+                rows = [rows; rowind(idx) + 1];
+                cols = [cols; j * ones(numel(idx), 1)];
+                vals = [vals; bsp.values(idx)];
+            end
+            mat = full(sparse(rows, cols, vals, bsp.nrows, bsp.ncols));
+        case 'DMAT'
+            mat = reshape(bsp.values, [bsp.nrows, bsp.ncols]);
+        case 'DVEC'
+            mat = reshape(bsp.values, [bsp.nrows, 1]);
+        otherwise
+            error('Unsupported format in test: %s', fmt);
     end
 end
 
+function delete_if_exists(filename)
+if exist(filename, 'file')
+    delete(filename);
 end
-
-function problem = create_basic_problem_struct()
-    % Create a minimal SuiteSparse Matrix Collection problem struct
-    problem = struct();
-    problem.name = 'test_basic_matrix';
-    problem.A = speye(3); % 3x3 identity matrix
-    problem.title = 'Basic Test Matrix';
-    problem.kind = 'test matrix';
-end
-
-function problem = create_extended_problem_struct()
-    % Create an extended SuiteSparse Matrix Collection problem struct
-    problem = struct();
-    problem.name = 'test_extended_matrix';
-    problem.title = 'Extended Test Matrix with Metadata';
-    problem.kind = 'artificial/test';
-    problem.A = sparse([1 2 3], [1 2 3], [1.5 2.5 3.5], 4, 4);
-    problem.notes = 'This is a test matrix for validation';
-    problem.author = 'Test Suite';
-    problem.date = datestr(now);
-    problem.editor = 'MATLAB';
-
-    % Add some additional fields that might be present
-    problem.id = 12345;
-    problem.group = 'Test';
-    problem.num_rows = size(problem.A, 1);
-    problem.num_cols = size(problem.A, 2);
-    problem.nnz = nnz(problem.A);
-    problem.pattern_symmetry = 1.0;
-    problem.numerical_symmetry = 1.0;
-    problem.type = 'real';
-    problem.structure = 'unsymmetric';
-    problem.sprank = rank(full(problem.A));
-end
-
-function problem = create_sparse_problem_struct()
-    % Create a problem struct with a more complex sparse matrix
-    problem = struct();
-    problem.name = 'test_sparse_matrix';
-    problem.title = 'Sparse Test Matrix';
-    problem.kind = 'test/sparse';
-
-    % Create a 10x10 sparse matrix with some pattern
-    n = 10;
-    [i, j] = meshgrid(1:n, 1:n);
-    mask = abs(i - j) <= 2; % Pentadiagonal pattern
-    rows = i(mask);
-    cols = j(mask);
-    vals = randn(length(rows), 1); % Random values
-
-    problem.A = sparse(rows, cols, vals, n, n);
-    problem.notes = sprintf('Random %dx%d pentadiagonal matrix with %d non-zeros', ...
-                           n, n, nnz(problem.A));
-
-    % Add matrix properties: FIXME: why?
-    problem.num_rows = n;
-    problem.num_cols = n;
-    problem.nnz = nnz(problem.A);
-    problem.type = 'real';
-    problem.structure = 'unsymmetric';
 end

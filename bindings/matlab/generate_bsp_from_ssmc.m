@@ -54,7 +54,8 @@ else
 end
 
 mat = binsparse_minimize_types(mat);
-binsparse_write(output_filename, mat, '', [], compression_level);
+primary_metadata = metadata_json(P, 'A');
+binsparse_write(output_filename, mat, '', primary_metadata, compression_level);
 
 % Handle aux struct
 if isfield(P, 'aux') && isstruct(P.aux)
@@ -75,15 +76,27 @@ if isfield(P, 'b') && ~isempty(P.b)
     handle_aux_entry('b', P.b, output_filename, format, compression_level);
 end
 
-% Metadata handling not yet implemented
-fprintf('Note: metadata handling is not implemented yet.\n');
-
 end
 
 function handle_aux_entry(name, value, output_filename, format, compression_level)
-    if ischar(value) || (isstring(value) && isscalar(value))
-        fprintf('Note: aux entry "%s" is a string and is currently ignored.\n', name);
+    if isempty(value)
         return;
+    end
+
+    if iscell(value)
+        for k = 1:numel(value)
+            handle_aux_entry(sprintf('%s_%d', name, k), value{k}, ...
+                             output_filename, format, compression_level);
+        end
+        return;
+    end
+
+    if ischar(value) || (isstring(value) && isscalar(value))
+        return;
+    end
+
+    if islogical(value)
+        value = double(value);
     end
 
     if issparse(value)
@@ -96,7 +109,8 @@ function handle_aux_entry(name, value, output_filename, format, compression_leve
     end
 
     bsp = binsparse_minimize_types(bsp);
-    binsparse_write(output_filename, bsp, name, [], compression_level);
+    binsparse_write(output_filename, bsp, name, entry_metadata_json(name), ...
+                    compression_level);
 end
 
 function fmt = dense_format_for(value)
@@ -104,5 +118,45 @@ function fmt = dense_format_for(value)
         fmt = 'DVEC';
     else
         fmt = 'DMAT';
+    end
+end
+
+function json = metadata_json(P, role)
+    metadata_fields = {'name', 'title', 'id', 'date', 'author', 'ed', ...
+                       'editor', 'kind', 'notes', 'group', 'num_rows', ...
+                       'num_cols', 'nnz', 'pattern_symmetry', ...
+                       'numerical_symmetry', 'type', 'structure'};
+    metadata = struct();
+    metadata.role = role;
+
+    for i = 1:numel(metadata_fields)
+        field = metadata_fields{i};
+        if isfield(P, field)
+            value = P.(field);
+            if is_metadata_value(value)
+                metadata.(field) = value;
+            end
+        end
+    end
+
+    json = encode_json_or_empty(metadata);
+end
+
+function json = entry_metadata_json(role)
+    metadata = struct();
+    metadata.role = role;
+    json = encode_json_or_empty(metadata);
+end
+
+function ok = is_metadata_value(value)
+    ok = ischar(value) || isstring(value) || islogical(value) || ...
+         (isnumeric(value) && numel(value) <= 64);
+end
+
+function json = encode_json_or_empty(value)
+    try
+        json = jsonencode(value);
+    catch
+        json = [];
     end
 end
