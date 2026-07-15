@@ -8,7 +8,8 @@ function test_generate_bsp_from_ssmc()
 fprintf('=== Testing generate_bsp_from_ssmc ===\n\n');
 
 required = {'binsparse_from_ssmc', 'binsparse_minimize_types', ...
-            'binsparse_write', 'binsparse_read', 'generate_bsp_from_ssmc'};
+            'binsparse_write', 'binsparse_read', ...
+            'binsparse_write_string_dataset', 'generate_bsp_from_ssmc'};
 for i = 1:numel(required)
     if exist(required{i}, 'file') ~= 3 && exist(required{i}, 'file') ~= 2
         error('%s not found. Please compile MEX functions and ensure the .m file is on path.', required{i});
@@ -19,6 +20,12 @@ end
 Problem = struct();
 Problem.name = 'Test/Small';
 Problem.title = 'Small test';
+Problem.id = 7;
+Problem.date = '2026-06-03';
+Problem.author = 'Binsparse Developers';
+Problem.ed = 'Binsparse Developers';
+Problem.kind = 'test matrix';
+Problem.notes = char('first note', 'second note');
 Problem.A = sparse([1 3 4], [1 2 4], [5 6 7], 4, 4);
 Problem.Zeros = sparse([2 4], [2 1], [1 1], 4, 4);
 Problem.b = [10; 20; 30; 40];
@@ -27,7 +34,8 @@ Problem.aux = struct();
 Problem.aux.c = [1; 2; 3];
 Problem.aux.D = [1 0 2; 3 4 5];
 Problem.aux.S = sparse([1 2], [2 3], [9 8], 3, 3);
-Problem.aux.note = 'ignored.txt';
+Problem.aux.note = char('hello', 'there');
+Problem.aux.tags = {'alpha'; 'beta'};
 
 problem = struct('Problem', Problem);
 
@@ -56,6 +64,15 @@ aux_sparse_mat = bsp_to_matlab(aux_sparse);
 expected_sparse = full(Problem.aux.S);
 assert(matrices_equal(aux_sparse_mat, expected_sparse), 'Aux sparse matrix mismatch');
 
+check_string_dataset(out_file, 'note', {'hello'; 'there'});
+check_string_dataset(out_file, 'tags', {'alpha'; 'beta'});
+
+json = h5readatt(out_file, '/', 'binsparse');
+assert(contains(json, '"metadata"'), 'Primary metadata not nested');
+assert(~isempty(regexp(json, '"id"\s*:\s*7', 'once')), ...
+       'Primary metadata id is not a JSON number');
+assert(~contains(json, '"ssmc_metadata"'), 'Unexpected legacy metadata key');
+
 fprintf('Test passed.\n');
 
 end
@@ -65,6 +82,24 @@ function check_dense_group(filename, group, expected)
     actual = bsp_to_matlab(bsp);
     assert(matrices_equal(actual, expected), ...
            'Group "%s" mismatch', group);
+end
+
+function check_string_dataset(filename, name, expected)
+    actual = h5read(filename, ['/' name]);
+    actual = as_cellstr(actual);
+    assert(isequal(actual, expected), 'String dataset "%s" mismatch', name);
+end
+
+function value = as_cellstr(value)
+    if iscell(value)
+        value = value(:);
+    elseif isstring(value)
+        value = cellstr(value(:));
+    elseif ischar(value)
+        value = cellstr(value);
+    else
+        error('Unexpected string dataset value type');
+    end
 end
 
 function ok = matrices_equal(a, b)
