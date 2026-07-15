@@ -15,7 +15,8 @@
  * Usage in MATLAB/Octave:
  *   write_binsparse_from_matlab(problem_struct, filename)
  *   write_binsparse_from_matlab(problem_struct, filename, format)
- *   write_binsparse_from_matlab(problem_struct, filename, format, [], compression)
+ *   write_binsparse_from_matlab(problem_struct, filename, format, [],
+ * compression)
  *
  * For compatibility with the older scaffold, a non-format third string is
  * accepted and ignored as an HDF5 group name; generate_bsp_from_ssmc writes
@@ -31,7 +32,9 @@ static bool is_supported_sparse_format(const char* text) {
          strcasecmp(text, "COO") == 0 || strcasecmp(text, "COOR") == 0;
 }
 
-static mxArray* make_default_format(void) { return mxCreateString("COO"); }
+static mxArray* make_default_format(void) {
+  return mxCreateString("COO");
+}
 
 void mexFunction(int nlhs, mxArray* plhs[], int nrhs, const mxArray* prhs[]) {
   (void) plhs;
@@ -108,7 +111,6 @@ void mexFunction(int nlhs, mxArray* plhs[], int nrhs, const mxArray* prhs[]) {
   mxDestroyArray(compression);
 
   if (status != 0) {
-    mexErrMsgIdAndTxt("BinSparse:WriteFailed",
-                      "generate_bsp_from_ssmc failed");
+    mexErrMsgIdAndTxt("BinSparse:WriteFailed", "generate_bsp_from_ssmc failed");
   }
 }

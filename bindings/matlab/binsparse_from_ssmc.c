@@ -98,9 +98,8 @@ static void build_csc_merged(const matlab_csc_t* a, const matlab_csc_t* z,
   out->structure = BSP_GENERAL;
   out->is_iso = false;
 
-  error = construct_array_with_allocator(&out->values, out->nnz,
-                                         sparse_value_type(a),
-                                         bsp_matlab_allocator);
+  error = construct_array_with_allocator(
+      &out->values, out->nnz, sparse_value_type(a), bsp_matlab_allocator);
   if (error != BSP_SUCCESS) {
     mexErrMsgIdAndTxt("BinSparse:MemoryError",
                       "Failed to allocate values array");
@@ -206,9 +205,8 @@ static void build_csc_from_a(const matlab_csc_t* a, bsp_matrix_t* out) {
   out->structure = BSP_GENERAL;
   out->is_iso = false;
 
-  error = construct_array_with_allocator(&out->values, out->nnz,
-                                         sparse_value_type(a),
-                                         bsp_matlab_allocator);
+  error = construct_array_with_allocator(
+      &out->values, out->nnz, sparse_value_type(a), bsp_matlab_allocator);
   if (error != BSP_SUCCESS) {
     mexErrMsgIdAndTxt("BinSparse:MemoryError",
                       "Failed to allocate values array");
@@ -323,9 +321,8 @@ void mexFunction(int nlhs, mxArray* plhs[], int nrhs, const mxArray* prhs[]) {
     mx_zeros = prhs[1];
   }
 
-  if (mx_zeros &&
-      (mxIsComplex(mx_zeros) ||
-       (!mxIsDouble(mx_zeros) && !mxIsLogical(mx_zeros)))) {
+  if (mx_zeros && (mxIsComplex(mx_zeros) ||
+                   (!mxIsDouble(mx_zeros) && !mxIsLogical(mx_zeros)))) {
     mexErrMsgIdAndTxt("BinSparse:InvalidZeros",
                       "Zeros must be a real sparse double or logical matrix");
   }

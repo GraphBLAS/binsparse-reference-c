@@ -100,7 +100,8 @@ int main(int argc, char** argv) {
 
   bsp_mm_metadata m = bsp_mmread_metadata(input_fname);
   if (!bsp_mm_metadata_is_valid(m)) {
-    fprintf(stderr, "error: unable to read Matrix Market metadata from \"%s\".\n",
+    fprintf(stderr,
+            "error: unable to read Matrix Market metadata from \"%s\".\n",
             input_fname);
     bsp_destroy_mm_metadata(&m);
     bsp_destroy_fdataset_info_t(&info2);

@@ -143,8 +143,7 @@ void mexFunction(int nlhs, mxArray* plhs[], int nrhs, const mxArray* prhs[]) {
   }
 
   type = H5Tcopy(H5T_C_S1);
-  if (type == H5I_INVALID_HID ||
-      H5Tset_size(type, H5T_VARIABLE) < 0 ||
+  if (type == H5I_INVALID_HID || H5Tset_size(type, H5T_VARIABLE) < 0 ||
       H5Tset_cset(type, H5T_CSET_UTF8) < 0) {
     error_id = "BinSparse:HDF5Error";
     error_message = "Failed to create UTF-8 string datatype";
@@ -163,8 +162,8 @@ void mexFunction(int nlhs, mxArray* plhs[], int nrhs, const mxArray* prhs[]) {
     goto cleanup;
   }
 
-  dset = H5Dcreate2(file, dataset_name, type, space, H5P_DEFAULT,
-                    H5P_DEFAULT, H5P_DEFAULT);
+  dset = H5Dcreate2(file, dataset_name, type, space, H5P_DEFAULT, H5P_DEFAULT,
+                    H5P_DEFAULT);
   if (dset == H5I_INVALID_HID) {
     error_id = "BinSparse:HDF5Error";
     error_message = "Failed to create string dataset";

@@ -51,8 +51,7 @@ static inline int extract_matlab_csc(const mxArray* mx_matrix,
   csc_matrix->has_values = mxIsDouble(mx_matrix);
   csc_matrix->is_complex = mxIsComplex(mx_matrix);
   csc_matrix->values = csc_matrix->has_values ? mxGetPr(mx_matrix) : NULL;
-  csc_matrix->imag_values =
-      csc_matrix->is_complex ? mxGetPi(mx_matrix) : NULL;
+  csc_matrix->imag_values = csc_matrix->is_complex ? mxGetPi(mx_matrix) : NULL;
   csc_matrix->rowind = mxGetIr(mx_matrix);
   csc_matrix->colptr = mxGetJc(mx_matrix);
 
@@ -66,8 +65,7 @@ static inline int extract_matlab_csc(const mxArray* mx_matrix,
     csc_matrix->nnz = 0;
   }
 
-  if (csc_matrix->nnz > 0 && csc_matrix->has_values &&
-      !csc_matrix->values) {
+  if (csc_matrix->nnz > 0 && csc_matrix->has_values && !csc_matrix->values) {
     return -1;
   }
 
