@@ -19,14 +19,25 @@
 
 #include "mex.h"
 #include <binsparse/binsparse.h>
+#include <stdbool.h>
 #include <string.h>
 
 #include "matlab_bsp_helpers.h"
+
+static void lock_mex_module(void) {
+  static bool locked = false;
+  if (!locked) {
+    mexLock();
+    locked = true;
+  }
+}
 
 /**
  * Main MEX function entry point
  */
 void mexFunction(int nlhs, mxArray* plhs[], int nrhs, const mxArray* prhs[]) {
+  lock_mex_module();
+
   char* filename = NULL;
   char* group = NULL;
   char* json_string = NULL;

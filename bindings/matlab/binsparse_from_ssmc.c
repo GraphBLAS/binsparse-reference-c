@@ -26,6 +26,7 @@
 
 #include "mex.h"
 #include <binsparse/binsparse.h>
+#include <complex.h>
 #include <string.h>
 
 #include "matlab_bsp_helpers.h"
@@ -59,6 +60,32 @@ static bsp_error_t construct_array_with_allocator(bsp_array_t* array,
   return bsp_construct_array_t_allocator(array, size, type, allocator);
 }
 
+static bsp_type_t sparse_value_type(const matlab_csc_t* matrix) {
+  return matrix->is_complex ? BSP_COMPLEX_FLOAT64 : BSP_FLOAT64;
+}
+
+static void write_sparse_value(const matlab_csc_t* matrix, mwIndex src,
+                               bsp_matrix_t* out, uint64_t dst) {
+  if (matrix->is_complex) {
+    double _Complex* out_values = (double _Complex*) out->values.data;
+    double imag = matrix->imag_values ? matrix->imag_values[src] : 0.0;
+    out_values[dst] = matrix->values[src] + imag * I;
+  } else {
+    double* out_values = (double*) out->values.data;
+    out_values[dst] = matrix->values[src];
+  }
+}
+
+static void write_explicit_zero(bsp_matrix_t* out, uint64_t dst) {
+  if (out->values.type == BSP_COMPLEX_FLOAT64) {
+    double _Complex* out_values = (double _Complex*) out->values.data;
+    out_values[dst] = 0.0 + 0.0 * I;
+  } else {
+    double* out_values = (double*) out->values.data;
+    out_values[dst] = 0.0;
+  }
+}
+
 static void build_csc_merged(const matlab_csc_t* a, const matlab_csc_t* z,
                              bsp_matrix_t* out) {
   bsp_error_t error;
@@ -71,7 +98,8 @@ static void build_csc_merged(const matlab_csc_t* a, const matlab_csc_t* z,
   out->structure = BSP_GENERAL;
   out->is_iso = false;
 
-  error = construct_array_with_allocator(&out->values, out->nnz, BSP_FLOAT64,
+  error = construct_array_with_allocator(&out->values, out->nnz,
+                                         sparse_value_type(a),
                                          bsp_matlab_allocator);
   if (error != BSP_SUCCESS) {
     mexErrMsgIdAndTxt("BinSparse:MemoryError",
@@ -94,7 +122,6 @@ static void build_csc_merged(const matlab_csc_t* a, const matlab_csc_t* z,
 
   uint64_t* out_colptr = (uint64_t*) out->pointers_to_1.data;
   uint64_t* out_rowind = (uint64_t*) out->indices_1.data;
-  double* out_values = (double*) out->values.data;
 
   out_colptr[0] = 0;
   for (mwIndex j = 0; j < a->ncols; j++) {
@@ -113,12 +140,12 @@ static void build_csc_merged(const matlab_csc_t* a, const matlab_csc_t* z,
     while (a_ptr < a_end || z_ptr < z_end) {
       if (z_ptr >= z_end ||
           (a_ptr < a_end && a->rowind[a_ptr] < z->rowind[z_ptr])) {
-        out_values[out_ptr] = a->values[a_ptr];
+        write_sparse_value(a, a_ptr, out, out_ptr);
         out_rowind[out_ptr] = (uint64_t) a->rowind[a_ptr];
         a_ptr++;
       } else if (a_ptr >= a_end ||
                  (z_ptr < z_end && z->rowind[z_ptr] < a->rowind[a_ptr])) {
-        out_values[out_ptr] = 0.0;
+        write_explicit_zero(out, out_ptr);
         out_rowind[out_ptr] = (uint64_t) z->rowind[z_ptr];
         z_ptr++;
       } else {
@@ -179,7 +206,8 @@ static void build_csc_from_a(const matlab_csc_t* a, bsp_matrix_t* out) {
   out->structure = BSP_GENERAL;
   out->is_iso = false;
 
-  error = construct_array_with_allocator(&out->values, out->nnz, BSP_FLOAT64,
+  error = construct_array_with_allocator(&out->values, out->nnz,
+                                         sparse_value_type(a),
                                          bsp_matlab_allocator);
   if (error != BSP_SUCCESS) {
     mexErrMsgIdAndTxt("BinSparse:MemoryError",
@@ -202,10 +230,9 @@ static void build_csc_from_a(const matlab_csc_t* a, bsp_matrix_t* out) {
 
   uint64_t* out_colptr = (uint64_t*) out->pointers_to_1.data;
   uint64_t* out_rowind = (uint64_t*) out->indices_1.data;
-  double* out_values = (double*) out->values.data;
 
   for (size_t i = 0; i < out->nnz; i++) {
-    out_values[i] = a->values[i];
+    write_sparse_value(a, i, out, (uint64_t) i);
     out_rowind[i] = (uint64_t) a->rowind[i];
   }
 
@@ -286,9 +313,9 @@ void mexFunction(int nlhs, mxArray* plhs[], int nrhs, const mxArray* prhs[]) {
                       "Sparse matrix cannot use DMAT/DVEC formats");
   }
 
-  if (mxIsComplex(mx_a) || !mxIsDouble(mx_a)) {
+  if (!mxIsDouble(mx_a)) {
     mexErrMsgIdAndTxt("BinSparse:InvalidMatrix",
-                      "A must be a real sparse double matrix");
+                      "A must be a sparse double matrix");
   }
 
   const mxArray* mx_zeros = NULL;
@@ -296,9 +323,11 @@ void mexFunction(int nlhs, mxArray* plhs[], int nrhs, const mxArray* prhs[]) {
     mx_zeros = prhs[1];
   }
 
-  if (mx_zeros && (mxIsComplex(mx_zeros) || !mxIsDouble(mx_zeros))) {
+  if (mx_zeros &&
+      (mxIsComplex(mx_zeros) ||
+       (!mxIsDouble(mx_zeros) && !mxIsLogical(mx_zeros)))) {
     mexErrMsgIdAndTxt("BinSparse:InvalidZeros",
-                      "Zeros must be a real sparse double matrix");
+                      "Zeros must be a real sparse double or logical matrix");
   }
 
   if (mx_zeros &&

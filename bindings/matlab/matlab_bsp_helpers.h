@@ -8,15 +8,19 @@
 
 #include "mex.h"
 #include <binsparse/binsparse.h>
+#include <complex.h>
 #include <string.h>
 
 typedef struct {
   double* values;
+  double* imag_values;
   mwIndex* rowind;
   mwIndex* colptr;
   size_t nrows;
   size_t ncols;
   size_t nnz;
+  bool has_values;
+  bool is_complex;
 } matlab_csc_t;
 
 static const bsp_allocator_t bsp_matlab_allocator = {.malloc = mxMalloc,
@@ -32,11 +36,11 @@ static inline int extract_matlab_csc(const mxArray* mx_matrix,
     return -1;
   }
 
-  if (mxIsComplex(mx_matrix)) {
+  if (!mxIsDouble(mx_matrix) && !mxIsLogical(mx_matrix)) {
     return -1;
   }
 
-  if (!mxIsDouble(mx_matrix)) {
+  if (mxIsLogical(mx_matrix) && mxIsComplex(mx_matrix)) {
     return -1;
   }
 
@@ -44,11 +48,15 @@ static inline int extract_matlab_csc(const mxArray* mx_matrix,
   csc_matrix->ncols = mxGetN(mx_matrix);
   csc_matrix->nnz = mxGetNzmax(mx_matrix);
 
-  csc_matrix->values = mxGetPr(mx_matrix);
+  csc_matrix->has_values = mxIsDouble(mx_matrix);
+  csc_matrix->is_complex = mxIsComplex(mx_matrix);
+  csc_matrix->values = csc_matrix->has_values ? mxGetPr(mx_matrix) : NULL;
+  csc_matrix->imag_values =
+      csc_matrix->is_complex ? mxGetPi(mx_matrix) : NULL;
   csc_matrix->rowind = mxGetIr(mx_matrix);
   csc_matrix->colptr = mxGetJc(mx_matrix);
 
-  if (!csc_matrix->values || !csc_matrix->rowind || !csc_matrix->colptr) {
+  if (!csc_matrix->rowind || !csc_matrix->colptr) {
     return -1;
   }
 
@@ -56,6 +64,11 @@ static inline int extract_matlab_csc(const mxArray* mx_matrix,
     csc_matrix->nnz = csc_matrix->colptr[csc_matrix->ncols];
   } else {
     csc_matrix->nnz = 0;
+  }
+
+  if (csc_matrix->nnz > 0 && csc_matrix->has_values &&
+      !csc_matrix->values) {
+    return -1;
   }
 
   return 0;
@@ -148,18 +161,18 @@ matlab_to_bsp_array_allocator(const mxArray* mx_array, bsp_array_t* array,
     if (class_id == mxDOUBLE_CLASS) {
       double* real_data = mxGetPr(mx_array);
       double* imag_data = mxGetPi(mx_array);
-      double* out_data = (double*) array->data;
+      double _Complex* out_data = (double _Complex*) array->data;
       for (size_t i = 0; i < size; i++) {
-        out_data[2 * i] = real_data[i];
-        out_data[2 * i + 1] = imag_data[i];
+        double imag = imag_data ? imag_data[i] : 0.0;
+        out_data[i] = real_data[i] + imag * I;
       }
     } else {
       float* real_data = (float*) mxGetData(mx_array);
       float* imag_data = (float*) mxGetImagData(mx_array);
-      float* out_data = (float*) array->data;
+      float _Complex* out_data = (float _Complex*) array->data;
       for (size_t i = 0; i < size; i++) {
-        out_data[2 * i] = real_data[i];
-        out_data[2 * i + 1] = imag_data[i];
+        float imag = imag_data ? imag_data[i] : 0.0f;
+        out_data[i] = real_data[i] + imag * I;
       }
     }
   } else {
@@ -393,8 +406,7 @@ static inline mxArray* bsp_array_to_matlab(bsp_array_t* array) {
     mexWarnMsgIdAndTxt("BinSparse:UnsupportedType",
                        "Unsupported array type %d, returning empty array",
                        (int) array->type);
-    mxArray* empty_array = mxCreateNumericMatrix(
-        0, 1, get_mxClassID(array->type), get_mxComplexity(array->type));
+    mxArray* empty_array = mxCreateNumericMatrix(0, 1, mxDOUBLE_CLASS, mxREAL);
     return empty_array;
   }
 
@@ -420,20 +432,20 @@ static inline mxArray* bsp_array_to_matlab(bsp_array_t* array) {
              array->size * bsp_type_size(array->type));
     } else {
       if (array->type == BSP_COMPLEX_FLOAT32) {
-        float* in_data = (float*) array->data;
+        float _Complex* in_data = (float _Complex*) array->data;
         float* real_data = (float*) mxGetData(mx_array);
         float* imag_data = (float*) mxGetImagData(mx_array);
         for (size_t i = 0; i < array->size; i++) {
-          real_data[i] = in_data[2 * i];
-          imag_data[i] = in_data[2 * i + 1];
+          real_data[i] = crealf(in_data[i]);
+          imag_data[i] = cimagf(in_data[i]);
         }
       } else {
-        double* in_data = (double*) array->data;
+        double _Complex* in_data = (double _Complex*) array->data;
         double* real_data = mxGetPr(mx_array);
         double* imag_data = mxGetPi(mx_array);
         for (size_t i = 0; i < array->size; i++) {
-          real_data[i] = in_data[2 * i];
-          imag_data[i] = in_data[2 * i + 1];
+          real_data[i] = creal(in_data[i]);
+          imag_data[i] = cimag(in_data[i]);
         }
       }
     }

@@ -15,7 +15,6 @@
 #include "mex.h"
 #include <binsparse/binsparse.h>
 #include <complex.h>
-#include <math.h>
 #include <string.h>
 
 #include "matlab_bsp_helpers.h"
@@ -293,40 +292,6 @@ static void minimize_int64_values(bsp_matrix_t* matrix) {
   matrix->values = new_values;
 }
 
-static bool float_values_are_int64(const double* values, size_t count) {
-  for (size_t i = 0; i < count; i++) {
-    double value = values[i];
-    if (!isfinite(value)) {
-      return false;
-    }
-    if (value < (double) INT64_MIN || value > (double) INT64_MAX) {
-      return false;
-    }
-    int64_t ivalue = (int64_t) value;
-    if ((double) ivalue != value) {
-      return false;
-    }
-  }
-  return true;
-}
-
-static bool float32_values_are_int64(const float* values, size_t count) {
-  for (size_t i = 0; i < count; i++) {
-    float value = values[i];
-    if (!isfinite(value)) {
-      return false;
-    }
-    if (value < (float) INT64_MIN || value > (float) INT64_MAX) {
-      return false;
-    }
-    int64_t ivalue = (int64_t) value;
-    if ((float) ivalue != value) {
-      return false;
-    }
-  }
-  return true;
-}
-
 static void minimize_values_matlab(bsp_matrix_t* matrix) {
   if (matrix->values.size == 0) {
     return;
@@ -334,26 +299,6 @@ static void minimize_values_matlab(bsp_matrix_t* matrix) {
 
   if (matrix->values.type == BSP_FLOAT64) {
     double* values = (double*) matrix->values.data;
-
-    if (float_values_are_int64(values, matrix->values.size)) {
-      bsp_array_t new_values;
-      bsp_error_t error = bsp_construct_array_t_allocator(
-          &new_values, matrix->values.size, BSP_INT64, bsp_matlab_allocator);
-      if (error != BSP_SUCCESS) {
-        return;
-      }
-
-      int64_t* n_values = (int64_t*) new_values.data;
-      for (size_t i = 0; i < matrix->values.size; i++) {
-        n_values[i] = (int64_t) values[i];
-      }
-
-      bsp_destroy_array_t(&matrix->values);
-      matrix->values = new_values;
-      minimize_int64_values(matrix);
-      return;
-    }
-
     bool float32_representable = true;
     for (size_t i = 0; i < matrix->values.size; i++) {
       if (((float) values[i]) != values[i]) {
@@ -377,26 +322,6 @@ static void minimize_values_matlab(bsp_matrix_t* matrix) {
 
       bsp_destroy_array_t(&matrix->values);
       matrix->values = new_values;
-    }
-  } else if (matrix->values.type == BSP_FLOAT32) {
-    float* values = (float*) matrix->values.data;
-    if (float32_values_are_int64(values, matrix->values.size)) {
-      bsp_array_t new_values;
-      bsp_error_t error = bsp_construct_array_t_allocator(
-          &new_values, matrix->values.size, BSP_INT64, bsp_matlab_allocator);
-      if (error != BSP_SUCCESS) {
-        return;
-      }
-
-      int64_t* n_values = (int64_t*) new_values.data;
-      for (size_t i = 0; i < matrix->values.size; i++) {
-        n_values[i] = (int64_t) values[i];
-      }
-
-      bsp_destroy_array_t(&matrix->values);
-      matrix->values = new_values;
-      minimize_int64_values(matrix);
-      return;
     }
   } else if (matrix->values.type == BSP_INT64) {
     minimize_int64_values(matrix);
