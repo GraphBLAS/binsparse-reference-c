@@ -50,6 +50,9 @@ if verbose
     fprintf('Build paths:\n');
     fprintf('  Current dir: %s\n', paths.current_dir);
     fprintf('  Include dir: %s\n', paths.include_dir);
+    if ~isempty(paths.hdf5_include_dir)
+        fprintf('  HDF5 include dir: %s\n', paths.hdf5_include_dir);
+    end
     fprintf('  Root dir: %s\n', paths.binsparse_root);
     fprintf('\n');
 end
@@ -88,6 +91,7 @@ function paths = get_build_paths()
     paths.current_dir = pwd;
     paths.binsparse_root = fullfile(paths.current_dir, '..', '..');
     paths.include_dir = fullfile(paths.binsparse_root, 'include');
+    paths.hdf5_include_dir = hdf5_include_dir();
 
     if ~exist(paths.include_dir, 'dir')
         error('Binsparse include directory not found: %s\nEnsure you are running this script from the bindings/matlab directory.', paths.include_dir);
@@ -100,15 +104,26 @@ function paths = get_build_paths()
     end
 end
 
+function include_dir = hdf5_include_dir()
+    include_dir = '';
+    if exist('/usr/include/hdf5/serial', 'dir')
+        include_dir = '/usr/include/hdf5/serial';
+    elseif exist('/usr/include/hdf5', 'dir')
+        include_dir = '/usr/include/hdf5';
+    end
+end
+
 function compile_octave_functions(paths, verbose)
     % Compile all MEX functions using mkoctfile
 
     % List of MEX functions to compile
     mex_files = {'binsparse_read.c', 'binsparse_write.c', ...
         'binsparse_from_ssmc.c', 'binsparse_minimize_types.c', ...
-        'write_binsparse_from_matlab.c'};
+        'write_binsparse_from_matlab.c', ...
+        'binsparse_write_string_dataset.c'};
 
     fprintf('Compiling MEX functions with mkoctfile...\n');
+    failed_files = {};
 
     for i = 1:length(mex_files)
         mex_file = mex_files{i};
@@ -121,6 +136,10 @@ function compile_octave_functions(paths, verbose)
 
         % Prepare mkoctfile command with library linking
         include_flag = sprintf('-I%s', paths.include_dir);
+        if ~isempty(paths.hdf5_include_dir)
+            include_flag = sprintf('%s -I%s', include_flag, ...
+                paths.hdf5_include_dir);
+        end
         lib_dir = fullfile(paths.binsparse_root, 'build');
         lib_path = fullfile(lib_dir, 'libbinsparse.a');
         cjson_lib_dir = fullfile(lib_dir, '_deps', 'cjson-build');
@@ -148,7 +167,13 @@ function compile_octave_functions(paths, verbose)
         else
             fprintf('FAILED\n');
             fprintf('    Error output:\n%s\n', output);
+            failed_files{end+1} = mex_file;
         end
+    end
+
+    if ~isempty(failed_files)
+        error('Failed to compile MEX file(s): %s', ...
+              strjoin(failed_files, ', '));
     end
 end
 

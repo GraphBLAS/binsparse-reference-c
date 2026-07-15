@@ -102,6 +102,17 @@ fi
 
 print_info "Using Binsparse include directory: $INCLUDE_DIR"
 
+HDF5_INCLUDE_DIR=""
+if [ -d /usr/include/hdf5/serial ]; then
+    HDF5_INCLUDE_DIR="/usr/include/hdf5/serial"
+elif [ -d /usr/include/hdf5 ]; then
+    HDF5_INCLUDE_DIR="/usr/include/hdf5"
+fi
+
+if [ -n "$HDF5_INCLUDE_DIR" ]; then
+    print_info "Using HDF5 include directory: $HDF5_INCLUDE_DIR"
+fi
+
 # Change to script directory
 cd "$SCRIPT_DIR"
 
@@ -137,7 +148,7 @@ if [ "$CLEAN" = true ]; then
 fi
 
 # List of MEX files to compile
-MEX_FILES=("binsparse_read.c" "binsparse_write.c" "binsparse_from_ssmc.c" "binsparse_minimize_types.c" "write_binsparse_from_matlab.c")
+MEX_FILES=("binsparse_read.c" "binsparse_write.c" "binsparse_from_ssmc.c" "binsparse_minimize_types.c" "write_binsparse_from_matlab.c" "binsparse_write_string_dataset.c")
 
 print_info "Compiling MEX functions..."
 
@@ -155,7 +166,12 @@ for mex_file in "${MEX_FILES[@]}"; do
     LIB_PATH="$LIB_DIR/libbinsparse.a"
     CJSON_LIB_DIR="$LIB_DIR/_deps/cjson-build"
 
-    CMD="mkoctfile --mex -fPIC -I\"$INCLUDE_DIR\" $mex_file -Wl,--whole-archive \"$LIB_PATH\" -Wl,--no-whole-archive -L\"$CJSON_LIB_DIR\" -lcjson -lhdf5_serial"
+    INCLUDE_FLAGS="-I\"$INCLUDE_DIR\""
+    if [ -n "$HDF5_INCLUDE_DIR" ]; then
+        INCLUDE_FLAGS="$INCLUDE_FLAGS -I\"$HDF5_INCLUDE_DIR\""
+    fi
+
+    CMD="mkoctfile --mex -fPIC $INCLUDE_FLAGS $mex_file -Wl,--whole-archive \"$LIB_PATH\" -Wl,--no-whole-archive -L\"$CJSON_LIB_DIR\" -lcjson -lhdf5_serial"
 
     if [ "$VERBOSE" = true ]; then
         CMD="$CMD --verbose"

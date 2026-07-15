@@ -45,6 +45,9 @@ if verbose
     fprintf('Build paths:\n');
     fprintf('  MATLAB dir: %s\n', paths.matlab_dir);
     fprintf('  Include dir: %s\n', paths.include_dir);
+    if ~isempty(paths.hdf5_include_dir)
+        fprintf('  HDF5 include dir: %s\n', paths.hdf5_include_dir);
+    end
     fprintf('  Root dir: %s\n', paths.binsparse_root);
     fprintf('\n');
 end
@@ -80,6 +83,7 @@ function paths = get_build_paths()
     paths.matlab_dir = pwd;
     paths.binsparse_root = fullfile(paths.matlab_dir, '..', '..');
     paths.include_dir = fullfile(paths.binsparse_root, 'include');
+    paths.hdf5_include_dir = hdf5_include_dir();
 
     if ~exist(paths.include_dir, 'dir')
         error('Binsparse include directory not found: %s\nEnsure you are running this script from the bindings/matlab directory.', paths.include_dir);
@@ -92,15 +96,26 @@ function paths = get_build_paths()
     end
 end
 
+function include_dir = hdf5_include_dir()
+    include_dir = '';
+    if exist('/usr/include/hdf5/serial', 'dir')
+        include_dir = '/usr/include/hdf5/serial';
+    elseif exist('/usr/include/hdf5', 'dir')
+        include_dir = '/usr/include/hdf5';
+    end
+end
+
 function compile_mex_functions(paths, verbose)
     % Compile all MEX functions
 
     % List of MEX functions to compile
     mex_files = {'binsparse_read.c', 'binsparse_write.c', ...
         'binsparse_from_ssmc.c', 'binsparse_minimize_types.c', ...
-        'write_binsparse_from_matlab.c'};
+        'write_binsparse_from_matlab.c', ...
+        'binsparse_write_string_dataset.c'};
 
     fprintf('Compiling MEX functions...\n');
+    failed_files = {};
 
     for i = 1:length(mex_files)
         mex_file = mex_files{i};
@@ -125,9 +140,14 @@ function compile_mex_functions(paths, verbose)
         rpath = [' LDFLAGS=''$LDFLAGS -fPIC ' rpath ' '' '] ;
 
 %       mex_args = {'-I', paths.include_dir, mex_file, lib_path, cjson_lib, '-lhdf5_serial'};
-        paths.include_dir
-        mex_args = sprintf ('mex -g -I%s %s %s %s %s -lhdf5_serial', ...
-            paths.include_dir, rpath, lib_path, mex_file, cjson_lib) ;
+        include_flags = sprintf('-I%s', paths.include_dir);
+        if ~isempty(paths.hdf5_include_dir)
+            include_flags = sprintf('%s -I%s', include_flags, ...
+                paths.hdf5_include_dir);
+        end
+        include_flags
+        mex_args = sprintf ('mex -g %s %s %s %s %s -lhdf5_serial', ...
+            include_flags, rpath, lib_path, mex_file, cjson_lib) ;
 %       if verbose
         if 0
 %           mex_args = [mex_args, {'-v'}];
@@ -142,7 +162,13 @@ function compile_mex_functions(paths, verbose)
             me
             fprintf('FAILED\n');
             fprintf('    Error: %s\n', me.message);
+            failed_files{end+1} = mex_file;
         end
+    end
+
+    if ~isempty(failed_files)
+        error('Failed to compile MEX file(s): %s', ...
+              strjoin(failed_files, ', '));
     end
 end
 
