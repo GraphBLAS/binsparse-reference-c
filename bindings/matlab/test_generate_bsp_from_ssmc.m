@@ -25,7 +25,7 @@ Problem.date = '2026-06-03';
 Problem.author = 'Binsparse Developers';
 Problem.ed = 'Binsparse Developers';
 Problem.kind = 'test matrix';
-Problem.notes = char('first note', 'second note');
+Problem.notes = ['first note  '; 'second note '];
 Problem.A = sparse([1 3 4], [1 2 4], [5 6 7], 4, 4);
 Problem.Zeros = sparse([2 4], [2 1], [1 1], 4, 4);
 Problem.b = [10; 20; 30; 40];
@@ -34,7 +34,7 @@ Problem.aux = struct();
 Problem.aux.c = [1; 2; 3];
 Problem.aux.D = [1 0 2; 3 4 5];
 Problem.aux.S = sparse([1 2], [2 3], [9 8], 3, 3);
-Problem.aux.note = char('hello', 'there');
+Problem.aux.note = ['hello '; 'there '];
 Problem.aux.tags = {'alpha'; 'beta'};
 
 problem = struct('Problem', Problem);
@@ -64,7 +64,7 @@ aux_sparse_mat = bsp_to_matlab(aux_sparse);
 expected_sparse = full(Problem.aux.S);
 assert(matrices_equal(aux_sparse_mat, expected_sparse), 'Aux sparse matrix mismatch');
 
-check_string_dataset(out_file, 'note', {'hello'; 'there'});
+check_string_dataset(out_file, 'note', {'hello '; 'there '});
 check_string_dataset(out_file, 'tags', {'alpha'; 'beta'});
 
 json = h5readatt(out_file, '/', 'binsparse');

@@ -162,7 +162,7 @@ function write_string_dataset(output_filename, name, value)
         end
     elseif ischar(value)
         if size(value, 1) > 1
-            value = cellstr(value);
+            value = char_rows(value);
         else
             value = char(value);
         end
@@ -213,7 +213,7 @@ function [ok, value] = metadata_value(value)
     ok = false;
     if ischar(value)
         if size(value, 1) > 1
-            value = cellstr(value);
+            value = char_rows(value);
         else
             value = char(value);
         end
@@ -227,6 +227,13 @@ function [ok, value] = metadata_value(value)
         ok = true;
     elseif (islogical(value) || isnumeric(value)) && numel(value) <= 64
         ok = true;
+    end
+end
+
+function rows = char_rows(value)
+    rows = cell(size(value, 1), 1);
+    for k = 1:size(value, 1)
+        rows{k} = value(k, :);
     end
 end
 
