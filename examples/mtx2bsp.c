@@ -99,11 +99,24 @@ int main(int argc, char** argv) {
   }
 
   bsp_mm_metadata m = bsp_mmread_metadata(input_fname);
+  if (!bsp_mm_metadata_is_valid(m)) {
+    fprintf(stderr, "error: unable to read Matrix Market metadata from \"%s\".\n",
+            input_fname);
+    bsp_destroy_mm_metadata(&m);
+    bsp_destroy_fdataset_info_t(&info2);
+    return 1;
+  }
 
   bsp_matrix_format_t format = BSP_COOR;
   if (format_name != NULL) {
     format = bsp_get_matrix_format(format_name);
-    assert(format != 0);
+    if (format == BSP_INVALID_FORMAT) {
+      fprintf(stderr, "error: unsupported Binsparse format \"%s\".\n",
+              format_name);
+      bsp_destroy_mm_metadata(&m);
+      bsp_destroy_fdataset_info_t(&info2);
+      return 1;
+    }
   }
 
   printf("%lu x %lu matrix with %lu nonzeros.\n", m.nrows, m.ncols, m.nnz);

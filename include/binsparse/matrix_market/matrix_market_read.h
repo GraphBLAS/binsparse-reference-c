@@ -317,6 +317,12 @@ static inline bsp_matrix_t bsp_mmread_explicit(const char* file_path,
                                                bsp_type_t value_type,
                                                bsp_type_t index_type) {
   bsp_mm_metadata metadata = bsp_mmread_metadata(file_path);
+  if (!bsp_mm_metadata_is_valid(metadata)) {
+    bsp_matrix_t matrix;
+    bsp_construct_default_matrix_t(&matrix);
+    bsp_destroy_mm_metadata(&metadata);
+    return matrix;
+  }
 
   if (strcmp(metadata.format, "array") == 0) {
     bsp_destroy_mm_metadata(&metadata);
@@ -331,6 +337,12 @@ static inline bsp_matrix_t bsp_mmread_explicit(const char* file_path,
 
 static inline bsp_matrix_t bsp_mmread(const char* file_path) {
   bsp_mm_metadata metadata = bsp_mmread_metadata(file_path);
+  if (!bsp_mm_metadata_is_valid(metadata)) {
+    bsp_matrix_t matrix;
+    bsp_construct_default_matrix_t(&matrix);
+    bsp_destroy_mm_metadata(&metadata);
+    return matrix;
+  }
 
   bsp_type_t value_type;
 

@@ -94,11 +94,11 @@ static inline size_t bsp_type_size(bsp_type_t type) {
 // Given the maximum value `max_value` that must be stored,
 // pick an unsigned integer type for indices.
 static inline bsp_type_t bsp_pick_integer_type(size_t max_value) {
-  if (max_value < (size_t) UINT8_MAX) {
+  if (max_value <= (size_t) UINT8_MAX) {
     return BSP_UINT8;
-  } else if (max_value < (size_t) UINT16_MAX) {
+  } else if (max_value <= (size_t) UINT16_MAX) {
     return BSP_UINT16;
-  } else if (max_value < (size_t) UINT32_MAX) {
+  } else if (max_value <= (size_t) UINT32_MAX) {
     return BSP_UINT32;
   } else {
     return BSP_UINT64;

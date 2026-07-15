@@ -12,10 +12,23 @@
 #include <binsparse/matrix.h>
 #include <binsparse/matrix_market/matrix_market_read.h>
 #include <cJSON/cJSON.h>
+#include <unistd.h>
+
+static void bsp_prepare_hdf5_runtime(void) {
+  static bool initialized = false;
+  if (!initialized) {
+    H5dont_atexit();
+    initialized = true;
+  }
+}
 
 #if __STDC_VERSION__ >= 201112L
 bsp_error_t bsp_read_matrix_from_group_parallel(bsp_matrix_t* matrix, hid_t f,
                                                 int num_threads) {
+  if (f < 0) {
+    return BSP_ERROR_IO;
+  }
+
   bsp_construct_default_matrix_t(matrix);
 
   char* json_string;
@@ -154,61 +167,93 @@ bsp_error_t bsp_read_matrix_from_group_parallel(bsp_matrix_t* matrix, hid_t f,
 
 bsp_error_t bsp_read_matrix_from_group_allocator(bsp_matrix_t* matrix, hid_t f,
                                                  bsp_allocator_t allocator) {
-  printf("construct default allocator:\n");
+  if (f < 0) {
+    return BSP_ERROR_IO;
+  }
+
   bsp_construct_default_matrix_t_allocator(matrix, allocator);
 
   char* json_string;
-  printf("read attr allocator:\n");
   bsp_error_t error = bsp_read_attribute_allocator(
       &json_string, f, (char*) "binsparse", allocator);
   if (error != BSP_SUCCESS) {
-    printf("fail here!:\n");
     return error;
   }
 
   cJSON* j = cJSON_Parse(json_string);
 
-  assert(j != NULL);
-  assert(cJSON_IsObject(j));
+  if (j == NULL || !cJSON_IsObject(j)) {
+    allocator.free(json_string);
+    return BSP_ERROR_FORMAT;
+  }
 
   cJSON* binsparse = cJSON_GetObjectItemCaseSensitive(j, "binsparse");
-  assert(cJSON_IsObject(binsparse));
+  if (!cJSON_IsObject(binsparse)) {
+    cJSON_Delete(j);
+    allocator.free(json_string);
+    return BSP_ERROR_FORMAT;
+  }
 
   cJSON* version_ = cJSON_GetObjectItemCaseSensitive(binsparse, "version");
 
-  assert(version_ != NULL);
-
-  assert(cJSON_IsString(version_));
+  if (version_ == NULL || !cJSON_IsString(version_)) {
+    cJSON_Delete(j);
+    allocator.free(json_string);
+    return BSP_ERROR_FORMAT;
+  }
 
   // TODO: check version.
 
   cJSON* format_ = cJSON_GetObjectItemCaseSensitive(binsparse, "format");
-  assert(format_ != NULL);
+  if (format_ == NULL || !cJSON_IsString(format_)) {
+    cJSON_Delete(j);
+    allocator.free(json_string);
+    return BSP_ERROR_FORMAT;
+  }
   char* format_string = cJSON_GetStringValue(format_);
 
   bsp_matrix_format_t format = bsp_get_matrix_format(format_string);
 
-  assert(format != 0);
+  if (format == BSP_INVALID_FORMAT) {
+    cJSON_Delete(j);
+    allocator.free(json_string);
+    return BSP_ERROR_FORMAT;
+  }
 
   matrix->format = format;
 
   cJSON* nnz_ =
       cJSON_GetObjectItemCaseSensitive(binsparse, "number_of_stored_values");
-  assert(nnz_ != NULL);
+  if (nnz_ == NULL || !cJSON_IsNumber(nnz_)) {
+    cJSON_Delete(j);
+    allocator.free(json_string);
+    return BSP_ERROR_FORMAT;
+  }
   size_t nnz = cJSON_GetNumberValue(nnz_);
 
   cJSON* shape_ = cJSON_GetObjectItemCaseSensitive(binsparse, "shape");
-  assert(shape_ != NULL);
-
-  assert(cJSON_GetArraySize(shape_) == 2);
+  if (shape_ == NULL || !cJSON_IsArray(shape_) ||
+      cJSON_GetArraySize(shape_) != 2) {
+    cJSON_Delete(j);
+    allocator.free(json_string);
+    return BSP_ERROR_FORMAT;
+  }
 
   cJSON* nrows_ = cJSON_GetArrayItem(shape_, 0);
-  assert(nrows_ != NULL);
+  if (nrows_ == NULL || !cJSON_IsNumber(nrows_)) {
+    cJSON_Delete(j);
+    allocator.free(json_string);
+    return BSP_ERROR_FORMAT;
+  }
 
   size_t nrows = cJSON_GetNumberValue(nrows_);
 
   cJSON* ncols_ = cJSON_GetArrayItem(shape_, 1);
-  assert(ncols_ != NULL);
+  if (ncols_ == NULL || !cJSON_IsNumber(ncols_)) {
+    cJSON_Delete(j);
+    allocator.free(json_string);
+    return BSP_ERROR_FORMAT;
+  }
 
   size_t ncols = cJSON_GetNumberValue(ncols_);
 
@@ -219,7 +264,11 @@ bsp_error_t bsp_read_matrix_from_group_allocator(bsp_matrix_t* matrix, hid_t f,
 
   cJSON* data_types_ =
       cJSON_GetObjectItemCaseSensitive(binsparse, "data_types");
-  assert(data_types_ != NULL);
+  if (data_types_ == NULL || !cJSON_IsObject(data_types_)) {
+    cJSON_Delete(j);
+    allocator.free(json_string);
+    return BSP_ERROR_FORMAT;
+  }
 
   if (cJSON_HasObjectItem(data_types_, "values")) {
     error = bsp_read_array_allocator(&matrix->values, f, (char*) "values",
@@ -314,7 +363,14 @@ bsp_error_t bsp_read_matrix_parallel(bsp_matrix_t* matrix,
     size_t idx = bsp_final_dot(file_name);
     if (strcmp(file_name + idx, ".hdf5") == 0 ||
         strcmp(file_name + idx, ".h5") == 0) {
+      if (access(file_name, F_OK) != 0) {
+        return BSP_ERROR_IO;
+      }
+      bsp_prepare_hdf5_runtime();
       hid_t f = H5Fopen(file_name, H5F_ACC_RDONLY, H5P_DEFAULT);
+      if (f < 0) {
+        return BSP_ERROR_IO;
+      }
       bsp_error_t error =
           bsp_read_matrix_from_group_parallel(matrix, f, num_threads);
       H5Fclose(f);
@@ -327,8 +383,19 @@ bsp_error_t bsp_read_matrix_parallel(bsp_matrix_t* matrix,
       return BSP_ERROR_IO;
     }
   } else {
+    if (access(file_name, F_OK) != 0) {
+      return BSP_ERROR_IO;
+    }
+    bsp_prepare_hdf5_runtime();
     hid_t f = H5Fopen(file_name, H5F_ACC_RDONLY, H5P_DEFAULT);
+    if (f < 0) {
+      return BSP_ERROR_IO;
+    }
     hid_t g = H5Gopen1(f, group);
+    if (g < 0) {
+      H5Fclose(f);
+      return BSP_ERROR_IO;
+    }
     bsp_error_t error =
         bsp_read_matrix_from_group_parallel(matrix, g, num_threads);
     H5Gclose(g);
@@ -345,7 +412,14 @@ bsp_error_t bsp_read_matrix_allocator(bsp_matrix_t* matrix,
     size_t idx = bsp_final_dot(file_name);
     if (strcmp(file_name + idx, ".hdf5") == 0 ||
         strcmp(file_name + idx, ".h5") == 0) {
+      if (access(file_name, F_OK) != 0) {
+        return BSP_ERROR_IO;
+      }
+      bsp_prepare_hdf5_runtime();
       hid_t f = H5Fopen(file_name, H5F_ACC_RDONLY, H5P_DEFAULT);
+      if (f < 0) {
+        return BSP_ERROR_IO;
+      }
       bsp_error_t error =
           bsp_read_matrix_from_group_allocator(matrix, f, allocator);
       H5Fclose(f);
@@ -358,8 +432,19 @@ bsp_error_t bsp_read_matrix_allocator(bsp_matrix_t* matrix,
       return BSP_ERROR_IO;
     }
   } else {
+    if (access(file_name, F_OK) != 0) {
+      return BSP_ERROR_IO;
+    }
+    bsp_prepare_hdf5_runtime();
     hid_t f = H5Fopen(file_name, H5F_ACC_RDONLY, H5P_DEFAULT);
+    if (f < 0) {
+      return BSP_ERROR_IO;
+    }
     hid_t g = H5Gopen1(f, group);
+    if (g < 0) {
+      H5Fclose(f);
+      return BSP_ERROR_IO;
+    }
     bsp_error_t error =
         bsp_read_matrix_from_group_allocator(matrix, g, allocator);
     H5Gclose(g);

@@ -8,7 +8,10 @@
 
 #include <assert.h>
 #include <ctype.h>
+#include <stdbool.h>
 #include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 
 #include <binsparse/structure.h>
 
@@ -36,17 +39,34 @@ static inline void bsp_destroy_mm_metadata(bsp_mm_metadata* metadata) {
   free(metadata->comments);
 }
 
+static inline bool bsp_mm_metadata_is_valid(bsp_mm_metadata metadata) {
+  return metadata.format[0] != '\0' && metadata.type[0] != '\0' &&
+         metadata.structure[0] != '\0';
+}
+
 static inline bsp_mm_metadata bsp_mmread_metadata(const char* file_path) {
+  bsp_mm_metadata metadata = {0};
+  metadata.comments = (char*) calloc(1, sizeof(char));
+  if (metadata.comments == NULL) {
+    return metadata;
+  }
+
   FILE* f = fopen(file_path, "r");
 
-  assert(f != NULL);
-
-  bsp_mm_metadata metadata;
+  if (f == NULL) {
+    return metadata;
+  }
 
   int read_items = fscanf(f, "%%%%MatrixMarket matrix %s %s %s\n",
                           metadata.format, metadata.type, metadata.structure);
 
-  assert(read_items == 3);
+  if (read_items != 3) {
+    fclose(f);
+    metadata.format[0] = '\0';
+    metadata.type[0] = '\0';
+    metadata.structure[0] = '\0';
+    return metadata;
+  }
 
   for (size_t i = 0; i < strlen(metadata.structure); i++) {
     metadata.structure[i] = tolower(metadata.structure[i]);
@@ -58,10 +78,25 @@ static inline bsp_mm_metadata bsp_mmread_metadata(const char* file_path) {
   size_t comments_capacity = 2048;
   size_t comments_size = 0;
   char* comments = (char*) malloc(sizeof(char) * comments_capacity);
+  if (comments == NULL) {
+    fclose(f);
+    metadata.format[0] = '\0';
+    metadata.type[0] = '\0';
+    metadata.structure[0] = '\0';
+    return metadata;
+  }
+  comments[0] = '\0';
 
   while (!outOfComments) {
     char* line = fgets(buf, 2048, f);
-    assert(line != NULL);
+    if (line == NULL) {
+      free(comments);
+      fclose(f);
+      metadata.format[0] = '\0';
+      metadata.type[0] = '\0';
+      metadata.structure[0] = '\0';
+      return metadata;
+    }
 
     if (line[0] != '%') {
       outOfComments = 1;
@@ -72,25 +107,49 @@ static inline bsp_mm_metadata bsp_mmread_metadata(const char* file_path) {
         while (comments_size + strlen(line) > comments_capacity) {
           comments_capacity <<= 1;
         }
-        comments = (char*) realloc(comments, sizeof(char) * comments_capacity);
+        char* resized =
+            (char*) realloc(comments, sizeof(char) * comments_capacity);
+        if (resized == NULL) {
+          free(comments);
+          fclose(f);
+          metadata.format[0] = '\0';
+          metadata.type[0] = '\0';
+          metadata.structure[0] = '\0';
+          return metadata;
+        }
+        comments = resized;
       }
 
       memcpy(comments + comments_size, line, strlen(line));
       comments_size += strlen(line);
+      comments[comments_size] = '\0';
     }
   }
 
-  if (comments[comments_size - 1] == '\n') {
+  if (comments_size > 0 && comments[comments_size - 1] == '\n') {
     comments[comments_size - 1] = 0;
   }
 
+  free(metadata.comments);
   metadata.comments = comments;
 
   unsigned long long nrows, ncols, nnz;
   if (strcmp(metadata.format, "coordinate") == 0) {
-    sscanf(buf, "%llu %llu %llu", &nrows, &ncols, &nnz);
+    if (sscanf(buf, "%llu %llu %llu", &nrows, &ncols, &nnz) != 3) {
+      fclose(f);
+      metadata.format[0] = '\0';
+      metadata.type[0] = '\0';
+      metadata.structure[0] = '\0';
+      return metadata;
+    }
   } else {
-    sscanf(buf, "%llu %llu", &nrows, &ncols);
+    if (sscanf(buf, "%llu %llu", &nrows, &ncols) != 2) {
+      fclose(f);
+      metadata.format[0] = '\0';
+      metadata.type[0] = '\0';
+      metadata.structure[0] = '\0';
+      return metadata;
+    }
     nnz = nrows * ncols;
   }
 

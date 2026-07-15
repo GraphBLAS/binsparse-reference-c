@@ -11,6 +11,14 @@
 #include <cJSON/cJSON.h>
 #include <unistd.h>
 
+static void bsp_prepare_hdf5_runtime(void) {
+  static bool initialized = false;
+  if (!initialized) {
+    H5dont_atexit();
+    initialized = true;
+  }
+}
+
 char* bsp_generate_json(bsp_matrix_t matrix, cJSON* user_json) {
   cJSON* j = cJSON_CreateObject();
   assert(j != NULL);
@@ -155,17 +163,18 @@ bsp_error_t bsp_write_matrix_cjson(const char* fname, bsp_matrix_t matrix,
                                    const char* group, cJSON* user_json,
                                    int compression_level) {
   if (group == NULL) {
+    bsp_prepare_hdf5_runtime();
     hid_t f = H5Fcreate(fname, H5F_ACC_TRUNC, H5P_DEFAULT, H5P_DEFAULT);
     bsp_error_t error = bsp_write_matrix_to_group_cjson(f, matrix, user_json,
                                                         compression_level);
     if (error != BSP_SUCCESS) {
-      printf("AGH! HDF5!\n");
       H5Fclose(f);
       return error;
     }
     H5Fclose(f);
   } else {
     hid_t f;
+    bsp_prepare_hdf5_runtime();
     if (access(fname, F_OK) == 0) {
       f = H5Fopen(fname, H5F_ACC_RDWR, H5P_DEFAULT);
     } else {
@@ -175,7 +184,6 @@ bsp_error_t bsp_write_matrix_cjson(const char* fname, bsp_matrix_t matrix,
     bsp_error_t error = bsp_write_matrix_to_group_cjson(g, matrix, user_json,
                                                         compression_level);
     if (error != BSP_SUCCESS) {
-      printf("AGH! Inner write!\n");
       H5Gclose(g);
       H5Fclose(f);
       return error;

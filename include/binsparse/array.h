@@ -165,7 +165,7 @@ static inline bool bsp_array_equal(bsp_array_t x, bsp_array_t y) {
       float* ptr = (float*) array.data;                                        \
       code_block;                                                              \
     } else if (array.type == BSP_FLOAT64) {                                    \
-      double* ptr = (float*) array.data;                                       \
+      double* ptr = (double*) array.data;                                      \
       code_block;                                                              \
     } else if (array.type == BSP_BINT8) {                                      \
       int8_t* ptr = (int8_t*) array.data;                                      \
