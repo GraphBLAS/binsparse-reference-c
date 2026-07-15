@@ -137,9 +137,6 @@ bsp_error_t bsp_write_matrix_to_group(hid_t f, bsp_matrix_t matrix,
                                       const char* user_json,
                                       int compression_level) {
   cJSON* user_json_cjson = cJSON_Parse(user_json);
-  if (user_json_cjson == NULL) {
-    return BSP_ERROR_FORMAT;
-  }
   bsp_error_t error = bsp_write_matrix_to_group_cjson(
       f, matrix, user_json_cjson, compression_level);
   cJSON_Delete(user_json_cjson);
@@ -154,6 +151,7 @@ bsp_error_t bsp_write_matrix_cjson(const char* fname, bsp_matrix_t matrix,
     bsp_error_t error = bsp_write_matrix_to_group_cjson(f, matrix, user_json,
                                                         compression_level);
     if (error != BSP_SUCCESS) {
+      printf("AGH! HDF5!\n");
       H5Fclose(f);
       return error;
     }
@@ -169,6 +167,7 @@ bsp_error_t bsp_write_matrix_cjson(const char* fname, bsp_matrix_t matrix,
     bsp_error_t error = bsp_write_matrix_to_group_cjson(g, matrix, user_json,
                                                         compression_level);
     if (error != BSP_SUCCESS) {
+      printf("AGH! Inner write!\n");
       H5Gclose(g);
       H5Fclose(f);
       return error;
@@ -183,9 +182,7 @@ bsp_error_t bsp_write_matrix(const char* fname, bsp_matrix_t matrix,
                              const char* group, const char* user_json,
                              int compression_level) {
   cJSON* user_json_cjson = cJSON_Parse(user_json);
-  if (user_json_cjson == NULL) {
-    return BSP_ERROR_FORMAT;
-  }
+
   bsp_error_t error = bsp_write_matrix_cjson(
       fname, matrix, group, user_json_cjson, compression_level);
   cJSON_Delete(user_json_cjson);
