@@ -83,15 +83,17 @@ function handle_aux_entry(name, value, output_filename, format, compression_leve
         return;
     end
 
-    if iscell(value)
-        for k = 1:numel(value)
-            handle_aux_entry(sprintf('%s_%d', name, k), value{k}, ...
-                             output_filename, format, compression_level);
-        end
+    if is_text_value(value)
+        write_string_dataset(output_filename, name, value);
         return;
     end
 
-    if ischar(value) || (isstring(value) && isscalar(value))
+    if iscell(value)
+        len = numel(value);
+        for k = 1:len
+            handle_aux_entry(component_name(name, k, len), value{k}, ...
+                             output_filename, format, compression_level);
+        end
         return;
     end
 
@@ -121,6 +123,59 @@ function fmt = dense_format_for(value)
     end
 end
 
+function name = component_name(prefix, index, count)
+    if count < 10
+        pattern = '%s_%d';
+    elseif count < 100
+        if index < 10
+            pattern = '%s_0%d';
+        else
+            pattern = '%s_%d';
+        end
+    else
+        if index < 10
+            pattern = '%s_00%d';
+        elseif index < 100
+            pattern = '%s_0%d';
+        else
+            pattern = '%s_%d';
+        end
+    end
+    name = sprintf(pattern, prefix, index);
+end
+
+function ok = is_text_value(value)
+    ok = ischar(value) || isstring(value) || iscellstr(value);
+end
+
+function write_string_dataset(output_filename, name, value)
+    if exist('binsparse_write_string_dataset', 'file') ~= 3
+        error('generate_bsp_from_ssmc:MissingStringWriter', ...
+              'BSP text output requires binsparse_write_string_dataset on the path');
+    end
+
+    if isstring(value)
+        if isscalar(value)
+            value = char(value);
+        else
+            value = cellstr(value(:));
+        end
+    elseif ischar(value)
+        if size(value, 1) > 1
+            value = cellstr(value);
+        else
+            value = char(value);
+        end
+    elseif iscellstr(value)
+        value = value(:);
+    else
+        error('generate_bsp_from_ssmc:InvalidStringValue', ...
+              'Text aux value must be char, string, or cellstr');
+    end
+
+    binsparse_write_string_dataset(output_filename, name, value);
+end
+
 function json = metadata_json(P, role)
     metadata_fields = {'name', 'title', 'id', 'date', 'author', 'ed', ...
                        'editor', 'kind', 'notes', 'group', 'num_rows', ...
@@ -132,25 +187,47 @@ function json = metadata_json(P, role)
     for i = 1:numel(metadata_fields)
         field = metadata_fields{i};
         if isfield(P, field)
-            value = P.(field);
-            if is_metadata_value(value)
+            [ok, value] = metadata_value(P.(field));
+            if ok
                 metadata.(field) = value;
             end
         end
     end
 
-    json = encode_json_or_empty(metadata);
+    json = metadata_payload_json(metadata);
 end
 
 function json = entry_metadata_json(role)
     metadata = struct();
     metadata.role = role;
-    json = encode_json_or_empty(metadata);
+    json = metadata_payload_json(metadata);
 end
 
-function ok = is_metadata_value(value)
-    ok = ischar(value) || isstring(value) || islogical(value) || ...
-         (isnumeric(value) && numel(value) <= 64);
+function json = metadata_payload_json(metadata)
+    payload = struct();
+    payload.metadata = metadata;
+    json = encode_json_or_empty(payload);
+end
+
+function [ok, value] = metadata_value(value)
+    ok = false;
+    if ischar(value)
+        if size(value, 1) > 1
+            value = cellstr(value);
+        else
+            value = char(value);
+        end
+        ok = true;
+    elseif isstring(value)
+        if isscalar(value)
+            value = char(value);
+        else
+            value = cellstr(value(:));
+        end
+        ok = true;
+    elseif (islogical(value) || isnumeric(value)) && numel(value) <= 64
+        ok = true;
+    end
 end
 
 function json = encode_json_or_empty(value)
