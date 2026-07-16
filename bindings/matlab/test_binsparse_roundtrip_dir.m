@@ -1,13 +1,13 @@
-% SPDX-FileCopyrightText: 2024 Binsparse Developers
-%
-% SPDX-License-Identifier: BSD-3-Clause
-
 function test_binsparse_roundtrip_dir(root_dir, temp_dir)
 % TEST_BINSPARSE_ROUNDTRIP_DIR - Round-trip binsparse files in a directory.
 %
 % This function scans a directory (recursively) for .h5 files, reads each
 % with binsparse_read, writes to a temporary file with binsparse_write, then
 % reads back and checks for equivalence.
+
+% SPDX-FileCopyrightText: 2024 Binsparse Developers
+%
+% SPDX-License-Identifier: BSD-3-Clause
 
 if nargin < 1 || isempty(root_dir)
     error('Usage: test_binsparse_roundtrip_dir(root_dir, [temp_dir])');

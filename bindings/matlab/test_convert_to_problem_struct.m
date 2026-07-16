@@ -1,9 +1,9 @@
+function test_convert_to_problem_struct
+%TEST_CONVERT_TO_PROBLEM_STRUCT test in-memory Binsparse Problem conversion
+
 % SPDX-FileCopyrightText: 2026 Binsparse Developers
 %
 % SPDX-License-Identifier: BSD-3-Clause
-
-function test_convert_to_problem_struct
-%TEST_CONVERT_TO_PROBLEM_STRUCT test in-memory Binsparse Problem conversion
 
 metadata = struct('name', 'Test/converter', 'title', 'converter test', ...
     'id', 7, 'date', '2026', 'author', 'Binsparse Developers', ...

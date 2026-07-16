@@ -1,7 +1,3 @@
-% SPDX-FileCopyrightText: 2026 Binsparse Developers
-%
-% SPDX-License-Identifier: BSD-3-Clause
-
 function Problem = convert_to_problem_struct(bsp_problem)
 %CONVERT_TO_PROBLEM_STRUCT convert a Binsparse problem to an SSMC Problem
 %
@@ -12,6 +8,10 @@ function Problem = convert_to_problem_struct(bsp_problem)
 % returned by binsparse_read.  The metadata field contains the user metadata
 % from the root Binsparse JSON descriptor.  Text entries may be char, string,
 % or cellstr values returned by h5read.
+
+% SPDX-FileCopyrightText: 2026 Binsparse Developers
+%
+% SPDX-License-Identifier: BSD-3-Clause
 
 validate_problem(bsp_problem);
 

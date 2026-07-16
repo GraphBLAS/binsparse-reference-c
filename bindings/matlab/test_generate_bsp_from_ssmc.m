@@ -1,9 +1,9 @@
+function test_generate_bsp_from_ssmc()
+% TEST_GENERATE_BSP_FROM_SSMC - End-to-end test for generate_bsp_from_ssmc
+
 % SPDX-FileCopyrightText: 2024 Binsparse Developers
 %
 % SPDX-License-Identifier: BSD-3-Clause
-
-function test_generate_bsp_from_ssmc()
-% TEST_GENERATE_BSP_FROM_SSMC - End-to-end test for generate_bsp_from_ssmc
 
 fprintf('=== Testing generate_bsp_from_ssmc ===\n\n');
 

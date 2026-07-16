@@ -24,11 +24,12 @@
 
 #include "matlab_bsp_helpers.h"
 
+// Keep this MEX function loaded for the whole MATLAB session: the HDF5
+// library used by libbinsparse installs process-wide state that is not safe
+// to tear down when a MEX file is cleared.
 static void lock_mex_module(void) {
-  static bool locked = false;
-  if (!locked) {
+  if (!mexIsLocked()) {
     mexLock();
-    locked = true;
   }
 }
 

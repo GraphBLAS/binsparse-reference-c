@@ -1,7 +1,3 @@
-% SPDX-FileCopyrightText: 2024 Binsparse Developers
-%
-% SPDX-License-Identifier: BSD-3-Clause
-
 function bsp_matrix_info(matrix)
 % BSP_MATRIX_INFO - Display information about a Binsparse matrix struct
 %
@@ -12,6 +8,10 @@ function bsp_matrix_info(matrix)
 %   - Matrix dimensions and number of non-zeros
 %   - Format and structure information
 %   - Array sizes and types for each field
+
+% SPDX-FileCopyrightText: 2024 Binsparse Developers
+%
+% SPDX-License-Identifier: BSD-3-Clause
 
 if ~isstruct(matrix)
     error('bsp_matrix_info:InvalidInput', 'Input must be a struct');

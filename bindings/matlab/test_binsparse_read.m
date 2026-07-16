@@ -1,12 +1,12 @@
-% SPDX-FileCopyrightText: 2024 Binsparse Developers
-%
-% SPDX-License-Identifier: BSD-3-Clause
-
 function test_binsparse_read()
 % TEST_BINSPARSE_READ - Test the binsparse_read MEX function
 %
 % This function demonstrates how to use the binsparse_read MEX function
 % to read Binsparse format matrices into MATLAB/Octave.
+
+% SPDX-FileCopyrightText: 2024 Binsparse Developers
+%
+% SPDX-License-Identifier: BSD-3-Clause
 
 fprintf('=== Testing Binsparse Read Function ===\n\n');
 
@@ -47,8 +47,7 @@ try
 
     fprintf('Usage examples:\n');
     fprintf('  matrix = binsparse_read(''myfile.h5'');           %% Read from HDF5\n');
-    fprintf('  matrix = binsparse_read(''myfile.h5'', ''group''); %% Read from specific group\n');
-    fprintf('  matrix = binsparse_read(''myfile.mtx'');          %% Read Matrix Market file\n\n');
+    fprintf('  matrix = binsparse_read(''myfile.h5'', ''group''); %% Read from specific group\n\n');
 
     fprintf('The returned matrix will have these fields:\n');
     fprintf('  matrix.values       - Values array\n');

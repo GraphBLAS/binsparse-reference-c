@@ -1,9 +1,9 @@
+function test_binsparse_minimize_roundtrip()
+% TEST_BINSPARSE_MINIMIZE_ROUNDTRIP - Test SSMC conversion + type minimization
+
 % SPDX-FileCopyrightText: 2024 Binsparse Developers
 %
 % SPDX-License-Identifier: BSD-3-Clause
-
-function test_binsparse_minimize_roundtrip()
-% TEST_BINSPARSE_MINIMIZE_ROUNDTRIP - Test SSMC conversion + type minimization
 
 fprintf('=== Testing binsparse_from_ssmc + binsparse_minimize_types ===\n\n');
 

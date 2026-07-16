@@ -1,7 +1,3 @@
-% SPDX-FileCopyrightText: 2024 Binsparse Developers
-%
-% SPDX-License-Identifier: BSD-3-Clause
-
 function matrix = bsp_matrix_create(varargin)
 % BSP_MATRIX_CREATE - Create a Binsparse matrix struct
 %
@@ -34,6 +30,10 @@ function matrix = bsp_matrix_create(varargin)
 %   rows = [1, 2, 3];
 %   cols = [1, 2, 3];
 %   matrix = bsp_matrix_create(values, rows, cols, [], 3, 3, 3, false, 'COO', 'general');
+
+% SPDX-FileCopyrightText: 2024 Binsparse Developers
+%
+% SPDX-License-Identifier: BSD-3-Clause
 
 if nargin == 0
     % Create empty/default matrix

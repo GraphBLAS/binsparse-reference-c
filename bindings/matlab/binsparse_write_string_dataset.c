@@ -21,12 +21,13 @@
 #include <string.h>
 #include <unistd.h>
 
+// Keep this MEX function loaded for the whole MATLAB session, and stop HDF5
+// from registering atexit handlers: both guard against crashes when MATLAB
+// tears down MEX files that share HDF5 process-wide state.
 static void lock_mex_module(void) {
-  static bool locked = false;
-  if (!locked) {
+  if (!mexIsLocked()) {
     H5dont_atexit();
     mexLock();
-    locked = true;
   }
 }
 

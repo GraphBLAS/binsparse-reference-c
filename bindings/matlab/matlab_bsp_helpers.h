@@ -46,7 +46,6 @@ static inline int extract_matlab_csc(const mxArray* mx_matrix,
 
   csc_matrix->nrows = mxGetM(mx_matrix);
   csc_matrix->ncols = mxGetN(mx_matrix);
-  csc_matrix->nnz = mxGetNzmax(mx_matrix);
 
   csc_matrix->has_values = mxIsDouble(mx_matrix);
   csc_matrix->is_complex = mxIsComplex(mx_matrix);

@@ -1,9 +1,9 @@
+function test_binsparse_from_ssmc()
+% TEST_BINSPARSE_FROM_SSMC - Basic test for binsparse_from_ssmc MEX function
+
 % SPDX-FileCopyrightText: 2024 Binsparse Developers
 %
 % SPDX-License-Identifier: BSD-3-Clause
-
-function test_binsparse_from_ssmc()
-% TEST_BINSPARSE_FROM_SSMC - Basic test for binsparse_from_ssmc MEX function
 
 fprintf('=== Testing binsparse_from_ssmc MEX function ===\n\n');
 

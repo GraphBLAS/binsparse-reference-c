@@ -1,7 +1,3 @@
-% SPDX-FileCopyrightText: 2024 Binsparse Developers
-%
-% SPDX-License-Identifier: BSD-3-Clause
-
 function build_octave_bindings(varargin)
 % BUILD_OCTAVE_BINDINGS - Build Binsparse Octave MEX functions
 %
@@ -21,6 +17,10 @@ function build_octave_bindings(varargin)
 %
 % Note: This script builds Octave-compatible MEX functions using mkoctfile
 %       instead of MATLAB's mex command.
+
+% SPDX-FileCopyrightText: 2024 Binsparse Developers
+%
+% SPDX-License-Identifier: BSD-3-Clause
 
 % Parse input arguments
 verbose = any(strcmpi(varargin, 'verbose'));

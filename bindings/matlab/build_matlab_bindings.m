@@ -1,7 +1,3 @@
-% SPDX-FileCopyrightText: 2024 Binsparse Developers
-%
-% SPDX-License-Identifier: BSD-3-Clause
-
 function build_matlab_bindings(varargin)
 % BUILD_MATLAB_BINDINGS - Build Binsparse MATLAB MEX functions
 %
@@ -17,10 +13,11 @@ function build_matlab_bindings(varargin)
 % Prerequisites:
 % - MATLAB with working MEX compiler (run 'mex -setup' if needed)
 % - Binsparse C library headers (in ../../include/)
+% - Compiled Binsparse library (in ../../build/)
+
+% SPDX-FileCopyrightText: 2024 Binsparse Developers
 %
-% Note: This script currently builds a simple demonstration MEX function.
-%       Additional Binsparse functionality can be added by creating more
-%       MEX wrapper functions.
+% SPDX-License-Identifier: BSD-3-Clause
 
 % Parse input arguments
 verbose = any(strcmpi(varargin, 'verbose'));
@@ -72,8 +69,7 @@ function success = check_mex_compiler()
         if success
             fprintf('MEX compiler found: %s\n', cc(1).Name);
         end
-    catch me
-        me
+    catch
         success = false;
     end
 end
@@ -126,8 +122,9 @@ function compile_mex_functions(paths, verbose)
 
         fprintf('  Compiling %s... ', mex_file);
 
-        % Prepare MEX command with library linking
-        % FIXME: use .so not .a
+        % Prepare MEX command with library linking.  The MEX functions link
+        % against the shared Binsparse library, so embed an rpath to the
+        % build directory on platforms that support it.
         lib_dir = fullfile(paths.binsparse_root, 'build');
         lib_path = fullfile(lib_dir, 'libbinsparse_dynamic.so');
         cjson_lib = fullfile(lib_dir, '_deps', 'cjson-build', 'libcjson.a');
@@ -135,31 +132,30 @@ function compile_mex_functions(paths, verbose)
             rpath = '-rpath ' ;
         elseif (isunix)
             rpath = '-rpath=' ;
+        else
+            rpath = '' ;
         end
-        rpath = sprintf (' -Wl,%s''''%s'''' ', rpath, lib_dir) ;
-        rpath = [' LDFLAGS=''$LDFLAGS -fPIC ' rpath ' '' '] ;
+        if ~isempty(rpath)
+            rpath = sprintf (' -Wl,%s''''%s'''' ', rpath, lib_dir) ;
+            rpath = [' LDFLAGS=''$LDFLAGS -fPIC ' rpath ' '' '] ;
+        end
 
-%       mex_args = {'-I', paths.include_dir, mex_file, lib_path, cjson_lib, '-lhdf5_serial'};
         include_flags = sprintf('-I%s', paths.include_dir);
         if ~isempty(paths.hdf5_include_dir)
             include_flags = sprintf('%s -I%s', include_flags, ...
                 paths.hdf5_include_dir);
         end
-        include_flags
-        mex_args = sprintf ('mex -g %s %s %s %s %s -lhdf5_serial', ...
+        mex_command = sprintf ('mex %s %s %s %s %s -lhdf5_serial', ...
             include_flags, rpath, lib_path, mex_file, cjson_lib) ;
-%       if verbose
-        if 0
-%           mex_args = [mex_args, {'-v'}];
-            mex_args = [mex_args, ' -v'] ;
+        if verbose
+            mex_command = [mex_command, ' -v'] ;
+            fprintf('\n    %s\n', mex_command);
         end
 
         try
-            mex_args
-            eval (mex_args) ;
+            eval (mex_command) ;
             fprintf('SUCCESS\n');
         catch me
-            me
             fprintf('FAILED\n');
             fprintf('    Error: %s\n', me.message);
             failed_files{end+1} = mex_file;

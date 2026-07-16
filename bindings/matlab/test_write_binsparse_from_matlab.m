@@ -1,9 +1,9 @@
+function test_write_binsparse_from_matlab()
+% TEST_WRITE_BINSPARSE_FROM_MATLAB - End-to-end test for the SSMC writer MEX
+
 % SPDX-FileCopyrightText: 2024 Binsparse Developers
 %
 % SPDX-License-Identifier: BSD-3-Clause
-
-function test_write_binsparse_from_matlab()
-% TEST_WRITE_BINSPARSE_FROM_MATLAB - End-to-end test for the SSMC writer MEX
 
 fprintf('=== Testing write_binsparse_from_matlab MEX function ===\n\n');
 

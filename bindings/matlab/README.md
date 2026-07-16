@@ -159,10 +159,11 @@ Problem.kind = 'artificial/test';
 % Write directly from SuiteSparse format to Binsparse
 write_binsparse_from_matlab(Problem, 'output.bsp.h5');
 
-% Write with optional parameters
-write_binsparse_from_matlab(Problem, 'output.bsp.h5', 'my_group');
-write_binsparse_from_matlab(Problem, 'output.bsp.h5', 'my_group', '{"test": "metadata"}');
-write_binsparse_from_matlab(Problem, 'output.bsp.h5', 'my_group', '{"test": "metadata"}', 6);
+% Write with an explicit sparse format ('COO', 'COOR', 'CSC', or 'CSR')
+write_binsparse_from_matlab(Problem, 'output.bsp.h5', 'CSC');
+
+% Write with a format and gzip compression level (0-9)
+write_binsparse_from_matlab(Problem, 'output.bsp.h5', 'COO', [], 6);
 ```
 
 ### Error Handling
@@ -183,21 +184,28 @@ end
 |------|-------------|
 | `binsparse_read.c` | MEX function for reading Binsparse matrix files |
 | `binsparse_write.c` | MEX function for writing Binsparse matrix files |
-| `write_binsparse_from_matlab.c` | MEX function for writing from SuiteSparse Matrix Collection format |
-| `build_matlab_bindings.m` | Main build script for MATLAB MEX functions |
-| `build_octave_bindings.m` | Main build script for Octave MEX functions |
-| `compile_binsparse_read.m` | Simple compilation script for read function (MATLAB) |
-| `compile_binsparse_write.m` | Simple compilation script for write function (MATLAB) |
-| `compile_write_binsparse_from_matlab.m` | Simple compilation script for SuiteSparse write function (MATLAB) |
-| `compile_binsparse_read_octave.m` | Simple compilation script for read function (Octave) |
-| `compile_binsparse_write_octave.m` | Simple compilation script for write function (Octave) |
-| `compile_write_binsparse_from_matlab_octave.m` | Simple compilation script for SuiteSparse write function (Octave) |
+| `binsparse_from_ssmc.c` | MEX function converting SuiteSparse A+Zeros to a Binsparse struct |
+| `binsparse_minimize_types.c` | MEX function minimizing value/index types in a Binsparse struct |
+| `binsparse_write_string_dataset.c` | MEX function writing HDF5 UTF-8 string datasets |
+| `write_binsparse_from_matlab.c` | MEX entry point for writing an SSMC Problem (delegates to `generate_bsp_from_ssmc.m`) |
+| `matlab_bsp_helpers.h` | Shared MATLAB/Binsparse conversion helpers for the MEX sources |
+| `generate_bsp_from_ssmc.m` | Write a full SSMC Problem struct to one Binsparse file |
+| `convert_to_problem_struct.m` | Convert Binsparse data back to an SSMC Problem struct |
+| `bsp_matrix_create.m` | Utility function for creating matrix structs |
+| `bsp_matrix_info.m` | Utility function for displaying matrix information |
+| `build_matlab_bindings.m` | Build script for all MATLAB MEX functions |
+| `build_octave_bindings.m` | Build script for all Octave MEX functions |
 | `compile_octave.sh` | Shell script for building Octave MEX functions |
 | `test_binsparse_read.m` | Test script for read functionality |
 | `test_binsparse_write.m` | Test script for write functionality |
-| `test_write_binsparse_from_matlab.m` | Test script for SuiteSparse write functionality |
-| `bsp_matrix_create.m` | Utility function for creating matrix structs |
-| `bsp_matrix_info.m` | Utility function for displaying matrix information |
+| `test_binsparse_from_ssmc.m` | Test script for SSMC conversion |
+| `test_binsparse_minimize_roundtrip.m` | Test script for type minimization |
+| `test_bsp_matrix_struct.m` | Test script for the matrix struct helpers |
+| `test_convert_to_problem_struct.m` | Test script for Problem conversion |
+| `test_generate_bsp_from_ssmc.m` | End-to-end test for the SSMC writer |
+| `test_write_binsparse_from_matlab.m` | Test script for the SSMC writer MEX |
+| `test_binsparse_roundtrip_dir.m` | Round-trip every .h5 file in a directory |
+| `Contents.m` | Directory listing for MATLAB's `help` |
 | `README.md` | This documentation file |
 
 ## Technical Details

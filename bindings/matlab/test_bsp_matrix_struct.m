@@ -1,12 +1,12 @@
-% SPDX-FileCopyrightText: 2024 Binsparse Developers
-%
-% SPDX-License-Identifier: BSD-3-Clause
-
 function test_bsp_matrix_struct()
 % TEST_BSP_MATRIX_STRUCT - Test the Binsparse matrix struct functionality
 %
 % This function demonstrates and tests the basic MATLAB struct
 % that mirrors the C bsp_matrix_t structure.
+
+% SPDX-FileCopyrightText: 2024 Binsparse Developers
+%
+% SPDX-License-Identifier: BSD-3-Clause
 
 fprintf('=== Testing Binsparse Matrix Struct ===\n\n');
 

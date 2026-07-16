@@ -1,7 +1,3 @@
-% SPDX-FileCopyrightText: 2024 Binsparse Developers
-%
-% SPDX-License-Identifier: BSD-3-Clause
-
 function generate_bsp_from_ssmc(problem, output_filename, format, compression_level)
 % GENERATE_BSP_FROM_SSMC - Generate a Binsparse file from an SSMC problem
 %
@@ -12,6 +8,10 @@ function generate_bsp_from_ssmc(problem, output_filename, format, compression_le
 % Defaults:
 %   format = 'COO'
 %   compression_level = 0
+
+% SPDX-FileCopyrightText: 2024 Binsparse Developers
+%
+% SPDX-License-Identifier: BSD-3-Clause
 
 if nargin < 2
     error('generate_bsp_from_ssmc:InvalidArgs', ...

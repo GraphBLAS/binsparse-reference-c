@@ -1,12 +1,12 @@
-% SPDX-FileCopyrightText: 2024 Binsparse Developers
-%
-% SPDX-License-Identifier: BSD-3-Clause
-
 function test_binsparse_write()
 % TEST_BINSPARSE_WRITE - Test the binsparse_write MEX function
 %
 % This function creates a simple test matrix and writes it to a temporary
 % Binsparse file using the binsparse_write MEX function.
+
+% SPDX-FileCopyrightText: 2024 Binsparse Developers
+%
+% SPDX-License-Identifier: BSD-3-Clause
 
 fprintf('=== Testing binsparse_write MEX function ===\n\n');
 
