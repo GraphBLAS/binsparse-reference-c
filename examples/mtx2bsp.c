@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
-#include <binsparse/binsparse.h>
+#include <binsparse/binsparse_all.h>
 #include <stdio.h>
 
 #include <time.h>
@@ -99,11 +99,25 @@ int main(int argc, char** argv) {
   }
 
   bsp_mm_metadata m = bsp_mmread_metadata(input_fname);
+  if (!bsp_mm_metadata_is_valid(m)) {
+    fprintf(stderr,
+            "error: unable to read Matrix Market metadata from \"%s\".\n",
+            input_fname);
+    bsp_destroy_mm_metadata(&m);
+    bsp_destroy_fdataset_info_t(&info2);
+    return 1;
+  }
 
   bsp_matrix_format_t format = BSP_COOR;
   if (format_name != NULL) {
     format = bsp_get_matrix_format(format_name);
-    assert(format != 0);
+    if (format == BSP_INVALID_FORMAT) {
+      fprintf(stderr, "error: unsupported Binsparse format \"%s\".\n",
+              format_name);
+      bsp_destroy_mm_metadata(&m);
+      bsp_destroy_fdataset_info_t(&info2);
+      return 1;
+    }
   }
 
   printf("%lu x %lu matrix with %lu nonzeros.\n", m.nrows, m.ncols, m.nnz);
@@ -151,7 +165,7 @@ int main(int argc, char** argv) {
   if (format != BSP_COOR) {
     begin = gettime();
     bsp_matrix_t converted_matrix = bsp_convert_matrix(matrix, format);
-    bsp_destroy_matrix_t(matrix);
+    bsp_destroy_matrix_t(&matrix);
     matrix = converted_matrix;
     end = gettime();
     duration = end - begin;
@@ -163,14 +177,17 @@ int main(int argc, char** argv) {
 
   printf(" === Writing to %s... ===\n", output_fname);
   begin = gettime();
-  bsp_write_matrix(output_fname, matrix, group_name, user_json,
-                   compression_level);
+  BSP_CHECK(bsp_write_matrix_cjson(output_fname, matrix, group_name, user_json,
+                                   compression_level));
   end = gettime();
   duration = end - begin;
   printf("%lf seconds writing Binsparse file...\n", duration);
   printf(" === Done writing. ===\n");
 
-  bsp_destroy_matrix_t(matrix);
+  bsp_destroy_matrix_t(&matrix);
+  bsp_destroy_mm_metadata(&m);
+  bsp_destroy_fdataset_info_t(&info2);
+  cJSON_Delete(user_json);
 
   return 0;
 }

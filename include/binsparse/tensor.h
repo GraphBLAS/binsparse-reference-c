@@ -74,7 +74,7 @@ static void bsp_destroy_level_t(bsp_level_t* level) {
   switch (level->kind) {
   case BSP_TENSOR_ELEMENT: {
     bsp_element_t* element = (bsp_element_t*) level->data;
-    bsp_destroy_array_t(element->values);
+    bsp_destroy_array_t(&element->values);
     free(element);
     break;
   }
@@ -88,10 +88,10 @@ static void bsp_destroy_level_t(bsp_level_t* level) {
     bsp_sparse_t* sparse = (bsp_sparse_t*) level->data;
 
     if (sparse->pointers_to != NULL)
-      bsp_destroy_array_t(*sparse->pointers_to);
+      bsp_destroy_array_t(sparse->pointers_to);
     if (sparse->indices != NULL) {
       for (int i = 0; i < sparse->rank; i++) {
-        bsp_destroy_array_t(sparse->indices[i]);
+        bsp_destroy_array_t(&sparse->indices[i]);
       }
     }
     bsp_destroy_level_t(sparse->child);

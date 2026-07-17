@@ -110,8 +110,9 @@ int main(int argc, char** argv) {
   printf("Matrix 2: %s and %s\n", info2.fname,
          (info2.dataset == NULL) ? "root" : info2.dataset);
 
-  bsp_matrix_t matrix1 = bsp_read_matrix(info1.fname, info1.dataset);
-  bsp_matrix_t matrix2 = bsp_read_matrix(info2.fname, info2.dataset);
+  bsp_matrix_t matrix1, matrix2;
+  BSP_CHECK(bsp_read_matrix(&matrix1, info1.fname, info1.dataset));
+  BSP_CHECK(bsp_read_matrix(&matrix2, info2.fname, info2.dataset));
 
   bool perform_suitesparse_declamping = true;
   if (perform_suitesparse_declamping &&
@@ -128,13 +129,13 @@ int main(int argc, char** argv) {
   if (matrix1.format != matrix2.format) {
     if (matrix1.format != BSP_COOR) {
       bsp_matrix_t intermediate = bsp_convert_matrix(matrix1, BSP_COOR);
-      bsp_destroy_matrix_t(matrix1);
+      bsp_destroy_matrix_t(&matrix1);
       matrix1 = intermediate;
     }
 
     if (matrix2.format != BSP_COOR) {
       bsp_matrix_t intermediate = bsp_convert_matrix(matrix2, BSP_COOR);
-      bsp_destroy_matrix_t(matrix2);
+      bsp_destroy_matrix_t(&matrix2);
       matrix2 = intermediate;
     }
   }
@@ -201,6 +202,11 @@ int main(int argc, char** argv) {
     fprintf(stderr, "FAIL!\n");
     return 9;
   }
+
+  bsp_destroy_matrix_t(&matrix1);
+  bsp_destroy_matrix_t(&matrix2);
+  bsp_destroy_fdataset_info_t(&info1);
+  bsp_destroy_fdataset_info_t(&info2);
 
   printf("The files are equivalent.\n");
   printf("OK!\n");

@@ -4,13 +4,15 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
+#include <binsparse/binsparse.h>
+#include <binsparse/hdf5_wrapper.h>
+#include <binsparse/read_tensor.h>
+
 #include <assert.h>
-#include <binsparse/tensor.h>
 #include <unistd.h>
 
-#include <binsparse/binsparse.h>
-#include <binsparse/read_tensor.h>
 #include <cJSON/cJSON.h>
+#include <hdf5.h>
 
 static cJSON* init_tensor_json(bsp_tensor_t tensor, cJSON* user_json) {
   cJSON* j = cJSON_CreateObject();
@@ -53,8 +55,8 @@ static cJSON* init_tensor_json(bsp_tensor_t tensor, cJSON* user_json) {
   return j;
 }
 
-int bsp_write_tensor_to_group(hid_t f, bsp_tensor_t tensor, cJSON* user_json,
-                              int compression_level) {
+bsp_error_t bsp_write_tensor_to_group(hid_t f, bsp_tensor_t tensor,
+                                      cJSON* user_json, int compression_level) {
   // bsp_matrix_t matrix;
   cJSON* j = init_tensor_json(tensor, user_json);
   // tensor:
@@ -85,10 +87,11 @@ int bsp_write_tensor_to_group(hid_t f, bsp_tensor_t tensor, cJSON* user_json,
   }
 
   // attempt to write an array.
-  int result = bsp_write_array(f, (char*) "values", values, compression_level);
-  if (result != 0) {
+  bsp_error_t error =
+      bsp_write_array(f, (char*) "values", values, compression_level);
+  if (error != BSP_SUCCESS) {
     cJSON_Delete(j);
-    return result;
+    return error;
   }
 
   int rank = 0;
@@ -107,11 +110,11 @@ int bsp_write_tensor_to_group(hid_t f, bsp_tensor_t tensor, cJSON* user_json,
         cJSON_AddStringToObject(data_types,
                                 key_with_index("pointers_to_", rank),
                                 bsp_get_type_string(sparse->pointers_to->type));
-        result = bsp_write_array(f, key_with_index("pointers_to_", rank),
-                                 *sparse->pointers_to, compression_level);
-        if (result != 0) {
+        error = bsp_write_array(f, key_with_index("pointers_to_", rank),
+                                *sparse->pointers_to, compression_level);
+        if (error != BSP_SUCCESS) {
           cJSON_Delete(j);
-          return result;
+          return error;
         }
       }
 
@@ -119,11 +122,11 @@ int bsp_write_tensor_to_group(hid_t f, bsp_tensor_t tensor, cJSON* user_json,
         cJSON_AddStringToObject(data_types,
                                 key_with_index("indices_", rank + i),
                                 bsp_get_type_string(sparse->indices[i].type));
-        result = bsp_write_array(f, key_with_index("indices_", rank + i),
-                                 sparse->indices[i], compression_level);
-        if (result != 0) {
+        error = bsp_write_array(f, key_with_index("indices_", rank + i),
+                                sparse->indices[i], compression_level);
+        if (error != BSP_SUCCESS) {
           cJSON_Delete(j);
-          return result;
+          return error;
         }
       }
 
@@ -153,17 +156,28 @@ int bsp_write_tensor_to_group(hid_t f, bsp_tensor_t tensor, cJSON* user_json,
   }
 
   char* json_string = cJSON_Print(j);
-  bsp_write_attribute(f, (char*) "binsparse", json_string);
+  error = bsp_write_attribute(f, (char*) "binsparse", json_string);
+  if (error != BSP_SUCCESS) {
+    free(json_string);
+    cJSON_Delete(j);
+    return error;
+  }
   free(json_string);
 
-  return 0;
+  return BSP_SUCCESS;
 }
 
-int bsp_write_tensor(const char* fname, bsp_tensor_t tensor, const char* group,
-                     cJSON* user_json, int compression_level) {
+bsp_error_t bsp_write_tensor(const char* fname, bsp_tensor_t tensor,
+                             const char* group, cJSON* user_json,
+                             int compression_level) {
   if (group == NULL) {
     hid_t f = H5Fcreate(fname, H5F_ACC_TRUNC, H5P_DEFAULT, H5P_DEFAULT);
-    bsp_write_tensor_to_group(f, tensor, user_json, compression_level);
+    bsp_error_t error =
+        bsp_write_tensor_to_group(f, tensor, user_json, compression_level);
+    if (error != BSP_SUCCESS) {
+      H5Fclose(f);
+      return error;
+    }
     H5Fclose(f);
   } else {
     hid_t f;
@@ -177,5 +191,5 @@ int bsp_write_tensor(const char* fname, bsp_tensor_t tensor, const char* group,
     H5Gclose(g);
     H5Fclose(f);
   }
-  return 0;
+  return BSP_SUCCESS;
 }

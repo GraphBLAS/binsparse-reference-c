@@ -7,6 +7,7 @@
 #include <binsparse/binsparse.h>
 #include <stdlib.h>
 #include <time.h>
+#include <unistd.h>
 
 double gettime() {
   struct timespec time;
@@ -82,8 +83,9 @@ int main(int argc, char** argv) {
 
   // If running warm cache experiments, read once to warm cache.
   if (!cold_cache) {
-    bsp_matrix_t mat = bsp_read_matrix_parallel(file_name, NULL, num_threads);
-    bsp_destroy_matrix_t(mat);
+    bsp_matrix_t mat;
+    BSP_CHECK(bsp_read_matrix_parallel(&mat, file_name, NULL, num_threads));
+    bsp_destroy_matrix_t(&mat);
   }
 
   for (size_t i = 0; i < num_trials; i++) {
@@ -92,12 +94,13 @@ int main(int argc, char** argv) {
     }
     fflush(stdout);
     double begin = gettime();
-    bsp_matrix_t mat = bsp_read_matrix_parallel(file_name, NULL, num_threads);
+    bsp_matrix_t mat;
+    BSP_CHECK(bsp_read_matrix_parallel(&mat, file_name, NULL, num_threads));
     double end = gettime();
     durations[i] = end - begin;
     nbytes = bsp_matrix_nbytes(mat);
 
-    bsp_destroy_matrix_t(mat);
+    bsp_destroy_matrix_t(&mat);
 
     double gbytes = ((double) nbytes) / 1024 / 1024 / 1024;
     double gbytes_s = gbytes / durations[i];

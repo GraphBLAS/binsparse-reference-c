@@ -21,7 +21,7 @@ int main(int argc, char** argv) {
     printf("%d, %d: %f\n", rowind[i], colind[i], values[i]);
   }
 
-  bsp_write_matrix("test.hdf5", mat, NULL, NULL, 9);
+  BSP_CHECK(bsp_write_matrix("test.hdf5", mat, NULL, NULL, 9));
 
   return 0;
 }

@@ -13,6 +13,7 @@
 
 #include <unistd.h>
 
+#include <binsparse/detail/hdf5_types.h>
 #include <binsparse/detail/shm_tools.h>
 
 #if __STDC_VERSION__ >= 201112L
@@ -21,10 +22,14 @@
 
 // Write an array to a dataset / file
 // Returns 0 on success, nonzero on error.
-static inline int bsp_write_array(hid_t f, const char* label, bsp_array_t array,
-                                  int compression_level) {
+static inline bsp_error_t bsp_write_array(hid_t f, const char* label,
+                                          bsp_array_t array,
+                                          int compression_level) {
   if (array.type == BSP_COMPLEX_FLOAT32 || array.type == BSP_COMPLEX_FLOAT64) {
-    array = bsp_complex_array_to_fp(array);
+    bsp_error_t error = bsp_complex_array_to_fp(&array);
+    if (error != BSP_SUCCESS) {
+      return BSP_ERROR_TYPE;
+    }
   }
 
   hsize_t hsize[1];
@@ -56,7 +61,10 @@ static inline int bsp_write_array(hid_t f, const char* label, bsp_array_t array,
       H5Dcreate2(f, label, hdf5_standard_type, fspace, lcpl, dcpl, H5P_DEFAULT);
 
   if (dset == H5I_INVALID_HID) {
-    return -1;
+    H5Sclose(fspace);
+    H5Pclose(lcpl);
+    H5Pclose(dcpl);
+    return BSP_ERROR_IO;
   }
 
   hid_t hdf5_native_type = bsp_get_hdf5_native_type(array.type);
@@ -64,30 +72,41 @@ static inline int bsp_write_array(hid_t f, const char* label, bsp_array_t array,
   hid_t r = H5Dwrite(dset, hdf5_native_type, H5S_ALL, fspace, H5P_DEFAULT,
                      array.data);
 
-  if (r == H5I_INVALID_HID) {
-    return -2;
+  if (r < 0) {
+    H5Dclose(dset);
+    H5Sclose(fspace);
+    H5Pclose(lcpl);
+    H5Pclose(dcpl);
+    return BSP_ERROR_IO;
   }
 
   H5Sclose(fspace);
+  H5Dclose(dset);
   H5Pclose(lcpl);
   H5Pclose(dcpl);
 
-  return 0;
+  return BSP_SUCCESS;
 }
 
 #if __STDC_VERSION__ >= 201112L
-static inline bsp_array_t bsp_read_array_parallel(hid_t f, const char* label,
+static inline bsp_error_t bsp_read_array_parallel(bsp_array_t* array, hid_t f,
+                                                  const char* label,
                                                   int num_threads) {
   hid_t dset = H5Dopen2(f, label, H5P_DEFAULT);
 
   if (dset == H5I_INVALID_HID) {
-    return bsp_construct_default_array_t();
+    H5Dclose(dset);
+    bsp_construct_default_array_t(array);
+    return BSP_ERROR_IO;
   }
 
   hid_t fspace = H5Dget_space(dset);
 
   if (fspace == H5I_INVALID_HID) {
-    return bsp_construct_default_array_t();
+    H5Sclose(fspace);
+    H5Dclose(dset);
+    bsp_construct_default_array_t(array);
+    return BSP_ERROR_IO;
   }
 
   hsize_t dims[3];
@@ -95,7 +114,10 @@ static inline bsp_array_t bsp_read_array_parallel(hid_t f, const char* label,
   int r = H5Sget_simple_extent_dims(fspace, dims, NULL);
 
   if (r < 0) {
-    return bsp_construct_default_array_t();
+    H5Sclose(fspace);
+    H5Dclose(dset);
+    bsp_construct_default_array_t(array);
+    return BSP_ERROR_IO;
   }
 
   hid_t hdf5_type = H5Dget_type(dset);
@@ -104,10 +126,9 @@ static inline bsp_array_t bsp_read_array_parallel(hid_t f, const char* label,
 
   // Array will be written into a POSIX shared memory.
   bsp_shm_t array_shm = bsp_shm_new(dims[0] * bsp_type_size(type));
-  bsp_array_t array;
-  array.type = type;
-  array.size = dims[0];
-  array.allocator = bsp_shm_allocator;
+  array->type = type;
+  array->size = dims[0];
+  array->allocator = bsp_shm_allocator;
 
   bsp_shm_t active_children_shm = bsp_shm_new(sizeof(_Atomic int));
 
@@ -131,17 +152,17 @@ static inline bsp_array_t bsp_read_array_parallel(hid_t f, const char* label,
     }
   }
 
-  array.data = bsp_shm_attach(array_shm);
+  array->data = bsp_shm_attach(array_shm);
   if (thread_num == 0) {
     bsp_shm_delete(array_shm);
   }
 
-  hsize_t chunk_size = (array.size + num_threads - 1) / num_threads;
-  hsize_t start = (chunk_size * thread_num < array.size)
+  hsize_t chunk_size = (array->size + num_threads - 1) / num_threads;
+  hsize_t start = (chunk_size * thread_num < array->size)
                       ? chunk_size * thread_num
-                      : array.size;
+                      : array->size;
   hsize_t count =
-      (start + chunk_size <= array.size) ? chunk_size : array.size - start;
+      (start + chunk_size <= array->size) ? chunk_size : array->size - start;
 
   if (count > 0) {
     H5Sselect_hyperslab(fspace, H5S_SELECT_SET, &start, NULL, &count, NULL);
@@ -149,17 +170,17 @@ static inline bsp_array_t bsp_read_array_parallel(hid_t f, const char* label,
     hid_t memspace_id = H5Screate_simple(1, &count, NULL);
 
     H5Dread(dset, bsp_get_hdf5_native_type(type), memspace_id, fspace,
-            H5P_DEFAULT, ((char*) array.data) + start * bsp_type_size(type));
+            H5P_DEFAULT, ((char*) array->data) + start * bsp_type_size(type));
     H5Sclose(memspace_id);
   }
 
-  H5Dclose(dset);
   H5Sclose(fspace);
+  H5Dclose(dset);
 
   if (thread_num > 0) {
     atomic_fetch_add_explicit(active_children, -1, memory_order_relaxed);
     bsp_shm_detach(active_children);
-    bsp_shm_detach(array.data);
+    bsp_shm_detach(array->data);
     exit(0);
   }
 
@@ -169,21 +190,27 @@ static inline bsp_array_t bsp_read_array_parallel(hid_t f, const char* label,
   }
   bsp_shm_detach(active_children);
 
-  return array;
+  return BSP_SUCCESS;
 }
 #endif
 
-static inline bsp_array_t bsp_read_array(hid_t f, const char* label) {
+static inline bsp_error_t bsp_read_array_allocator(bsp_array_t* array, hid_t f,
+                                                   const char* label,
+                                                   bsp_allocator_t allocator) {
   hid_t dset = H5Dopen2(f, label, H5P_DEFAULT);
 
   if (dset == H5I_INVALID_HID) {
-    return bsp_construct_default_array_t();
+    bsp_construct_default_array_t_allocator(array, allocator);
+    return BSP_ERROR_IO;
   }
 
   hid_t fspace = H5Dget_space(dset);
 
   if (fspace == H5I_INVALID_HID) {
-    return bsp_construct_default_array_t();
+    H5Sclose(fspace);
+    H5Dclose(dset);
+    bsp_construct_default_array_t_allocator(array, allocator);
+    return BSP_ERROR_IO;
   }
 
   hsize_t dims[3];
@@ -191,29 +218,48 @@ static inline bsp_array_t bsp_read_array(hid_t f, const char* label) {
   int r = H5Sget_simple_extent_dims(fspace, dims, NULL);
 
   if (r < 0) {
-    return bsp_construct_default_array_t();
+    H5Dclose(dset);
+    H5Sclose(fspace);
+    bsp_construct_default_array_t_allocator(array, allocator);
+    return BSP_ERROR_IO;
   }
 
   hid_t hdf5_type = H5Dget_type(dset);
 
   bsp_type_t type = bsp_get_bsp_type(hdf5_type);
 
-  bsp_array_t array = bsp_construct_array_t(dims[0], type);
-
-  herr_t status = H5Dread(dset, bsp_get_hdf5_native_type(type), H5S_ALL,
-                          H5S_ALL, H5P_DEFAULT, array.data);
-
-  if (status < 0) {
-    return bsp_construct_default_array_t();
+  bsp_error_t error =
+      bsp_construct_array_t_allocator(array, dims[0], type, allocator);
+  if (error != BSP_SUCCESS) {
+    H5Dclose(dset);
+    H5Sclose(fspace);
+    bsp_construct_default_array_t_allocator(array, allocator);
+    return BSP_ERROR_MEMORY;
   }
 
-  H5Dclose(dset);
+  herr_t status = H5Dread(dset, bsp_get_hdf5_native_type(type), H5S_ALL,
+                          H5S_ALL, H5P_DEFAULT, array->data);
+
+  if (status < 0) {
+    bsp_destroy_array_t(array);
+    H5Sclose(fspace);
+    H5Dclose(dset);
+    bsp_construct_default_array_t_allocator(array, allocator);
+    return BSP_ERROR_IO;
+  }
+
   H5Sclose(fspace);
-  return array;
+  H5Dclose(dset);
+  return BSP_SUCCESS;
 }
 
-static inline void bsp_write_attribute(hid_t f, const char* label,
-                                       const char* string) {
+static inline bsp_error_t bsp_read_array(bsp_array_t* array, hid_t f,
+                                         const char* label) {
+  return bsp_read_array_allocator(array, f, label, bsp_default_allocator);
+}
+
+static inline bsp_error_t bsp_write_attribute(hid_t f, const char* label,
+                                              const char* string) {
   hid_t strtype = H5Tcopy(H5T_C_S1);
   H5Tset_size(strtype, strlen(string));
   H5Tset_cset(strtype, H5T_CSET_UTF8);
@@ -227,23 +273,35 @@ static inline void bsp_write_attribute(hid_t f, const char* label,
   H5Tclose(strtype);
   H5Aclose(attribute);
   H5Sclose(dataspace);
+
+  return BSP_SUCCESS;
 }
 
-static inline char* bsp_read_attribute(hid_t f, const char* label) {
+static inline bsp_error_t
+bsp_read_attribute_allocator(char** string, hid_t f, const char* label,
+                             bsp_allocator_t allocator) {
   hid_t attribute = H5Aopen(f, label, H5P_DEFAULT);
-  hid_t strtype = H5Aget_type(attribute);
 
-  hid_t type_class = H5Tget_class(strtype);
-  assert(type_class == H5T_STRING);
+  if (attribute == H5I_INVALID_HID) {
+    return BSP_ERROR_FORMAT;
+  }
+
+  hid_t strtype = H5Aget_type(attribute);
 
   size_t size = H5Tget_size(strtype);
 
-  char* string = (char*) malloc(size + 1);
+  *string = (char*) allocator.malloc(size + 1);
 
-  H5Aread(attribute, strtype, string);
+  H5Aread(attribute, strtype, *string);
+  (*string)[size] = '\0';
 
   H5Aclose(attribute);
   H5Tclose(strtype);
 
-  return string;
+  return BSP_SUCCESS;
+}
+
+static inline bsp_error_t bsp_read_attribute(char** string, hid_t f,
+                                             const char* label) {
+  return bsp_read_attribute_allocator(string, f, label, bsp_default_allocator);
 }

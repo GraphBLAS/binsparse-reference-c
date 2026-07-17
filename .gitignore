@@ -4,7 +4,15 @@
 
 scripts
 venv
-build*
+build/
+build-*/
 compile_flags.txt
 ._*
 tensor_test_files
+
+# MATLAB/Octave MEX files
+*.mex
+*.mexa64
+*.mexw32
+*.mexw64
+*.mexmaci64

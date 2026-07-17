@@ -10,8 +10,7 @@
 int main(int argc, char** argv) {
 
   if (argc < 3) {
-    printf(
-        "usage: ./bsp2mtx [inputfile_name.mtx] [outputfile_name.bsp.hdf5]\n");
+    printf("usage: ./bsp2mtx [inputfile_name.bsp.h5] [outputfile_name.mtx]\n");
     return 1;
   }
 
@@ -19,8 +18,9 @@ int main(int argc, char** argv) {
   char* output_fname = argv[2];
 
   printf(" === Reading file... ===\n");
-  bsp_matrix_t matrix = bsp_read_matrix(input_fname, NULL);
-  printf(" === Done writing. ===\n");
+  bsp_matrix_t matrix;
+  BSP_CHECK(bsp_read_matrix(&matrix, input_fname, NULL));
+  printf(" === Done reading. ===\n");
   if (matrix.format != BSP_COO) {
     matrix = bsp_convert_matrix(matrix, BSP_COO);
   }
@@ -29,7 +29,7 @@ int main(int argc, char** argv) {
   bsp_mmwrite(output_fname, matrix);
   printf(" === Done writing. ===\n");
 
-  bsp_destroy_matrix_t(matrix);
+  bsp_destroy_matrix_t(&matrix);
 
   return 0;
 }

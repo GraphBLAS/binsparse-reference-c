@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
-#include <binsparse/binsparse.h>
+#include <binsparse/binsparse_all.h>
 
 herr_t visit_group(hid_t loc_id, const char* name, const H5L_info_t* linfo,
                    void* opdata);
@@ -18,7 +18,13 @@ void print_group_info(hid_t g, const char* name) {
   H5E_END_TRY;
 
   if (bsp_json != H5I_INVALID_HID) {
-    char* json_string = bsp_read_attribute(g, "binsparse");
+    char* json_string;
+    bsp_error_t error = bsp_read_attribute(&json_string, g, "binsparse");
+    if (error != BSP_SUCCESS) {
+      printf("Error reading binsparse attribute: %s\n",
+             bsp_get_error_string(error));
+      return;
+    }
 
     cJSON* j = cJSON_Parse(json_string);
 

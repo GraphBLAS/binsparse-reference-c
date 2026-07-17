@@ -13,6 +13,11 @@ typedef struct {
   char* dataset;
 } bsp_fdataset_info_t;
 
+static inline void bsp_destroy_fdataset_info_t(bsp_fdataset_info_t* info) {
+  free(info->fname);
+  free(info->dataset);
+}
+
 static inline bsp_fdataset_info_t bsp_parse_fdataset_string(char* str) {
   size_t len = strlen(str);
 
