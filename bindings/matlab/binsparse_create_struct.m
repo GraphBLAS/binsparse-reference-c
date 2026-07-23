@@ -1,12 +1,12 @@
-function matrix = bsp_matrix_create(varargin)
-% BSP_MATRIX_CREATE - Create a Binsparse matrix struct
+function matrix = binsparse_create_struct(varargin)
+% BINSPARSE_CREATE_STRUCT - Create a Binsparse vector or matrix struct
 %
 % Creates a MATLAB struct analogous to the C bsp_matrix_t structure.
 % The struct contains four native MATLAB arrays and metadata fields.
 %
 % Usage:
-%   matrix = bsp_matrix_create()                    % Empty matrix
-%   matrix = bsp_matrix_create(values, indices_0, indices_1, pointers_to_1, ...
+%   matrix = binsparse_create_struct()              % Empty struct
+%   matrix = binsparse_create_struct(values, indices_0, indices_1, pointers_to_1, ...
 %                              nrows, ncols, nnz, is_iso, format, structure)
 %
 % Fields:
@@ -23,13 +23,14 @@ function matrix = bsp_matrix_create(varargin)
 %
 % Example:
 %   % Create empty matrix
-%   matrix = bsp_matrix_create();
+%   matrix = binsparse_create_struct();
 %
 %   % Create COO matrix
 %   values = [1.0, 2.0, 3.0];
 %   rows = [1, 2, 3];
 %   cols = [1, 2, 3];
-%   matrix = bsp_matrix_create(values, rows, cols, [], 3, 3, 3, false, 'COO', 'general');
+%   matrix = binsparse_create_struct(values, rows, cols, [], ...
+%       3, 3, 3, false, 'COO', 'general');
 
 % SPDX-FileCopyrightText: 2024 Binsparse Developers
 %
@@ -64,7 +65,7 @@ elseif nargin == 10
         'structure', char(varargin{10}));
 
 else
-    error('bsp_matrix_create:InvalidArgs', ...
+    error('binsparse_create_struct:InvalidArgs', ...
           'Expected 0 or 10 arguments, got %d', nargin);
 end
 

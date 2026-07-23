@@ -12,6 +12,7 @@
 #include <binsparse/matrix.h>
 #include <binsparse/matrix_market/matrix_market_read.h>
 #include <cJSON/cJSON.h>
+#include <math.h>
 #include <unistd.h>
 
 static void bsp_prepare_hdf5_runtime(void) {
@@ -20,6 +21,44 @@ static void bsp_prepare_hdf5_runtime(void) {
     H5dont_atexit();
     initialized = true;
   }
+}
+
+static bool bsp_parse_dimension(const cJSON* item, size_t* dimension) {
+  if (item == NULL || !cJSON_IsNumber(item)) {
+    return false;
+  }
+
+  double value = cJSON_GetNumberValue(item);
+  if (!isfinite(value) || value < 0 || floor(value) != value ||
+      value >= (double) SIZE_MAX) {
+    return false;
+  }
+
+  *dimension = (size_t) value;
+  return true;
+}
+
+static bsp_error_t bsp_parse_matrix_shape(const cJSON* binsparse,
+                                          bsp_matrix_format_t format,
+                                          size_t* nrows, size_t* ncols) {
+  cJSON* shape = cJSON_GetObjectItemCaseSensitive(binsparse, "shape");
+  if (shape == NULL || !cJSON_IsArray(shape)) {
+    return BSP_ERROR_FORMAT;
+  }
+
+  int expected_rank = bsp_matrix_format_is_vector(format) ? 1 : 2;
+  if (cJSON_GetArraySize(shape) != expected_rank ||
+      !bsp_parse_dimension(cJSON_GetArrayItem(shape, 0), nrows)) {
+    return BSP_ERROR_FORMAT;
+  }
+
+  if (expected_rank == 1) {
+    *ncols = 1;
+  } else if (!bsp_parse_dimension(cJSON_GetArrayItem(shape, 1), ncols)) {
+    return BSP_ERROR_FORMAT;
+  }
+
+  return BSP_SUCCESS;
 }
 
 #if __STDC_VERSION__ >= 201112L
@@ -69,20 +108,14 @@ bsp_error_t bsp_read_matrix_from_group_parallel(bsp_matrix_t* matrix, hid_t f,
   assert(nnz_ != NULL);
   size_t nnz = cJSON_GetNumberValue(nnz_);
 
-  cJSON* shape_ = cJSON_GetObjectItemCaseSensitive(binsparse, "shape");
-  assert(shape_ != NULL);
-
-  assert(cJSON_GetArraySize(shape_) == 2);
-
-  cJSON* nrows_ = cJSON_GetArrayItem(shape_, 0);
-  assert(nrows_ != NULL);
-
-  size_t nrows = cJSON_GetNumberValue(nrows_);
-
-  cJSON* ncols_ = cJSON_GetArrayItem(shape_, 1);
-  assert(ncols_ != NULL);
-
-  size_t ncols = cJSON_GetNumberValue(ncols_);
+  size_t nrows;
+  size_t ncols;
+  error = bsp_parse_matrix_shape(binsparse, format, &nrows, &ncols);
+  if (error != BSP_SUCCESS || (format == BSP_DVEC && nnz != nrows)) {
+    cJSON_Delete(j);
+    free(json_string);
+    return BSP_ERROR_FORMAT;
+  }
 
   matrix->nrows = nrows;
   matrix->ncols = ncols;
@@ -231,31 +264,14 @@ bsp_error_t bsp_read_matrix_from_group_allocator(bsp_matrix_t* matrix, hid_t f,
   }
   size_t nnz = cJSON_GetNumberValue(nnz_);
 
-  cJSON* shape_ = cJSON_GetObjectItemCaseSensitive(binsparse, "shape");
-  if (shape_ == NULL || !cJSON_IsArray(shape_) ||
-      cJSON_GetArraySize(shape_) != 2) {
+  size_t nrows;
+  size_t ncols;
+  error = bsp_parse_matrix_shape(binsparse, format, &nrows, &ncols);
+  if (error != BSP_SUCCESS || (format == BSP_DVEC && nnz != nrows)) {
     cJSON_Delete(j);
     allocator.free(json_string);
     return BSP_ERROR_FORMAT;
   }
-
-  cJSON* nrows_ = cJSON_GetArrayItem(shape_, 0);
-  if (nrows_ == NULL || !cJSON_IsNumber(nrows_)) {
-    cJSON_Delete(j);
-    allocator.free(json_string);
-    return BSP_ERROR_FORMAT;
-  }
-
-  size_t nrows = cJSON_GetNumberValue(nrows_);
-
-  cJSON* ncols_ = cJSON_GetArrayItem(shape_, 1);
-  if (ncols_ == NULL || !cJSON_IsNumber(ncols_)) {
-    cJSON_Delete(j);
-    allocator.free(json_string);
-    return BSP_ERROR_FORMAT;
-  }
-
-  size_t ncols = cJSON_GetNumberValue(ncols_);
 
   matrix->nrows = nrows;
   matrix->ncols = ncols;

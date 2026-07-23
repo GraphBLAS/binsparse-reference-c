@@ -1,20 +1,38 @@
-function test_generate_bsp_from_ssmc()
-% TEST_GENERATE_BSP_FROM_SSMC - End-to-end test for generate_bsp_from_ssmc
+function test_binsparse_write_ssmc_problem()
+% TEST_BINSPARSE_WRITE_SSMC_PROBLEM - Test binsparse_write_ssmc_problem
 
 % SPDX-FileCopyrightText: 2024 Binsparse Developers
 %
 % SPDX-License-Identifier: BSD-3-Clause
 
-fprintf('=== Testing generate_bsp_from_ssmc ===\n\n');
+fprintf('=== Testing binsparse_write_ssmc_problem ===\n\n');
 
 required = {'binsparse_from_ssmc', 'binsparse_minimize_types', ...
             'binsparse_write', 'binsparse_read', ...
-            'binsparse_write_string_dataset', 'generate_bsp_from_ssmc'};
+            'binsparse_write_string_dataset', 'binsparse_write_ssmc_problem'};
 for i = 1:numel(required)
     if exist(required{i}, 'file') ~= 3 && exist(required{i}, 'file') ~= 2
-        error('%s not found. Please compile MEX functions and ensure the .m file is on path.', required{i});
+        error(['%s not found. Please compile MEX functions and ensure ' ...
+               'the .m file is on path.'], required{i});
     end
 end
+
+% Check validation performed by the public SSMC writer.
+minimal_problem = struct('A', sparse(1));
+expect_error(@() binsparse_write_ssmc_problem(), ...
+             'binsparse_write_ssmc_problem:InvalidArgs');
+expect_error(@() binsparse_write_ssmc_problem(42, 'invalid.bsp.h5'), ...
+             'binsparse_write_ssmc_problem:InvalidProblem');
+expect_error(@() binsparse_write_ssmc_problem(minimal_problem, 42), ...
+             'binsparse_write_ssmc_problem:InvalidFilename');
+expect_error(@() binsparse_write_ssmc_problem( ...
+             minimal_problem, 'invalid.bsp.h5', 'bad'), ...
+             'binsparse_write_ssmc_problem:InvalidFormat');
+expect_error(@() binsparse_write_ssmc_problem(minimal_problem, ...
+             'invalid.bsp.h5', 'COO', 10), ...
+             'binsparse_write_ssmc_problem:InvalidCompression');
+expect_error(@() binsparse_write_ssmc_problem(struct(), 'invalid.bsp.h5'), ...
+             'binsparse_write_ssmc_problem:MissingMatrix');
 
 % Build synthetic problem
 Problem = struct();
@@ -45,7 +63,7 @@ cleanup_file = onCleanup(@() delete_if_exists(out_file));
 format = 'COO';
 compression_level = 0;
 
-generate_bsp_from_ssmc(problem, out_file, format, compression_level);
+binsparse_write_ssmc_problem(problem, out_file, format, compression_level);
 
 % Read primary
 primary_bsp = binsparse_read(out_file);
@@ -55,8 +73,10 @@ assert(matrices_equal(primary_mat, expected_primary), 'Primary matrix mismatch')
 
 % Read aux and x/b
 check_dense_group(out_file, 'b', Problem.b(:));
+check_vector_shape(out_file, 'b', numel(Problem.b));
 check_dense_group(out_file, 'x', Problem.x);
 check_dense_group(out_file, 'c', Problem.aux.c(:));
+check_vector_shape(out_file, 'c', numel(Problem.aux.c));
 check_dense_group(out_file, 'D', Problem.aux.D);
 
 aux_sparse = binsparse_read(out_file, 'S');
@@ -84,10 +104,28 @@ function check_dense_group(filename, group, expected)
            'Group "%s" mismatch', group);
 end
 
+function check_vector_shape(filename, group, expected)
+    json = h5readatt(filename, ['/' group], 'binsparse');
+    pattern = sprintf('"shape"\s*:\s*\[\s*%d\s*\]', expected);
+    assert(~isempty(regexp(json, pattern, 'once')), ...
+           'Group "%s" does not have a one-dimensional shape', group);
+end
+
 function check_string_dataset(filename, name, expected)
     actual = h5read(filename, ['/' name]);
     actual = as_cellstr(actual);
     assert(isequal(actual, expected), 'String dataset "%s" mismatch', name);
+end
+
+function expect_error(action, identifier)
+    try
+        action();
+    catch exception
+        assert(strcmp(exception.identifier, identifier), ...
+               'Expected %s, received %s', identifier, exception.identifier);
+        return;
+    end
+    error('Expected error %s', identifier);
 end
 
 function value = as_cellstr(value)

@@ -1,14 +1,14 @@
-function build_matlab_bindings(varargin)
-% BUILD_MATLAB_BINDINGS - Build Binsparse MATLAB MEX functions
+function binsparse_build_matlab_bindings(varargin)
+% BINSPARSE_BUILD_MATLAB_BINDINGS - Build Binsparse MATLAB MEX functions
 %
 % This script provides a simple interface to build MATLAB bindings
 % for the Binsparse library. It automatically detects include paths
 % and sets up the compilation environment.
 %
 % Usage:
-%   build_matlab_bindings()           % Build all available MEX functions
-%   build_matlab_bindings('verbose')  % Build with verbose output
-%   build_matlab_bindings('clean')    % Clean compiled MEX files
+%   binsparse_build_matlab_bindings()           % Build all available MEX functions
+%   binsparse_build_matlab_bindings('verbose')  % Build with verbose output
+%   binsparse_build_matlab_bindings('clean')    % Clean compiled MEX files
 %
 % Prerequisites:
 % - MATLAB with working MEX compiler (run 'mex -setup' if needed)
@@ -56,7 +56,7 @@ fprintf('\n=== Build Complete ===\n');
 fprintf('Run the test functions to verify the installation:\n');
 fprintf('  test_binsparse_read()\n');
 fprintf('  test_binsparse_write()\n');
-fprintf('  test_write_binsparse_from_matlab()\n\n');
+fprintf('  test_binsparse_write_ssmc_problem()\n\n');
 
 end
 
@@ -107,7 +107,6 @@ function compile_mex_functions(paths, verbose)
     % List of MEX functions to compile
     mex_files = {'binsparse_read.c', 'binsparse_write.c', ...
         'binsparse_from_ssmc.c', 'binsparse_minimize_types.c', ...
-        'write_binsparse_from_matlab.c', ...
         'binsparse_write_string_dataset.c'};
 
     fprintf('Compiling MEX functions...\n');

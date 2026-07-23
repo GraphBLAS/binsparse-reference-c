@@ -8,7 +8,7 @@
  * binsparse_read.c - Read Binsparse matrices into MATLAB
  *
  * This MEX function reads Binsparse format matrices and returns them
- * as MATLAB structs compatible with bsp_matrix_create.
+ * as MATLAB structs compatible with binsparse_create_struct.
  *
  * Usage in MATLAB/Octave:
  *   matrix = binsparse_read(filename)

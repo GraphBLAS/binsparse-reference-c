@@ -9,7 +9,7 @@ function binsparse_write(filename, matrix, group, json_string, compression_level
 %
 % filename is the path of the Binsparse HDF5 file to create (typically
 % *.bsp.h5), and matrix is a Binsparse matrix struct as returned by
-% binsparse_read, binsparse_from_ssmc, or bsp_matrix_create.  The optional
+% binsparse_read, binsparse_from_ssmc, or binsparse_create_struct.  The optional
 % group names an HDF5 group to write into ('' or [ ] writes to the file
 % root).  The optional json_string is a JSON object whose keys are merged
 % into the Binsparse descriptor as user metadata.  The optional
@@ -21,12 +21,13 @@ function binsparse_write(filename, matrix, group, json_string, compression_level
 %   binsparse_write ('example.bsp.h5', matrix) ;
 %   binsparse_write ('example.bsp.h5', matrix, 'b', '{"role": "b"}', 9) ;
 %
-% See also binsparse_read, binsparse_from_ssmc, bsp_matrix_create,
-% generate_bsp_from_ssmc.
+% See also binsparse_read, binsparse_from_ssmc, binsparse_create_struct,
+% binsparse_write_ssmc_problem.
 
 % SPDX-FileCopyrightText: 2024 Binsparse Developers
 % SPDX-License-Identifier: BSD-3-Clause
 
 % This .m file provides the help text for the binsparse_write MEX function.
 
-error ('binsparse_write mexFunction not found; compile with build_matlab_bindings first') ;
+error (['binsparse_write mexFunction not found; compile with ' ...
+    'binsparse_build_matlab_bindings first']) ;

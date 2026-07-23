@@ -7,7 +7,8 @@
 /**
  * binsparse_write.c - Write MATLAB structs to Binsparse format
  *
- * This MEX function writes MATLAB structs (compatible with bsp_matrix_create)
+ * This MEX function writes MATLAB structs (compatible with
+ * binsparse_create_struct)
  * to Binsparse format files.
  *
  * Usage in MATLAB/Octave:

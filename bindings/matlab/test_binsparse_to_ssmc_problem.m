@@ -1,5 +1,5 @@
-function test_convert_to_problem_struct
-%TEST_CONVERT_TO_PROBLEM_STRUCT test in-memory Binsparse Problem conversion
+function test_binsparse_to_ssmc_problem
+%TEST_BINSPARSE_TO_SSMC_PROBLEM test in-memory Binsparse Problem conversion
 
 % SPDX-FileCopyrightText: 2026 Binsparse Developers
 %
@@ -19,7 +19,7 @@ expected_zeros = sparse(1, 3, 1, 3, 3);
 formats = matrix_formats(rows, cols, values, 3, 3);
 for k = 1:numel(formats)
     raw = struct('metadata', metadata, 'A', formats{k});
-    Problem = convert_to_problem_struct(raw);
+    Problem = binsparse_to_ssmc_problem(raw);
     assert(isequal(Problem.A, expected), ...
         'A mismatch for %s', formats{k}.format);
     assert(isequal(Problem.Zeros, expected_zeros), ...
@@ -29,34 +29,34 @@ end
 
 raw = struct('metadata', metadata, ...
     'A', make_matrix(0, rows, cols, [], 3, 3, 'COO', true, 'general'));
-Problem = convert_to_problem_struct(raw);
+Problem = binsparse_to_ssmc_problem(raw);
 assert(nnz(Problem.A) == 0);
 assert(isequal(Problem.Zeros, sparse(rows + 1, cols + 1, 1, 3, 3)));
 
 lower = make_matrix([1; 2; 0; 3], [0; 1; 1; 2], [0; 0; 1; 2], ...
     [], 3, 3, 'COO', false, 'symmetric_lower');
 raw = struct('metadata', metadata, 'A', lower);
-Problem = convert_to_problem_struct(raw);
+Problem = binsparse_to_ssmc_problem(raw);
 assert(isequal(Problem.A, sparse([1 2 1 3], [1 1 2 3], [1 2 2 3], 3, 3)));
 assert(isequal(Problem.Zeros, sparse(2, 2, 1, 3, 3)));
 
 hermitian = make_matrix([1; 2+3i; 4], [0; 1; 1], [0; 0; 1], ...
     [], 2, 2, 'COO', false, 'hermitian_lower');
 raw = struct('metadata', metadata, 'A', hermitian);
-Problem = convert_to_problem_struct(raw);
+Problem = binsparse_to_ssmc_problem(raw);
 assert(isequal(Problem.A, sparse([1 2-3i; 2+3i 4])));
 
 skew = make_matrix([5; 0], [1; 1], [0; 1], ...
     [], 2, 2, 'COO', false, 'skew_symmetric_lower');
 raw = struct('metadata', metadata, 'A', skew);
-Problem = convert_to_problem_struct(raw);
+Problem = binsparse_to_ssmc_problem(raw);
 assert(isequal(Problem.A, sparse([0 -5; 5 0])));
 assert(isequal(Problem.Zeros, sparse(2, 2, 1, 2, 2)));
 
 cvec = make_matrix([8; 0], [0; 2], [], [], ...
     3, 1, 'CVEC', false, 'general');
 raw = struct('metadata', metadata, 'A', cvec);
-Problem = convert_to_problem_struct(raw);
+Problem = binsparse_to_ssmc_problem(raw);
 assert(isequal(Problem.A, sparse(1, 1, 8, 3, 1)));
 assert(isequal(Problem.Zeros, sparse(3, 1, 1, 3, 1)));
 
@@ -67,7 +67,7 @@ raw = struct('metadata', metadata, ...
 raw.aux.seq_1 = dense_matrix([5; 6], 2, 1, 'DVEC');
 raw.aux.seq_2 = dense_matrix([7; 8], 2, 1, 'DVEC');
 raw.aux.label = {'abc'; 'def'};
-Problem = convert_to_problem_struct(raw);
+Problem = binsparse_to_ssmc_problem(raw);
 assert(isequal(Problem.b, [10; 20; 30]));
 assert(isequal(Problem.x, [1 2; 3 4]));
 assert(iscell(Problem.aux.seq) && numel(Problem.aux.seq) == 2);
@@ -76,39 +76,39 @@ assert(isequal(Problem.aux.label, char({'abc'; 'def'})));
 
 dmat = dense_matrix([1; 2; 3; 4; 5; 6], 2, 3, 'DMAT');
 raw = struct('metadata', metadata, 'A', formats{1}, 'b', dmat);
-Problem = convert_to_problem_struct(raw);
+Problem = binsparse_to_ssmc_problem(raw);
 assert(isequal(Problem.b, [1 2 3; 4 5 6]));
 
 bad = formats{1};
 bad.indices_1([1 2]) = bad.indices_1([2 1]);
-assert_throws(@() convert_to_problem_struct( ...
+assert_throws(@() binsparse_to_ssmc_problem( ...
     struct('metadata', metadata, 'A', bad)), 'BinSparse:InvalidMatrix');
 
 bad = formats{3};
 bad.pointers_to_1 = uint64([0; 3; 2; 5]);
-assert_throws(@() convert_to_problem_struct( ...
+assert_throws(@() binsparse_to_ssmc_problem( ...
     struct('metadata', metadata, 'A', bad)), 'BinSparse:InvalidMatrix');
 
 bad = formats{5};
 bad.pointers_to_1 = uint64([0; 2; 2; 5]);
-assert_throws(@() convert_to_problem_struct( ...
+assert_throws(@() binsparse_to_ssmc_problem( ...
     struct('metadata', metadata, 'A', bad)), 'BinSparse:InvalidMatrix');
 
 bad = formats{1};
 bad.format = 'CUSTOM';
-assert_throws(@() convert_to_problem_struct( ...
+assert_throws(@() binsparse_to_ssmc_problem( ...
     struct('metadata', metadata, 'A', bad)), 'BinSparse:UnsupportedFormat');
 
 bad = dense_matrix((1:6).', 2, 3, 'DMATC');
-assert_throws(@() convert_to_problem_struct( ...
+assert_throws(@() binsparse_to_ssmc_problem( ...
     struct('metadata', metadata, 'A', bad)), 'BinSparse:InvalidProblem');
 
 bad = make_matrix(uint64(9007199254740992) + uint64(1), 0, 0, [], ...
     1, 1, 'COO', false, 'general');
-assert_throws(@() convert_to_problem_struct( ...
+assert_throws(@() binsparse_to_ssmc_problem( ...
     struct('metadata', metadata, 'A', bad)), 'BinSparse:InexactValue');
 
-fprintf('test_convert_to_problem_struct: all tests passed\n');
+fprintf('test_binsparse_to_ssmc_problem: all tests passed\n');
 
 end
 

@@ -55,24 +55,30 @@ void print_group_info(hid_t g, const char* name) {
     cJSON* shape_ = cJSON_GetObjectItemCaseSensitive(binsparse, "shape");
     assert(shape_ != NULL);
 
-    assert(cJSON_GetArraySize(shape_) == 2);
+    bool is_vector =
+        bsp_matrix_format_is_vector(bsp_get_matrix_format(format_string));
+    assert(cJSON_GetArraySize(shape_) == (is_vector ? 1 : 2));
 
     cJSON* nrows_ = cJSON_GetArrayItem(shape_, 0);
     assert(nrows_ != NULL);
 
     size_t nrows = cJSON_GetNumberValue(nrows_);
 
-    cJSON* ncols_ = cJSON_GetArrayItem(shape_, 1);
-    assert(ncols_ != NULL);
-
-    size_t ncols = cJSON_GetNumberValue(ncols_);
-
     char full_group_path[2048];
     size_t size = H5Iget_name(g, full_group_path, 2048);
 
-    printf("Group \"%s\": Version %s Binsparse matrix. Format %s, %zu x %zu. "
-           "%zu stored values.\n",
-           full_group_path, version_string, format_string, nrows, ncols, nnz);
+    if (is_vector) {
+      printf("Group \"%s\": Version %s Binsparse vector. Format %s, length "
+             "%zu. %zu stored values.\n",
+             full_group_path, version_string, format_string, nrows, nnz);
+    } else {
+      cJSON* ncols_ = cJSON_GetArrayItem(shape_, 1);
+      assert(ncols_ != NULL);
+      size_t ncols = cJSON_GetNumberValue(ncols_);
+      printf("Group \"%s\": Version %s Binsparse matrix. Format %s, %zu x "
+             "%zu. %zu stored values.\n",
+             full_group_path, version_string, format_string, nrows, ncols, nnz);
+    }
 
     cJSON* data_types =
         cJSON_GetObjectItemCaseSensitive(binsparse, "data_types");

@@ -1,7 +1,7 @@
-function Problem = convert_to_problem_struct(bsp_problem)
-%CONVERT_TO_PROBLEM_STRUCT convert a Binsparse problem to an SSMC Problem
+function Problem = binsparse_to_ssmc_problem(bsp_problem)
+%BINSPARSE_TO_SSMC_PROBLEM convert a Binsparse problem to an SSMC Problem
 %
-% Problem = convert_to_problem_struct(bsp_problem)
+% Problem = binsparse_to_ssmc_problem(bsp_problem)
 %
 % bsp_problem is an in-memory representation of one SuiteSparse Matrix
 % Collection problem.  Its A, b, x, and aux numeric entries are raw structs
