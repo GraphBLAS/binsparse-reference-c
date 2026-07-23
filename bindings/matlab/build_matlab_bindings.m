@@ -56,7 +56,7 @@ fprintf('\n=== Build Complete ===\n');
 fprintf('Run the test functions to verify the installation:\n');
 fprintf('  test_binsparse_read()\n');
 fprintf('  test_binsparse_write()\n');
-fprintf('  test_write_binsparse_from_matlab()\n\n');
+fprintf('  test_generate_bsp_from_ssmc()\n\n');
 
 end
 
@@ -107,7 +107,6 @@ function compile_mex_functions(paths, verbose)
     % List of MEX functions to compile
     mex_files = {'binsparse_read.c', 'binsparse_write.c', ...
         'binsparse_from_ssmc.c', 'binsparse_minimize_types.c', ...
-        'write_binsparse_from_matlab.c', ...
         'binsparse_write_string_dataset.c'};
 
     fprintf('Compiling MEX functions...\n');

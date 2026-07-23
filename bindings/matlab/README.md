@@ -57,7 +57,7 @@ mkoctfile --version
    ```matlab
    test_binsparse_read()
    test_binsparse_write()
-   test_write_binsparse_from_matlab()
+   test_generate_bsp_from_ssmc()
    ```
 
 #### Option 2: Octave (from within Octave)
@@ -76,7 +76,7 @@ mkoctfile --version
    ```octave
    test_binsparse_read()
    test_binsparse_write()
-   test_write_binsparse_from_matlab()
+   test_generate_bsp_from_ssmc()
    ```
 
 #### Option 3: Octave (from command line)
@@ -95,7 +95,7 @@ mkoctfile --version
    ```bash
    octave --eval "test_binsparse_read()"
    octave --eval "test_binsparse_write()"
-   octave --eval "test_write_binsparse_from_matlab()"
+   octave --eval "test_generate_bsp_from_ssmc()"
    ```
 
 ## Usage Examples
@@ -157,13 +157,13 @@ Problem.title = 'Test Matrix';
 Problem.kind = 'artificial/test';
 
 % Write directly from SuiteSparse format to Binsparse
-write_binsparse_from_matlab(Problem, 'output.bsp.h5');
+generate_bsp_from_ssmc(Problem, 'output.bsp.h5');
 
 % Write with an explicit sparse format ('COO', 'COOR', 'CSC', or 'CSR')
-write_binsparse_from_matlab(Problem, 'output.bsp.h5', 'CSC');
+generate_bsp_from_ssmc(Problem, 'output.bsp.h5', 'CSC');
 
 % Write with a format and gzip compression level (0-9)
-write_binsparse_from_matlab(Problem, 'output.bsp.h5', 'COO', [], 6);
+generate_bsp_from_ssmc(Problem, 'output.bsp.h5', 'COO', 6);
 ```
 
 ### Error Handling
@@ -187,7 +187,6 @@ end
 | `binsparse_from_ssmc.c` | MEX function converting SuiteSparse A+Zeros to a Binsparse struct |
 | `binsparse_minimize_types.c` | MEX function minimizing value/index types in a Binsparse struct |
 | `binsparse_write_string_dataset.c` | MEX function writing HDF5 UTF-8 string datasets |
-| `write_binsparse_from_matlab.c` | MEX entry point for writing an SSMC Problem (delegates to `generate_bsp_from_ssmc.m`) |
 | `matlab_bsp_helpers.h` | Shared MATLAB/Binsparse conversion helpers for the MEX sources |
 | `generate_bsp_from_ssmc.m` | Write a full SSMC Problem struct to one Binsparse file |
 | `convert_to_problem_struct.m` | Convert Binsparse data back to an SSMC Problem struct |
@@ -203,7 +202,6 @@ end
 | `test_bsp_matrix_struct.m` | Test script for the matrix struct helpers |
 | `test_convert_to_problem_struct.m` | Test script for Problem conversion |
 | `test_generate_bsp_from_ssmc.m` | End-to-end test for the SSMC writer |
-| `test_write_binsparse_from_matlab.m` | Test script for the SSMC writer MEX |
 | `test_binsparse_roundtrip_dir.m` | Round-trip every .h5 file in a directory |
 | `Contents.m` | Directory listing for MATLAB's `help` |
 | `README.md` | This documentation file |

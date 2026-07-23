@@ -6,7 +6,6 @@
 %   binsparse_from_ssmc             - convert SSMC A+Zeros to a Binsparse matrix struct
 %   binsparse_minimize_types        - minimize value/index types in a Binsparse struct
 %   binsparse_write_string_dataset  - write an HDF5 UTF-8 string dataset
-%   write_binsparse_from_matlab     - write an SSMC Problem struct (delegates to generate_bsp_from_ssmc)
 %
 % MATLAB helpers:
 %   generate_bsp_from_ssmc          - write an SSMC Problem to a Binsparse file
@@ -27,7 +26,6 @@
 %   test_bsp_matrix_struct          - tests for the Binsparse matrix struct helpers
 %   test_convert_to_problem_struct  - tests for Binsparse Problem conversion
 %   test_generate_bsp_from_ssmc     - end-to-end test for generate_bsp_from_ssmc
-%   test_write_binsparse_from_matlab - end-to-end test for the SSMC writer MEX
 %   test_binsparse_roundtrip_dir    - round-trip every .h5 file in a directory
 
 % SPDX-FileCopyrightText: 2024 Binsparse Developers
