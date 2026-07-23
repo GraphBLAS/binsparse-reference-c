@@ -55,8 +55,8 @@ void print_group_info(hid_t g, const char* name) {
     cJSON* shape_ = cJSON_GetObjectItemCaseSensitive(binsparse, "shape");
     assert(shape_ != NULL);
 
-    bool is_vector = bsp_matrix_format_is_vector(
-        bsp_get_matrix_format(format_string));
+    bool is_vector =
+        bsp_matrix_format_is_vector(bsp_get_matrix_format(format_string));
     assert(cJSON_GetArraySize(shape_) == (is_vector ? 1 : 2));
 
     cJSON* nrows_ = cJSON_GetArrayItem(shape_, 0);
@@ -77,8 +77,7 @@ void print_group_info(hid_t g, const char* name) {
       size_t ncols = cJSON_GetNumberValue(ncols_);
       printf("Group \"%s\": Version %s Binsparse matrix. Format %s, %zu x "
              "%zu. %zu stored values.\n",
-             full_group_path, version_string, format_string, nrows, ncols,
-             nnz);
+             full_group_path, version_string, format_string, nrows, ncols, nnz);
     }
 
     cJSON* data_types =

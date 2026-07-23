@@ -25,8 +25,7 @@ typedef enum bsp_matrix_format_t {
   BSP_INVALID_FORMAT = 21
 } bsp_matrix_format_t;
 
-static inline bool
-bsp_matrix_format_is_vector(bsp_matrix_format_t format) {
+static inline bool bsp_matrix_format_is_vector(bsp_matrix_format_t format) {
   return format == BSP_DVEC || format == BSP_CVEC;
 }
 

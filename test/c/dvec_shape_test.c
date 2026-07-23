@@ -98,8 +98,7 @@ int main(int argc, char** argv) {
 
   create_invalid_shape(invalid_filename);
   bsp_matrix_t invalid;
-  assert(bsp_read_matrix(&invalid, invalid_filename, NULL) ==
-         BSP_ERROR_FORMAT);
+  assert(bsp_read_matrix(&invalid, invalid_filename, NULL) == BSP_ERROR_FORMAT);
   assert(bsp_read_matrix_parallel(&invalid, invalid_filename, NULL, 2) ==
          BSP_ERROR_FORMAT);
 
