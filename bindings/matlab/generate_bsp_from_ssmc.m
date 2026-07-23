@@ -15,25 +15,56 @@ function generate_bsp_from_ssmc(problem, output_filename, format, compression_le
 
 if nargin < 2
     error('generate_bsp_from_ssmc:InvalidArgs', ...
-          'Usage: generate_bsp_from_ssmc(problem, output_filename [, format [, compression_level]])');
+          ['Usage: generate_bsp_from_ssmc(problem, output_filename ' ...
+           '[, format [, compression_level]])']);
+end
+
+if ~isstruct(problem) || ~isscalar(problem)
+    error('generate_bsp_from_ssmc:InvalidProblem', ...
+          'Problem must be a scalar struct');
+end
+
+if ~ischar(output_filename) || size(output_filename, 1) ~= 1 || ...
+        isempty(output_filename)
+    error('generate_bsp_from_ssmc:InvalidFilename', ...
+          'Output filename must be a nonempty character vector');
 end
 
 if nargin < 3 || isempty(format)
     format = 'COO';
 end
 
+if ~ischar(format) || size(format, 1) ~= 1
+    error('generate_bsp_from_ssmc:InvalidFormat', ...
+          'Format must be a character vector');
+end
+format = upper(format);
+if ~any(strcmp(format, {'COO', 'COOR', 'CSC', 'CSR'}))
+    error('generate_bsp_from_ssmc:InvalidFormat', ...
+          'Unsupported sparse format: %s', format);
+end
+
 if nargin < 4 || isempty(compression_level)
     compression_level = 0;
 end
 
-if ~isstruct(problem)
-    error('generate_bsp_from_ssmc:InvalidProblem', 'Problem must be a struct');
+if ~isnumeric(compression_level) || ~isreal(compression_level) || ...
+        ~isscalar(compression_level) || ~isfinite(compression_level) || ...
+        compression_level ~= fix(compression_level) || ...
+        compression_level < 0 || compression_level > 9
+    error('generate_bsp_from_ssmc:InvalidCompression', ...
+          'Compression level must be an integer from 0 to 9');
 end
 
 if isfield(problem, 'Problem')
     P = problem.Problem;
 else
     P = problem;
+end
+
+if ~isstruct(P) || ~isscalar(P)
+    error('generate_bsp_from_ssmc:InvalidProblem', ...
+          'Problem must contain a scalar Problem struct');
 end
 
 if ~isfield(P, 'A')

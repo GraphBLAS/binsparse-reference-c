@@ -12,9 +12,27 @@ required = {'binsparse_from_ssmc', 'binsparse_minimize_types', ...
             'binsparse_write_string_dataset', 'generate_bsp_from_ssmc'};
 for i = 1:numel(required)
     if exist(required{i}, 'file') ~= 3 && exist(required{i}, 'file') ~= 2
-        error('%s not found. Please compile MEX functions and ensure the .m file is on path.', required{i});
+        error(['%s not found. Please compile MEX functions and ensure ' ...
+               'the .m file is on path.'], required{i});
     end
 end
+
+% Check validation performed by the public SSMC writer.
+minimal_problem = struct('A', sparse(1));
+expect_error(@() generate_bsp_from_ssmc(), ...
+             'generate_bsp_from_ssmc:InvalidArgs');
+expect_error(@() generate_bsp_from_ssmc(42, 'invalid.bsp.h5'), ...
+             'generate_bsp_from_ssmc:InvalidProblem');
+expect_error(@() generate_bsp_from_ssmc(minimal_problem, 42), ...
+             'generate_bsp_from_ssmc:InvalidFilename');
+expect_error(@() generate_bsp_from_ssmc( ...
+             minimal_problem, 'invalid.bsp.h5', 'bad'), ...
+             'generate_bsp_from_ssmc:InvalidFormat');
+expect_error(@() generate_bsp_from_ssmc(minimal_problem, ...
+             'invalid.bsp.h5', 'COO', 10), ...
+             'generate_bsp_from_ssmc:InvalidCompression');
+expect_error(@() generate_bsp_from_ssmc(struct(), 'invalid.bsp.h5'), ...
+             'generate_bsp_from_ssmc:MissingMatrix');
 
 % Build synthetic problem
 Problem = struct();
@@ -88,6 +106,17 @@ function check_string_dataset(filename, name, expected)
     actual = h5read(filename, ['/' name]);
     actual = as_cellstr(actual);
     assert(isequal(actual, expected), 'String dataset "%s" mismatch', name);
+end
+
+function expect_error(action, identifier)
+    try
+        action();
+    catch exception
+        assert(strcmp(exception.identifier, identifier), ...
+               'Expected %s, received %s', identifier, exception.identifier);
+        return;
+    end
+    error('Expected error %s', identifier);
 end
 
 function value = as_cellstr(value)
