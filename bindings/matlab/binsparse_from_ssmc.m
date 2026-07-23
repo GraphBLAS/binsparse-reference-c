@@ -20,7 +20,8 @@ function matrix = binsparse_from_ssmc (A, Zeros, format)
 %   Zeros = sparse (2, 3, 1, 3, 3) ;
 %   matrix = binsparse_from_ssmc (A, Zeros, 'CSC') ;
 %
-% See also binsparse_write, binsparse_minimize_types, generate_bsp_from_ssmc.
+% See also binsparse_write, binsparse_minimize_types,
+% binsparse_write_ssmc_problem.
 
 % SPDX-FileCopyrightText: 2024 Binsparse Developers
 %
@@ -29,4 +30,5 @@ function matrix = binsparse_from_ssmc (A, Zeros, format)
 % This .m file provides the help text for the binsparse_from_ssmc MEX
 % function.
 
-error('binsparse_from_ssmc mexFunction not found; compile with build_matlab_bindings first');
+error(['binsparse_from_ssmc mexFunction not found; compile with ' ...
+       'binsparse_build_matlab_bindings first']);

@@ -1,15 +1,15 @@
-function test_generate_bsp_from_ssmc()
-% TEST_GENERATE_BSP_FROM_SSMC - End-to-end test for generate_bsp_from_ssmc
+function test_binsparse_write_ssmc_problem()
+% TEST_BINSPARSE_WRITE_SSMC_PROBLEM - Test binsparse_write_ssmc_problem
 
 % SPDX-FileCopyrightText: 2024 Binsparse Developers
 %
 % SPDX-License-Identifier: BSD-3-Clause
 
-fprintf('=== Testing generate_bsp_from_ssmc ===\n\n');
+fprintf('=== Testing binsparse_write_ssmc_problem ===\n\n');
 
 required = {'binsparse_from_ssmc', 'binsparse_minimize_types', ...
             'binsparse_write', 'binsparse_read', ...
-            'binsparse_write_string_dataset', 'generate_bsp_from_ssmc'};
+            'binsparse_write_string_dataset', 'binsparse_write_ssmc_problem'};
 for i = 1:numel(required)
     if exist(required{i}, 'file') ~= 3 && exist(required{i}, 'file') ~= 2
         error(['%s not found. Please compile MEX functions and ensure ' ...
@@ -19,20 +19,20 @@ end
 
 % Check validation performed by the public SSMC writer.
 minimal_problem = struct('A', sparse(1));
-expect_error(@() generate_bsp_from_ssmc(), ...
-             'generate_bsp_from_ssmc:InvalidArgs');
-expect_error(@() generate_bsp_from_ssmc(42, 'invalid.bsp.h5'), ...
-             'generate_bsp_from_ssmc:InvalidProblem');
-expect_error(@() generate_bsp_from_ssmc(minimal_problem, 42), ...
-             'generate_bsp_from_ssmc:InvalidFilename');
-expect_error(@() generate_bsp_from_ssmc( ...
+expect_error(@() binsparse_write_ssmc_problem(), ...
+             'binsparse_write_ssmc_problem:InvalidArgs');
+expect_error(@() binsparse_write_ssmc_problem(42, 'invalid.bsp.h5'), ...
+             'binsparse_write_ssmc_problem:InvalidProblem');
+expect_error(@() binsparse_write_ssmc_problem(minimal_problem, 42), ...
+             'binsparse_write_ssmc_problem:InvalidFilename');
+expect_error(@() binsparse_write_ssmc_problem( ...
              minimal_problem, 'invalid.bsp.h5', 'bad'), ...
-             'generate_bsp_from_ssmc:InvalidFormat');
-expect_error(@() generate_bsp_from_ssmc(minimal_problem, ...
+             'binsparse_write_ssmc_problem:InvalidFormat');
+expect_error(@() binsparse_write_ssmc_problem(minimal_problem, ...
              'invalid.bsp.h5', 'COO', 10), ...
-             'generate_bsp_from_ssmc:InvalidCompression');
-expect_error(@() generate_bsp_from_ssmc(struct(), 'invalid.bsp.h5'), ...
-             'generate_bsp_from_ssmc:MissingMatrix');
+             'binsparse_write_ssmc_problem:InvalidCompression');
+expect_error(@() binsparse_write_ssmc_problem(struct(), 'invalid.bsp.h5'), ...
+             'binsparse_write_ssmc_problem:MissingMatrix');
 
 % Build synthetic problem
 Problem = struct();
@@ -63,7 +63,7 @@ cleanup_file = onCleanup(@() delete_if_exists(out_file));
 format = 'COO';
 compression_level = 0;
 
-generate_bsp_from_ssmc(problem, out_file, format, compression_level);
+binsparse_write_ssmc_problem(problem, out_file, format, compression_level);
 
 % Read primary
 primary_bsp = binsparse_read(out_file);

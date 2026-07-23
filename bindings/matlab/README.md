@@ -50,14 +50,14 @@ mkoctfile --version
 
 2. Build the MEX functions:
    ```matlab
-   build_matlab_bindings()
+   binsparse_build_matlab_bindings()
    ```
 
 3. Test the installation:
    ```matlab
    test_binsparse_read()
    test_binsparse_write()
-   test_generate_bsp_from_ssmc()
+   test_binsparse_write_ssmc_problem()
    ```
 
 #### Option 2: Octave (from within Octave)
@@ -69,14 +69,14 @@ mkoctfile --version
 
 2. Build the MEX functions:
    ```octave
-   build_octave_bindings()
+   binsparse_build_octave_bindings()
    ```
 
 3. Test the installation:
    ```octave
    test_binsparse_read()
    test_binsparse_write()
-   test_generate_bsp_from_ssmc()
+   test_binsparse_write_ssmc_problem()
    ```
 
 #### Option 3: Octave (from command line)
@@ -95,7 +95,7 @@ mkoctfile --version
    ```bash
    octave --eval "test_binsparse_read()"
    octave --eval "test_binsparse_write()"
-   octave --eval "test_generate_bsp_from_ssmc()"
+   octave --eval "test_binsparse_write_ssmc_problem()"
    ```
 
 ## Usage Examples
@@ -157,13 +157,13 @@ Problem.title = 'Test Matrix';
 Problem.kind = 'artificial/test';
 
 % Write directly from SuiteSparse format to Binsparse
-generate_bsp_from_ssmc(Problem, 'output.bsp.h5');
+binsparse_write_ssmc_problem(Problem, 'output.bsp.h5');
 
 % Write with an explicit sparse format ('COO', 'COOR', 'CSC', or 'CSR')
-generate_bsp_from_ssmc(Problem, 'output.bsp.h5', 'CSC');
+binsparse_write_ssmc_problem(Problem, 'output.bsp.h5', 'CSC');
 
 % Write with a format and gzip compression level (0-9)
-generate_bsp_from_ssmc(Problem, 'output.bsp.h5', 'COO', 6);
+binsparse_write_ssmc_problem(Problem, 'output.bsp.h5', 'COO', 6);
 ```
 
 ### Error Handling
@@ -188,20 +188,20 @@ end
 | `binsparse_minimize_types.c` | MEX function minimizing value/index types in a Binsparse struct |
 | `binsparse_write_string_dataset.c` | MEX function writing HDF5 UTF-8 string datasets |
 | `matlab_bsp_helpers.h` | Shared MATLAB/Binsparse conversion helpers for the MEX sources |
-| `generate_bsp_from_ssmc.m` | Write a full SSMC Problem struct to one Binsparse file |
-| `convert_to_problem_struct.m` | Convert Binsparse data back to an SSMC Problem struct |
-| `bsp_matrix_create.m` | Utility function for creating matrix structs |
-| `bsp_matrix_info.m` | Utility function for displaying matrix information |
-| `build_matlab_bindings.m` | Build script for all MATLAB MEX functions |
-| `build_octave_bindings.m` | Build script for all Octave MEX functions |
+| `binsparse_write_ssmc_problem.m` | Write a full SSMC Problem struct to one Binsparse file |
+| `binsparse_to_ssmc_problem.m` | Convert Binsparse data back to an SSMC Problem struct |
+| `binsparse_create_struct.m` | Utility function for creating Binsparse structs |
+| `binsparse_info.m` | Utility function for displaying Binsparse information |
+| `binsparse_build_matlab_bindings.m` | Build script for all MATLAB MEX functions |
+| `binsparse_build_octave_bindings.m` | Build script for all Octave MEX functions |
 | `compile_octave.sh` | Shell script for building Octave MEX functions |
 | `test_binsparse_read.m` | Test script for read functionality |
 | `test_binsparse_write.m` | Test script for write functionality |
 | `test_binsparse_from_ssmc.m` | Test script for SSMC conversion |
 | `test_binsparse_minimize_roundtrip.m` | Test script for type minimization |
-| `test_bsp_matrix_struct.m` | Test script for the matrix struct helpers |
-| `test_convert_to_problem_struct.m` | Test script for Problem conversion |
-| `test_generate_bsp_from_ssmc.m` | End-to-end test for the SSMC writer |
+| `test_binsparse_struct.m` | Test script for the struct helpers |
+| `test_binsparse_to_ssmc_problem.m` | Test script for Problem conversion |
+| `test_binsparse_write_ssmc_problem.m` | End-to-end test for the SSMC writer |
 | `test_binsparse_roundtrip_dir.m` | Round-trip every .h5 file in a directory |
 | `Contents.m` | Directory listing for MATLAB's `help` |
 | `README.md` | This documentation file |
@@ -240,7 +240,7 @@ To add new Binsparse functionality:
 
 1. Create a new `.c` file with MEX function structure
 2. Include `<binsparse/binsparse.h>` and relevant headers
-3. Add the filename to `mex_files` list in `build_matlab_bindings.m`
+3. Add the filename to `mex_files` list in `binsparse_build_matlab_bindings.m`
 4. Create corresponding test functions
 
 ### Example MEX Function Template
@@ -282,8 +282,8 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {
    - Check that `../../include/binsparse/binsparse.h` exists
 
 3. **Compilation errors**
-   - **MATLAB**: Try building with verbose output: `build_matlab_bindings('verbose')`
-   - **Octave**: Try building with verbose output: `build_octave_bindings('verbose')` or `./compile_octave.sh --verbose`
+   - **MATLAB**: Try building with verbose output: `binsparse_build_matlab_bindings('verbose')`
+   - **Octave**: Try building with verbose output: `binsparse_build_octave_bindings('verbose')` or `./compile_octave.sh --verbose`
    - Check compiler compatibility with your MATLAB/Octave version
 
 ### Platform-Specific Notes

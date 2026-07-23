@@ -1,14 +1,14 @@
-function build_octave_bindings(varargin)
-% BUILD_OCTAVE_BINDINGS - Build Binsparse Octave MEX functions
+function binsparse_build_octave_bindings(varargin)
+% BINSPARSE_BUILD_OCTAVE_BINDINGS - Build Binsparse Octave MEX functions
 %
 % This script provides a simple interface to build Octave bindings
 % for the Binsparse library using mkoctfile. It automatically detects
 % include paths and sets up the compilation environment.
 %
 % Usage:
-%   build_octave_bindings()           % Build all available MEX functions
-%   build_octave_bindings('verbose')  % Build with verbose output
-%   build_octave_bindings('clean')    % Clean compiled MEX files
+%   binsparse_build_octave_bindings()           % Build all available MEX functions
+%   binsparse_build_octave_bindings('verbose')  % Build with verbose output
+%   binsparse_build_octave_bindings('clean')    % Clean compiled MEX files
 %
 % Prerequisites:
 % - GNU Octave with mkoctfile (usually included with Octave)
@@ -36,7 +36,8 @@ end
 
 % Check if we're running in Octave
 if ~is_octave()
-    warning('This script is designed for Octave. For MATLAB, use build_matlab_bindings.m');
+    warning(['This script is designed for Octave. For MATLAB, use ' ...
+             'binsparse_build_matlab_bindings.m']);
 end
 
 % Check mkoctfile availability
@@ -64,7 +65,7 @@ fprintf('\n=== Build Complete ===\n');
 fprintf('Run the test functions to verify the installation:\n');
 fprintf('  test_binsparse_read()\n');
 fprintf('  test_binsparse_write()\n');
-fprintf('  test_generate_bsp_from_ssmc()\n\n');
+fprintf('  test_binsparse_write_ssmc_problem()\n\n');
 
 end
 

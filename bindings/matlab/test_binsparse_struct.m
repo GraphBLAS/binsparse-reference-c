@@ -1,5 +1,5 @@
-function test_bsp_matrix_struct()
-% TEST_BSP_MATRIX_STRUCT - Test the Binsparse matrix struct functionality
+function test_binsparse_struct()
+% TEST_BINSPARSE_STRUCT - Test the Binsparse struct functionality
 %
 % This function demonstrates and tests the basic MATLAB struct
 % that mirrors the C bsp_matrix_t structure.
@@ -13,9 +13,9 @@ fprintf('=== Testing Binsparse Matrix Struct ===\n\n');
 try
     % Test 1: Create empty matrix
     fprintf('Test 1: Creating empty matrix\n');
-    empty_matrix = bsp_matrix_create();
+    empty_matrix = binsparse_create_struct();
     fprintf('Empty matrix created successfully\n');
-    bsp_matrix_info(empty_matrix);
+    binsparse_info(empty_matrix);
     fprintf('\n');
 
     % Test 2: Create simple COO matrix
@@ -26,10 +26,10 @@ try
     cols = uint64([0, 1, 2]);      % 0-based indexing like C
     pointers = uint64([]);  % Empty for COO format
 
-    coo_matrix = bsp_matrix_create(values, rows, cols, pointers, ...
+    coo_matrix = binsparse_create_struct(values, rows, cols, pointers, ...
                                    3, 3, 3, false, 'COO', 'general');
     fprintf('COO matrix created successfully\n');
-    bsp_matrix_info(coo_matrix);
+    binsparse_info(coo_matrix);
     fprintf('\n');
 
     % Test 3: Create CSR matrix
@@ -40,10 +40,10 @@ try
     csr_rows = uint64([]);  % Not used in CSR
     csr_ptrs = uint64([0, 1, 2, 3]); % Row pointers
 
-    csr_matrix = bsp_matrix_create(csr_values, csr_rows, csr_cols, csr_ptrs, ...
+    csr_matrix = binsparse_create_struct(csr_values, csr_rows, csr_cols, csr_ptrs, ...
                                    3, 3, 3, false, 'CSR', 'general');
     fprintf('CSR matrix created successfully\n');
-    bsp_matrix_info(csr_matrix);
+    binsparse_info(csr_matrix);
     fprintf('\n');
 
     % Test 4: Test field access
@@ -57,7 +57,7 @@ try
     % Test 5: Test error handling
     fprintf('Test 5: Testing error handling\n');
     try
-        invalid_matrix = bsp_matrix_create(1, 2, 3); % Wrong number of args
+        invalid_matrix = binsparse_create_struct(1, 2, 3); % Wrong number of args
         fprintf('FAILED - Should have thrown error\n');
     catch ME
         fprintf('Successfully caught error: %s\n', ME.message);
