@@ -43,12 +43,10 @@ char* bsp_generate_json(bsp_matrix_t matrix, cJSON* user_json) {
                           bsp_get_matrix_format_string(matrix.format));
 
   cJSON* shape = cJSON_AddArrayToObject(binsparse, "shape");
-
-  cJSON* nrows = cJSON_CreateNumber(matrix.nrows);
-  cJSON* ncols = cJSON_CreateNumber(matrix.ncols);
-
-  cJSON_AddItemToArray(shape, nrows);
-  cJSON_AddItemToArray(shape, ncols);
+  cJSON_AddItemToArray(shape, cJSON_CreateNumber(matrix.nrows));
+  if (!bsp_matrix_format_is_vector(matrix.format)) {
+    cJSON_AddItemToArray(shape, cJSON_CreateNumber(matrix.ncols));
+  }
 
   cJSON_AddNumberToObject(binsparse, "number_of_stored_values", matrix.nnz);
 
@@ -101,6 +99,13 @@ char* bsp_generate_json(bsp_matrix_t matrix, cJSON* user_json) {
 bsp_error_t bsp_write_matrix_to_group_cjson(hid_t f, bsp_matrix_t matrix,
                                             cJSON* user_json,
                                             int compression_level) {
+  if (bsp_matrix_format_is_vector(matrix.format) && matrix.ncols != 1) {
+    return BSP_ERROR_INVALID_INPUT;
+  }
+  if (matrix.format == BSP_DVEC && matrix.nnz != matrix.nrows) {
+    return BSP_ERROR_INVALID_INPUT;
+  }
+
   bsp_error_t error =
       bsp_write_array(f, (char*) "values", matrix.values, compression_level);
   if (error != BSP_SUCCESS) {

@@ -73,8 +73,10 @@ assert(matrices_equal(primary_mat, expected_primary), 'Primary matrix mismatch')
 
 % Read aux and x/b
 check_dense_group(out_file, 'b', Problem.b(:));
+check_vector_shape(out_file, 'b', numel(Problem.b));
 check_dense_group(out_file, 'x', Problem.x);
 check_dense_group(out_file, 'c', Problem.aux.c(:));
+check_vector_shape(out_file, 'c', numel(Problem.aux.c));
 check_dense_group(out_file, 'D', Problem.aux.D);
 
 aux_sparse = binsparse_read(out_file, 'S');
@@ -100,6 +102,13 @@ function check_dense_group(filename, group, expected)
     actual = bsp_to_matlab(bsp);
     assert(matrices_equal(actual, expected), ...
            'Group "%s" mismatch', group);
+end
+
+function check_vector_shape(filename, group, expected)
+    json = h5readatt(filename, ['/' group], 'binsparse');
+    pattern = sprintf('"shape"\s*:\s*\[\s*%d\s*\]', expected);
+    assert(~isempty(regexp(json, pattern, 'once')), ...
+           'Group "%s" does not have a one-dimensional shape', group);
 end
 
 function check_string_dataset(filename, name, expected)

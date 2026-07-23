@@ -6,6 +6,7 @@
 
 #pragma once
 
+#include <stdbool.h>
 #include <string.h>
 
 typedef enum bsp_matrix_format_t {
@@ -23,6 +24,11 @@ typedef enum bsp_matrix_format_t {
   BSP_COOC = 20,
   BSP_INVALID_FORMAT = 21
 } bsp_matrix_format_t;
+
+static inline bool
+bsp_matrix_format_is_vector(bsp_matrix_format_t format) {
+  return format == BSP_DVEC || format == BSP_CVEC;
+}
 
 static inline char* bsp_get_matrix_format_string(bsp_matrix_format_t format) {
   if (format == BSP_DVEC) {

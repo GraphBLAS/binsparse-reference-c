@@ -120,6 +120,8 @@ install(FILES
     DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/binsparse)
 
 if(CMAKE_PROJECT_NAME STREQUAL PROJECT_NAME)
+  enable_testing()
+
   if (ENABLE_SANITIZERS)
       set(SANITIZER_FLAGS "-fsanitize=address,undefined")
       target_compile_options(binsparse INTERFACE ${SANITIZER_FLAGS} -g -O1 -fno-omit-frame-pointer)
