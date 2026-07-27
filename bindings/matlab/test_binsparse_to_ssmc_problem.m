@@ -74,6 +74,13 @@ assert(iscell(Problem.aux.seq) && numel(Problem.aux.seq) == 2);
 assert(isequal(Problem.aux.seq{2}, [7; 8]));
 assert(isequal(Problem.aux.label, char({'abc'; 'def'})));
 
+% A stripped string dataset rebuilds the char matrix it was written from,
+% including the width carried by the widest row.
+raw.aux.label = {'hello '; 'there'};
+Problem = binsparse_to_ssmc_problem(raw);
+assert(isequal(Problem.aux.label, ['hello '; 'there ']), ...
+    'stripped string dataset mismatch');
+
 dmat = dense_matrix([1; 2; 3; 4; 5; 6], 2, 3, 'DMAT');
 raw = struct('metadata', metadata, 'A', formats{1}, 'b', dmat);
 Problem = binsparse_to_ssmc_problem(raw);

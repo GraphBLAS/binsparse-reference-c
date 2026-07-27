@@ -53,6 +53,7 @@ Problem.aux.c = [1; 2; 3];
 Problem.aux.D = [1 0 2; 3 4 5];
 Problem.aux.S = sparse([1 2], [2 3], [9 8], 3, 3);
 Problem.aux.note = ['hello '; 'there '];
+Problem.aux.note2 = ['hello!'; 'there '];
 Problem.aux.tags = {'alpha'; 'beta'};
 
 problem = struct('Problem', Problem);
@@ -84,8 +85,16 @@ aux_sparse_mat = bsp_to_matlab(aux_sparse);
 expected_sparse = full(Problem.aux.S);
 assert(matrices_equal(aux_sparse_mat, expected_sparse), 'Aux sparse matrix mismatch');
 
-check_string_dataset(out_file, 'note', {'hello '; 'there '});
+% String datasets are stripped row by row.  No row of note reaches the char
+% matrix width, so the widest row keeps one blank; note2 needs none.  Either
+% way char() rebuilds the original char matrix exactly.
+check_string_dataset(out_file, 'note', {'hello '; 'there'});
+check_string_dataset(out_file, 'note2', {'hello!'; 'there'});
 check_string_dataset(out_file, 'tags', {'alpha'; 'beta'});
+assert(isequal(char(as_cellstr(h5read(out_file, '/note'))), Problem.aux.note), ...
+       'Aux note round trip is not exact');
+assert(isequal(char(as_cellstr(h5read(out_file, '/note2'))), Problem.aux.note2), ...
+       'Aux note2 round trip is not exact');
 
 json = h5readatt(out_file, '/', 'binsparse');
 assert(contains(json, '"metadata"'), 'Primary metadata not nested');
