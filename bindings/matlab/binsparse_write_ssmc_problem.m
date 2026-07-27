@@ -244,7 +244,7 @@ function [ok, value] = metadata_value(value)
     ok = false;
     if ischar(value)
         if size(value, 1) > 1
-            value = char_rows(value);
+            value = text_block(value);
         else
             value = char(value);
         end
@@ -253,12 +253,34 @@ function [ok, value] = metadata_value(value)
         if isscalar(value)
             value = char(value);
         else
-            value = cellstr(value(:));
+            value = text_block(value);
         end
         ok = true;
     elseif (islogical(value) || isnumeric(value)) && numel(value) <= 64
         ok = true;
     end
+end
+
+function text = text_block(value)
+    % Join multi-row text into a single multi-line string, stripping the
+    % trailing blanks that Matlab char matrices use as padding.  Readers
+    % re-pad with char(), which recovers the original width only if some
+    % row reaches that width; when no row does, the widest row keeps just
+    % enough padding to preserve it.  That makes the round trip exact
+    % while leaving trailing blanks on at most one line.
+    if ischar(value)
+        raw = num2cell(value, 2);
+    else
+        raw = cellstr(value(:));
+    end
+    rows = regexprep(raw, ' +$', '');
+    lengths = cellfun('length', rows);
+    width = max(cellfun('length', raw));
+    if ~isempty(lengths) && max(lengths) < width
+        [~, k] = max(lengths);
+        rows{k} = [rows{k} repmat(' ', 1, width - lengths(k))];
+    end
+    text = strjoin(reshape(rows, 1, []), sprintf('\n'));
 end
 
 function rows = char_rows(value)

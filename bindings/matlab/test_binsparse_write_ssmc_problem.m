@@ -93,6 +93,32 @@ assert(~isempty(regexp(json, '"id"\s*:\s*7', 'once')), ...
        'Primary metadata id is not a JSON number');
 assert(~contains(json, '"ssmc_metadata"'), 'Unexpected legacy metadata key');
 
+% notes are stored as one multi-line string.  Trailing blanks are stripped,
+% except on the widest row when that row is what carries the char matrix
+% width, so that char() rebuilds the original notes exactly.
+decoded = jsondecode(json);
+notes_text = decoded.metadata.notes;
+assert(ischar(notes_text) && isrow(notes_text), ...
+       'Notes metadata is not a single string');
+assert(isequal(notes_text, sprintf('first note\nsecond note ')), ...
+       'Notes metadata text mismatch');
+rebuilt = char(regexp(notes_text, '\r\n|\n|\r', 'split'));
+assert(isequal(rebuilt, Problem.notes), 'Notes round trip is not exact');
+
+% When the widest row has no padding, no trailing blanks survive at all.
+clean = Problem;
+clean.notes = ['abc'; 'de '];
+clean_file = [tempname() '.bsp.h5'];
+cleanup_clean = onCleanup(@() delete_if_exists(clean_file)); %#ok<NASGU>
+binsparse_write_ssmc_problem(struct('Problem', clean), clean_file, ...
+                             format, compression_level);
+clean_notes = jsondecode(h5readatt(clean_file, '/', 'binsparse'));
+clean_notes = clean_notes.metadata.notes;
+assert(isequal(clean_notes, sprintf('abc\nde')), ...
+       'Notes metadata retained recoverable padding');
+assert(isequal(char(regexp(clean_notes, '\n', 'split')), clean.notes), ...
+       'Notes round trip is not exact');
+
 fprintf('Test passed.\n');
 
 end
