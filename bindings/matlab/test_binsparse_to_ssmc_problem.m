@@ -74,10 +74,42 @@ assert(iscell(Problem.aux.seq) && numel(Problem.aux.seq) == 2);
 assert(isequal(Problem.aux.seq{2}, [7; 8]));
 assert(isequal(Problem.aux.label, char({'abc'; 'def'})));
 
+% A stripped string dataset rebuilds the char matrix it was written from,
+% including the width carried by the widest row.
+raw.aux.label = {'hello '; 'there'};
+Problem = binsparse_to_ssmc_problem(raw);
+assert(isequal(Problem.aux.label, ['hello '; 'there ']), ...
+    'stripped string dataset mismatch');
+
 dmat = dense_matrix([1; 2; 3; 4; 5; 6], 2, 3, 'DMAT');
 raw = struct('metadata', metadata, 'A', formats{1}, 'b', dmat);
 Problem = binsparse_to_ssmc_problem(raw);
 assert(isequal(Problem.b, [1 2 3; 4 5 6]));
+
+% notes may be a single multi-line string, and blank rows are preserved.
+notes_meta = metadata;
+notes_meta.notes = sprintf('a longest line with trailing space \nshort\n\nlast');
+Problem = binsparse_to_ssmc_problem( ...
+    struct('metadata', notes_meta, 'A', formats{1}));
+assert(isequal(Problem.notes, char({'a longest line with trailing space '; ...
+    'short'; ''; 'last'})), 'multi-line notes mismatch');
+assert(isequal(size(Problem.notes), [4 35]), 'multi-line notes width mismatch');
+
+notes_meta.notes = sprintf('abc\n');
+Problem = binsparse_to_ssmc_problem( ...
+    struct('metadata', notes_meta, 'A', formats{1}));
+assert(isequal(Problem.notes, char({'abc'; ''})), 'trailing blank note row lost');
+
+% Padded row arrays written by older versions read back the same way.
+notes_meta.notes = {'first note '; 'second note'};
+legacy = binsparse_to_ssmc_problem( ...
+    struct('metadata', notes_meta, 'A', formats{1}));
+notes_meta.notes = sprintf('first note\nsecond note');
+joined = binsparse_to_ssmc_problem( ...
+    struct('metadata', notes_meta, 'A', formats{1}));
+assert(isequal(legacy.notes, joined.notes), ...
+    'legacy and multi-line notes disagree');
+assert(isequal(joined.notes, char({'first note'; 'second note'})));
 
 bad = formats{1};
 bad.indices_1([1 2]) = bad.indices_1([2 1]);

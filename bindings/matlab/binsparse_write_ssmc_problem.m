@@ -185,20 +185,23 @@ function write_string_dataset(output_filename, name, value)
               'BSP text output requires binsparse_write_string_dataset on the path');
     end
 
+    % Trailing blanks are stripped row by row, as sstextwrite does for the
+    % MM and RB formats.  A single row is left alone: it is the widest row,
+    % so its blanks are what a char() rebuild needs to recover the width.
     if isstring(value)
         if isscalar(value)
             value = char(value);
         else
-            value = cellstr(value(:));
+            value = strip_text_rows(value);
         end
     elseif ischar(value)
         if size(value, 1) > 1
-            value = char_rows(value);
+            value = strip_text_rows(value);
         else
             value = char(value);
         end
     elseif iscellstr(value)
-        value = value(:);
+        value = strip_text_rows(value);
     else
         error('binsparse_write_ssmc_problem:InvalidStringValue', ...
               'Text aux value must be char, string, or cellstr');
@@ -244,7 +247,7 @@ function [ok, value] = metadata_value(value)
     ok = false;
     if ischar(value)
         if size(value, 1) > 1
-            value = char_rows(value);
+            value = text_block(value);
         else
             value = char(value);
         end
@@ -253,7 +256,7 @@ function [ok, value] = metadata_value(value)
         if isscalar(value)
             value = char(value);
         else
-            value = cellstr(value(:));
+            value = text_block(value);
         end
         ok = true;
     elseif (islogical(value) || isnumeric(value)) && numel(value) <= 64
@@ -261,11 +264,32 @@ function [ok, value] = metadata_value(value)
     end
 end
 
-function rows = char_rows(value)
-    rows = cell(size(value, 1), 1);
-    for k = 1:size(value, 1)
-        rows{k} = value(k, :);
+function rows = strip_text_rows(value)
+    % Strip the trailing blanks that Matlab uses to pad the rows of a char
+    % matrix.  A reader rebuilds the matrix with char(), which pads every
+    % row to the longest one, so the original width survives only if some
+    % row reaches it; when none does, the widest row keeps just enough
+    % padding to preserve it.  The round trip is then exact, with trailing
+    % blanks left on at most one row.  Cell and string arrays carry no such
+    % padding, so their elements are simply stripped.
+    if ischar(value)
+        raw = num2cell(value, 2);
+        width = size(value, 2);
+    else
+        raw = cellstr(value(:));
+        width = 0;
     end
+    rows = regexprep(raw, ' +$', '');
+    lengths = cellfun('length', rows);
+    if ~isempty(lengths) && max(lengths) < width
+        [~, k] = max(lengths);
+        rows{k} = [rows{k} repmat(' ', 1, width - lengths(k))];
+    end
+end
+
+function text = text_block(value)
+    % Join multi-row text into a single multi-line string.
+    text = strjoin(reshape(strip_text_rows(value), 1, []), sprintf('\n'));
 end
 
 function json = encode_json_or_empty(value)

@@ -442,8 +442,13 @@ end
 end
 
 function value = text_rows(value)
+% Rebuild a Matlab char matrix from metadata text.  The text is normally a
+% single multi-line string, but older files store an array of rows, so any
+% embedded line terminators are split out of every element.  Rows are never
+% deblanked here: whatever padding the writer kept is what char() needs to
+% restore the original width.
 if ischar(value)
-    return;
+    value = num2cell(value, 2);
 elseif isstring(value)
     value = cellstr(value(:));
 elseif iscellstr(value)
@@ -451,7 +456,12 @@ elseif iscellstr(value)
 else
     error('BinSparse:InvalidMetadata', 'notes must contain text');
 end
-value = char(value);
+rows = cell(0, 1);
+for k = 1:numel(value)
+    pieces = regexp(value{k}, '\r\n|\n|\r', 'split');
+    rows = [rows; pieces(:)];                                   %#ok<AGROW>
+end
+value = char(rows);
 end
 
 function value = normalize_component_text(value, use_cellstr)

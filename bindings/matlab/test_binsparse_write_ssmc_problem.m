@@ -53,6 +53,7 @@ Problem.aux.c = [1; 2; 3];
 Problem.aux.D = [1 0 2; 3 4 5];
 Problem.aux.S = sparse([1 2], [2 3], [9 8], 3, 3);
 Problem.aux.note = ['hello '; 'there '];
+Problem.aux.note2 = ['hello!'; 'there '];
 Problem.aux.tags = {'alpha'; 'beta'};
 
 problem = struct('Problem', Problem);
@@ -84,14 +85,48 @@ aux_sparse_mat = bsp_to_matlab(aux_sparse);
 expected_sparse = full(Problem.aux.S);
 assert(matrices_equal(aux_sparse_mat, expected_sparse), 'Aux sparse matrix mismatch');
 
-check_string_dataset(out_file, 'note', {'hello '; 'there '});
+% String datasets are stripped row by row.  No row of note reaches the char
+% matrix width, so the widest row keeps one blank; note2 needs none.  Either
+% way char() rebuilds the original char matrix exactly.
+check_string_dataset(out_file, 'note', {'hello '; 'there'});
+check_string_dataset(out_file, 'note2', {'hello!'; 'there'});
 check_string_dataset(out_file, 'tags', {'alpha'; 'beta'});
+assert(isequal(char(as_cellstr(h5read(out_file, '/note'))), Problem.aux.note), ...
+       'Aux note round trip is not exact');
+assert(isequal(char(as_cellstr(h5read(out_file, '/note2'))), Problem.aux.note2), ...
+       'Aux note2 round trip is not exact');
 
 json = h5readatt(out_file, '/', 'binsparse');
 assert(contains(json, '"metadata"'), 'Primary metadata not nested');
 assert(~isempty(regexp(json, '"id"\s*:\s*7', 'once')), ...
        'Primary metadata id is not a JSON number');
 assert(~contains(json, '"ssmc_metadata"'), 'Unexpected legacy metadata key');
+
+% notes are stored as one multi-line string.  Trailing blanks are stripped,
+% except on the widest row when that row is what carries the char matrix
+% width, so that char() rebuilds the original notes exactly.
+decoded = jsondecode(json);
+notes_text = decoded.metadata.notes;
+assert(ischar(notes_text) && isrow(notes_text), ...
+       'Notes metadata is not a single string');
+assert(isequal(notes_text, sprintf('first note\nsecond note ')), ...
+       'Notes metadata text mismatch');
+rebuilt = char(regexp(notes_text, '\r\n|\n|\r', 'split'));
+assert(isequal(rebuilt, Problem.notes), 'Notes round trip is not exact');
+
+% When the widest row has no padding, no trailing blanks survive at all.
+clean = Problem;
+clean.notes = ['abc'; 'de '];
+clean_file = [tempname() '.bsp.h5'];
+cleanup_clean = onCleanup(@() delete_if_exists(clean_file)); %#ok<NASGU>
+binsparse_write_ssmc_problem(struct('Problem', clean), clean_file, ...
+                             format, compression_level);
+clean_notes = jsondecode(h5readatt(clean_file, '/', 'binsparse'));
+clean_notes = clean_notes.metadata.notes;
+assert(isequal(clean_notes, sprintf('abc\nde')), ...
+       'Notes metadata retained recoverable padding');
+assert(isequal(char(regexp(clean_notes, '\n', 'split')), clean.notes), ...
+       'Notes round trip is not exact');
 
 fprintf('Test passed.\n');
 
