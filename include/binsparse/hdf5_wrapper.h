@@ -260,15 +260,19 @@ static inline bsp_error_t bsp_read_array(bsp_array_t* array, hid_t f,
 
 static inline bsp_error_t bsp_write_attribute(hid_t f, const char* label,
                                               const char* string) {
+  // Variable-length, like the string datasets Binsparse writes.  High-level
+  // bindings expose a fixed-size string attribute as raw bytes rather than as
+  // a string.
   hid_t strtype = H5Tcopy(H5T_C_S1);
-  H5Tset_size(strtype, strlen(string));
+  H5Tset_size(strtype, H5T_VARIABLE);
   H5Tset_cset(strtype, H5T_CSET_UTF8);
   hid_t dataspace = H5Screate(H5S_SCALAR);
 
   hid_t attribute =
       H5Acreate2(f, label, strtype, dataspace, H5P_DEFAULT, H5P_DEFAULT);
 
-  H5Awrite(attribute, strtype, string);
+  // A variable-length write takes the address of the pointer, not the pointer.
+  H5Awrite(attribute, strtype, &string);
 
   H5Tclose(strtype);
   H5Aclose(attribute);
@@ -287,6 +291,33 @@ bsp_read_attribute_allocator(char** string, hid_t f, const char* label,
   }
 
   hid_t strtype = H5Aget_type(attribute);
+
+  // Older files store this attribute as a fixed-size string, handled below.
+  // A variable-length one has to be read through a pointer HDF5 allocates,
+  // since H5Tget_size would just give the size of that pointer.
+  if (H5Tis_variable_str(strtype) > 0) {
+    char* buffer = NULL;
+
+    if (H5Aread(attribute, strtype, &buffer) < 0 || buffer == NULL) {
+      H5Aclose(attribute);
+      H5Tclose(strtype);
+      return BSP_ERROR_IO;
+    }
+
+    size_t size = strlen(buffer);
+    *string = (char*) allocator.malloc(size + 1);
+    memcpy(*string, buffer, size + 1);
+
+    // Return HDF5's copy to HDF5; it did not come from `allocator`.
+    hid_t space = H5Aget_space(attribute);
+    H5Dvlen_reclaim(strtype, space, H5P_DEFAULT, &buffer);
+    H5Sclose(space);
+
+    H5Aclose(attribute);
+    H5Tclose(strtype);
+
+    return BSP_SUCCESS;
+  }
 
   size_t size = H5Tget_size(strtype);
 
