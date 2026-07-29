@@ -260,15 +260,19 @@ static inline bsp_error_t bsp_read_array(bsp_array_t* array, hid_t f,
 
 static inline bsp_error_t bsp_write_attribute(hid_t f, const char* label,
                                               const char* string) {
+  // Variable-length, like the string datasets Binsparse writes.  High-level
+  // bindings expose a fixed-size string attribute as raw bytes rather than as
+  // a string.
   hid_t strtype = H5Tcopy(H5T_C_S1);
-  H5Tset_size(strtype, strlen(string));
+  H5Tset_size(strtype, H5T_VARIABLE);
   H5Tset_cset(strtype, H5T_CSET_UTF8);
   hid_t dataspace = H5Screate(H5S_SCALAR);
 
   hid_t attribute =
       H5Acreate2(f, label, strtype, dataspace, H5P_DEFAULT, H5P_DEFAULT);
 
-  H5Awrite(attribute, strtype, string);
+  // A variable-length write takes the address of the pointer, not the pointer.
+  H5Awrite(attribute, strtype, &string);
 
   H5Tclose(strtype);
   H5Aclose(attribute);
