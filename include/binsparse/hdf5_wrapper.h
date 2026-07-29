@@ -288,6 +288,33 @@ bsp_read_attribute_allocator(char** string, hid_t f, const char* label,
 
   hid_t strtype = H5Aget_type(attribute);
 
+  // Older files store this attribute as a fixed-size string, handled below.
+  // A variable-length one has to be read through a pointer HDF5 allocates,
+  // since H5Tget_size would just give the size of that pointer.
+  if (H5Tis_variable_str(strtype) > 0) {
+    char* buffer = NULL;
+
+    if (H5Aread(attribute, strtype, &buffer) < 0 || buffer == NULL) {
+      H5Aclose(attribute);
+      H5Tclose(strtype);
+      return BSP_ERROR_IO;
+    }
+
+    size_t size = strlen(buffer);
+    *string = (char*) allocator.malloc(size + 1);
+    memcpy(*string, buffer, size + 1);
+
+    // Return HDF5's copy to HDF5; it did not come from `allocator`.
+    hid_t space = H5Aget_space(attribute);
+    H5Dvlen_reclaim(strtype, space, H5P_DEFAULT, &buffer);
+    H5Sclose(space);
+
+    H5Aclose(attribute);
+    H5Tclose(strtype);
+
+    return BSP_SUCCESS;
+  }
+
   size_t size = H5Tget_size(strtype);
 
   *string = (char*) allocator.malloc(size + 1);
