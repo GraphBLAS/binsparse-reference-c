@@ -24,6 +24,7 @@
 #include <string.h>
 
 #include "matlab_bsp_helpers.h"
+#include "matlab_bsp_strings.h"
 
 // Keep this MEX function loaded for the whole MATLAB session: the HDF5
 // library used by libbinsparse installs process-wide state that is not safe
@@ -114,14 +115,17 @@ void mexFunction(int nlhs, mxArray* plhs[], int nrhs, const mxArray* prhs[]) {
       mexErrMsgIdAndTxt("BinSparse:InvalidJSON", "JSON must be a string");
     }
 
-    json_string = mxArrayToString(prhs[3]);
+    // The descriptor carries SSMC metadata such as Problem.notes, which is
+    // not always ASCII, so it is encoded as UTF-8 rather than run through
+    // mxArrayToString and its local code page.
+    json_string = bsp_mx_to_utf8(prhs[3]);
     if (!json_string) {
       bsp_destroy_matrix_t(&matrix);
       if (group)
         mxFree(group);
       mxFree(filename);
-      mexErrMsgIdAndTxt("BinSparse:MemoryError",
-                        "Failed to convert JSON string");
+      mexErrMsgIdAndTxt("BinSparse:InvalidJSON",
+                        "Failed to encode the JSON string as UTF-8");
     }
   }
 

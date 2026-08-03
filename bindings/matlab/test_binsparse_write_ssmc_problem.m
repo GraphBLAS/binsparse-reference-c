@@ -85,16 +85,13 @@ aux_sparse_mat = bsp_to_matlab(aux_sparse);
 expected_sparse = full(Problem.aux.S);
 assert(matrices_equal(aux_sparse_mat, expected_sparse), 'Aux sparse matrix mismatch');
 
-% String datasets are stripped row by row.  No row of note reaches the char
-% matrix width, so the widest row keeps one blank; note2 needs none.  Either
-% way char() rebuilds the original char matrix exactly.
-check_string_dataset(out_file, 'note', {'hello '; 'there'});
-check_string_dataset(out_file, 'note2', {'hello!'; 'there'});
-check_string_dataset(out_file, 'tags', {'alpha'; 'beta'});
-assert(isequal(char(as_cellstr(h5read(out_file, '/note'))), Problem.aux.note), ...
-       'Aux note round trip is not exact');
-assert(isequal(char(as_cellstr(h5read(out_file, '/note2'))), Problem.aux.note2), ...
-       'Aux note2 round trip is not exact');
+% Text is stored so that the HDF5 string datatype records the MATLAB class: a
+% char matrix goes to a fixed-length dataset, keeping its width and its
+% trailing blanks, and a cellstr to a variable-length one.  Nothing is
+% deblanked, so both come back exactly as written.
+check_string_dataset(out_file, 'note', Problem.aux.note);
+check_string_dataset(out_file, 'note2', Problem.aux.note2);
+check_string_dataset(out_file, 'tags', Problem.aux.tags);
 
 json = h5readatt(out_file, '/', 'binsparse');
 assert(contains(json, '"metadata"'), 'Primary metadata not nested');
@@ -128,6 +125,23 @@ assert(isequal(clean_notes, sprintf('abc\nde')), ...
 assert(isequal(char(regexp(clean_notes, '\n', 'split')), clean.notes), ...
        'Notes round trip is not exact');
 
+% The descriptor is UTF-8, so metadata keeps characters that the local code
+% page cannot represent.  Both of these turn up in the collection: an en dash
+% in SNAP/wiki-RfA and a replacement character in Pajek/Journals.
+wide = Problem;
+wide.notes = char({['en dash ' char(8211) ' here']; ['replacement ' char(65533)]});
+wide.title = ['t' char(233) 'tle'];
+wide_file = [tempname() '.bsp.h5'];
+cleanup_wide = onCleanup(@() delete_if_exists(wide_file)); %#ok<NASGU>
+binsparse_write_ssmc_problem(struct('Problem', wide), wide_file, ...
+                             format, compression_level);
+wide_meta = jsondecode(h5readatt(wide_file, '/', 'binsparse'));
+wide_meta = wide_meta.metadata;
+assert(isequal(char(regexp(wide_meta.notes, '\n', 'split')), wide.notes), ...
+       'Non-ASCII notes were not preserved');
+assert(isequal(wide_meta.title, wide.title), ...
+       'Non-ASCII title was not preserved');
+
 fprintf('Test passed.\n');
 
 end
@@ -147,8 +161,10 @@ function check_vector_shape(filename, group, expected)
 end
 
 function check_string_dataset(filename, name, expected)
-    actual = h5read(filename, ['/' name]);
-    actual = as_cellstr(actual);
+    actual = binsparse_read_string_dataset(filename, ['/' name]);
+    assert(strcmp(class(actual), class(expected)), ...
+           'String dataset "%s" changed class from %s to %s', name, ...
+           class(expected), class(actual));
     assert(isequal(actual, expected), 'String dataset "%s" mismatch', name);
 end
 
@@ -161,18 +177,6 @@ function expect_error(action, identifier)
         return;
     end
     error('Expected error %s', identifier);
-end
-
-function value = as_cellstr(value)
-    if iscell(value)
-        value = value(:);
-    elseif isstring(value)
-        value = cellstr(value(:));
-    elseif ischar(value)
-        value = cellstr(value);
-    else
-        error('Unexpected string dataset value type');
-    end
 end
 
 function ok = matrices_equal(a, b)

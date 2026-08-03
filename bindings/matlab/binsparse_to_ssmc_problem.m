@@ -6,8 +6,9 @@ function Problem = binsparse_to_ssmc_problem(bsp_problem)
 % bsp_problem is an in-memory representation of one SuiteSparse Matrix
 % Collection problem.  Its A, b, x, and aux numeric entries are raw structs
 % returned by binsparse_read.  The metadata field contains the user metadata
-% from the root Binsparse JSON descriptor.  Text entries may be char, string,
-% or cellstr values returned by h5read.
+% from the root Binsparse JSON descriptor.  Text entries are the char matrices
+% and cellstr values returned by binsparse_read_string_dataset, which recovers
+% the MATLAB class from the HDF5 string datatype.
 
 % SPDX-FileCopyrightText: 2026 Binsparse Developers
 %
@@ -26,13 +27,13 @@ if nnz(Zeros) > 0
 end
 
 if isfield(bsp_problem, 'b')
-    Problem.b = convert_component(bsp_problem.b, Problem);
+    Problem.b = convert_component(bsp_problem.b);
 end
 if isfield(bsp_problem, 'x')
-    Problem.x = convert_component(bsp_problem.x, Problem);
+    Problem.x = convert_component(bsp_problem.x);
 end
 if isfield(bsp_problem, 'aux')
-    Problem.aux = convert_aux(bsp_problem.aux, Problem);
+    Problem.aux = convert_aux(bsp_problem.aux);
 end
 
 end
@@ -81,19 +82,18 @@ for k = 1:numel(required)
 end
 end
 
-function value = convert_component(value, Problem)
+function value = convert_component(value)
 if is_bsp_matrix(value)
     value = convert_matrix(value, false);
 elseif is_text(value)
-    use_cellstr = isfield(Problem, 'id') && Problem.id > 2776;
-    value = normalize_component_text(value, use_cellstr);
+    value = normalize_component_text(value);
 else
     error('BinSparse:InvalidComponent', ...
           'Unsupported Binsparse problem component');
 end
 end
 
-function aux = convert_aux(raw_aux, Problem)
+function aux = convert_aux(raw_aux)
 if ~isstruct(raw_aux) || ~isscalar(raw_aux)
     error('BinSparse:InvalidAux', 'aux must be a scalar struct');
 end
@@ -102,7 +102,7 @@ aux = struct();
 names = fieldnames(raw_aux);
 for k = 1:numel(names)
     name = names{k};
-    value = convert_component(raw_aux.(name), Problem);
+    value = convert_component(raw_aux.(name));
     tokens = regexp(name, '^(.*)_([0-9]+)$', 'tokens', 'once');
     if isempty(tokens) || isempty(tokens{1})
         if isfield(aux, name)
@@ -464,27 +464,27 @@ end
 value = char(rows);
 end
 
-function value = normalize_component_text(value, use_cellstr)
+function value = normalize_component_text(value)
+% The MATLAB class of a text component is carried by the HDF5 string datatype
+% and restored by binsparse_read_string_dataset, so it is preserved here rather
+% than inferred.  A char matrix stays a char matrix and a cellstr stays a
+% cellstr; only a string array, which a foreign reader may produce, is mapped
+% onto one of the two classes SSMC uses.
 if ischar(value)
-    if size(value, 1) > 1
-        rows = cellstr(value);
-    else
-        rows = {value};
+    return;
+elseif iscellstr(value)
+    value = value(:);
+    for k = 1:numel(value)
+        value{k} = reshape(char(value{k}), 1, []);
     end
 elseif isstring(value)
-    rows = cellstr(value(:));
-elseif iscellstr(value)
-    rows = value(:);
+    if isscalar(value)
+        value = char(value);
+    else
+        value = cellstr(value(:));
+    end
 else
     error('BinSparse:InvalidComponent', 'Text component is invalid');
-end
-for k = 1:numel(rows)
-    rows{k} = reshape(char(rows{k}), 1, []);
-end
-if use_cellstr
-    value = rows;
-else
-    value = char(rows);
 end
 end
 

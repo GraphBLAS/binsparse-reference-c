@@ -72,14 +72,23 @@ assert(isequal(Problem.b, [10; 20; 30]));
 assert(isequal(Problem.x, [1 2; 3 4]));
 assert(iscell(Problem.aux.seq) && numel(Problem.aux.seq) == 2);
 assert(isequal(Problem.aux.seq{2}, [7; 8]));
-assert(isequal(Problem.aux.label, char({'abc'; 'def'})));
+assert(isequal(Problem.aux.label, {'abc'; 'def'}), ...
+    'cellstr component did not stay a cellstr');
 
-% A stripped string dataset rebuilds the char matrix it was written from,
-% including the width carried by the widest row.
+% The reader hands over the MATLAB class recorded by the HDF5 string datatype,
+% and it survives the conversion untouched: a cellstr keeps its own trailing
+% blanks and its ragged element lengths, and a char matrix keeps its width.
 raw.aux.label = {'hello '; 'there'};
 Problem = binsparse_to_ssmc_problem(raw);
-assert(isequal(Problem.aux.label, ['hello '; 'there ']), ...
-    'stripped string dataset mismatch');
+assert(isequal(Problem.aux.label, {'hello '; 'there'}), ...
+    'cellstr component was reshaped or deblanked');
+
+raw.aux.label = ['hello '; 'there '];
+Problem = binsparse_to_ssmc_problem(raw);
+assert(ischar(Problem.aux.label) && ...
+    isequal(Problem.aux.label, ['hello '; 'there ']), ...
+    'char matrix component did not stay a char matrix');
+raw.aux.label = {'abc'; 'def'};
 
 dmat = dense_matrix([1; 2; 3; 4; 5; 6], 2, 3, 'DMAT');
 raw = struct('metadata', metadata, 'A', formats{1}, 'b', dmat);

@@ -115,7 +115,7 @@ function handle_aux_entry(name, value, output_filename, format, compression_leve
     end
 
     if is_text_value(value)
-        write_string_dataset(output_filename, name, value);
+        write_string_dataset(output_filename, name, value, compression_level);
         return;
     end
 
@@ -179,35 +179,35 @@ function ok = is_text_value(value)
     ok = ischar(value) || isstring(value) || iscellstr(value);
 end
 
-function write_string_dataset(output_filename, name, value)
+function write_string_dataset(output_filename, name, value, compression_level)
     if exist('binsparse_write_string_dataset', 'file') ~= 3
         error('binsparse_write_ssmc_problem:MissingStringWriter', ...
               'BSP text output requires binsparse_write_string_dataset on the path');
     end
 
-    % Trailing blanks are stripped row by row, as sstextwrite does for the
-    % MM and RB formats.  A single row is left alone: it is the widest row,
-    % so its blanks are what a char() rebuild needs to recover the width.
+    % The MATLAB class of the value selects the HDF5 string datatype: a char
+    % matrix becomes a fixed-length dataset and a cellstr a variable-length
+    % one, which is what lets the reader restore the class.  Nothing is
+    % deblanked here.  A char matrix is rectangular, so its trailing blanks
+    % are part of the value and the fixed width carries them; a cellstr is
+    % ragged, and any trailing blanks in an element are the element's own.
     if isstring(value)
         if isscalar(value)
             value = char(value);
         else
-            value = strip_text_rows(value);
+            value = cellstr(value(:));
         end
     elseif ischar(value)
-        if size(value, 1) > 1
-            value = strip_text_rows(value);
-        else
-            value = char(value);
-        end
+        value = char(value);
     elseif iscellstr(value)
-        value = strip_text_rows(value);
+        value = value(:);
     else
         error('binsparse_write_ssmc_problem:InvalidStringValue', ...
               'Text aux value must be char, string, or cellstr');
     end
 
-    binsparse_write_string_dataset(output_filename, name, value);
+    binsparse_write_string_dataset(output_filename, name, value, ...
+                                   compression_level);
 end
 
 function json = metadata_json(P, role)
