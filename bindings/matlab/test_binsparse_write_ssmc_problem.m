@@ -155,7 +155,7 @@ end
 
 function check_vector_shape(filename, group, expected)
     json = h5readatt(filename, ['/' group], 'binsparse');
-    pattern = sprintf('"shape"\s*:\s*\[\s*%d\s*\]', expected);
+    pattern = sprintf('"shape"\\s*:\\s*\\[\\s*%d\\s*\\]', expected);
     assert(~isempty(regexp(json, pattern, 'once')), ...
            'Group "%s" does not have a one-dimensional shape', group);
 end
@@ -196,13 +196,13 @@ function mat = bsp_to_matlab(bsp)
         case 'COO'
             rows = double(bsp.indices_0) + 1;
             cols = double(bsp.indices_1) + 1;
-            vals = bsp.values;
+            vals = double (bsp.values) ;
             mat = sparse(rows, cols, vals, bsp.nrows, bsp.ncols);
             mat = full(mat);
         case 'CSC'
             colptr = double(bsp.pointers_to_1);
             rowind = double(bsp.indices_1);
-            vals = bsp.values;
+            vals = double (bsp.values) ;
             ncols = bsp.ncols;
             nrows = bsp.nrows;
             rows = [];
@@ -223,7 +223,7 @@ function mat = bsp_to_matlab(bsp)
         case 'CSR'
             rowptr = double(bsp.pointers_to_1);
             colind = double(bsp.indices_1);
-            vals = bsp.values;
+            vals = double (bsp.values) ;
             nrows = bsp.nrows;
             ncols = bsp.ncols;
             rows = [];
