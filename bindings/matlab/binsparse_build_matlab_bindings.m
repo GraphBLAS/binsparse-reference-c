@@ -107,7 +107,8 @@ function compile_mex_functions(paths, verbose)
     % List of MEX functions to compile
     mex_files = {'binsparse_read.c', 'binsparse_write.c', ...
         'binsparse_from_ssmc.c', 'binsparse_minimize_types.c', ...
-        'binsparse_write_string_dataset.c'};
+        'binsparse_write_string_dataset.c', ...
+        'binsparse_read_string_dataset.c'};
 
     fprintf('Compiling MEX functions...\n');
     failed_files = {};

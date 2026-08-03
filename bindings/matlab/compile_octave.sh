@@ -148,7 +148,7 @@ if [ "$CLEAN" = true ]; then
 fi
 
 # List of MEX files to compile
-MEX_FILES=("binsparse_read.c" "binsparse_write.c" "binsparse_from_ssmc.c" "binsparse_minimize_types.c" "binsparse_write_string_dataset.c")
+MEX_FILES=("binsparse_read.c" "binsparse_write.c" "binsparse_from_ssmc.c" "binsparse_minimize_types.c" "binsparse_write_string_dataset.c" "binsparse_read_string_dataset.c")
 
 print_info "Compiling MEX functions..."
 

@@ -6,6 +6,7 @@
 %   binsparse_from_ssmc             - convert SSMC A+Zeros to a Binsparse matrix struct
 %   binsparse_minimize_types        - minimize value/index types in a Binsparse struct
 %   binsparse_write_string_dataset  - write an HDF5 UTF-8 string dataset
+%   binsparse_read_string_dataset   - read an HDF5 UTF-8 string dataset
 %
 % MATLAB helpers:
 %   binsparse_write_ssmc_problem    - write an SSMC Problem to a Binsparse file

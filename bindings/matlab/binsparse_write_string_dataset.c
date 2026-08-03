@@ -9,27 +9,19 @@
  *
  * Usage in MATLAB/Octave:
  *   binsparse_write_string_dataset(filename, dataset_name, value)
+ *   binsparse_write_string_dataset(filename, dataset_name, value, level)
  *
- * The value may be a character vector or a cell array of character vectors.
- * Strings are stored as variable-length UTF-8 HDF5 strings, matching the usual
- * h5py representation for Python str values.
+ * A char matrix is written as a fixed-length dataset and a cell array of
+ * character vectors as a variable-length one, so the datatype alone says which
+ * MATLAB class the text came from.  See matlab_bsp_strings.h for the format.
  */
 
+#include "matlab_bsp_strings.h"
 #include "mex.h"
 #include <hdf5.h>
 #include <stdbool.h>
 #include <string.h>
 #include <unistd.h>
-
-// Keep this MEX function loaded for the whole MATLAB session, and stop HDF5
-// from registering atexit handlers: both guard against crashes when MATLAB
-// tears down MEX files that share HDF5 process-wide state.
-static void lock_mex_module(void) {
-  if (!mexIsLocked()) {
-    H5dont_atexit();
-    mexLock();
-  }
-}
 
 static char* get_required_string(const mxArray* value, const char* name) {
   if (!mxIsChar(value)) {
@@ -44,39 +36,121 @@ static char* get_required_string(const mxArray* value, const char* name) {
   return string;
 }
 
-static char** collect_strings(const mxArray* value, size_t* count,
-                              bool* scalar_dataset) {
-  char** strings = NULL;
+static int get_compression_level(int nrhs, const mxArray* prhs[]) {
+  if (nrhs < 4 || mxIsEmpty(prhs[3])) {
+    return 0;
+  }
+  if (!mxIsNumeric(prhs[3]) || mxIsComplex(prhs[3]) ||
+      mxGetNumberOfElements(prhs[3]) != 1) {
+    mexErrMsgIdAndTxt("BinSparse:InvalidCompression",
+                      "Compression level must be a real numeric scalar");
+  }
+  double level = mxGetScalar(prhs[3]);
+  if (!(level >= 0.0) || level > 9.0 || level != (double) (int) level) {
+    mexErrMsgIdAndTxt("BinSparse:InvalidCompression",
+                      "Compression level must be an integer from 0 to 9");
+  }
+  return (int) level;
+}
 
-  if (mxIsCell(value)) {
-    *count = mxGetNumberOfElements(value);
-    *scalar_dataset = false;
-    strings = (char**) mxCalloc(*count, sizeof(char*));
-    for (size_t i = 0; i < *count; i++) {
-      const mxArray* cell = mxGetCell(value, i);
-      if (!cell || !mxIsChar(cell)) {
-        mexErrMsgIdAndTxt("BinSparse:InvalidValue",
-                          "Cell values must be character vectors");
-      }
-      strings[i] = mxArrayToString(cell);
-      if (!strings[i]) {
-        mexErrMsgIdAndTxt("BinSparse:MemoryError",
-                          "Failed to read string cell");
-      }
+/*----------------------------------------------------------------------------
+ * char matrix -> fixed-length dataset
+ *
+ * Every row is encoded in full, trailing blanks included: the datatype size is
+ * what carries the column count back to the reader, so nothing is deblanked.
+ *--------------------------------------------------------------------------*/
+
+static char* encode_char_matrix(const mxArray* value, size_t* rows,
+                                size_t* width) {
+  size_t m = mxGetM(value);
+  size_t n = mxGetN(value);
+  const mxChar* chars = (const mxChar*) mxGetData(value);
+
+  // Lay each row out contiguously so it can be encoded as one string.
+  mxChar* row = (mxChar*) mxCalloc(n > 0 ? n : 1, sizeof(mxChar));
+  size_t max_bytes = 0;
+
+  for (size_t i = 0; i < m; i++) {
+    for (size_t j = 0; j < n; j++) {
+      row[j] = chars[i + j * m];
     }
-  } else if (mxIsChar(value)) {
-    *count = 1;
-    *scalar_dataset = true;
-    strings = (char**) mxCalloc(1, sizeof(char*));
-    strings[0] = mxArrayToString(value);
-    if (!strings[0]) {
-      mexErrMsgIdAndTxt("BinSparse:MemoryError", "Failed to read string");
+    size_t bytes = bsp_utf8_length(row, n);
+    if (bytes == BSP_UTF_INVALID) {
+      mxFree(row);
+      mexErrMsgIdAndTxt("BinSparse:InvalidText",
+                        "Row %zu contains an unpaired UTF-16 surrogate", i + 1);
     }
-  } else {
-    mexErrMsgIdAndTxt("BinSparse:InvalidValue",
-                      "Value must be a character vector or cellstr");
+    if (bytes > max_bytes) {
+      max_bytes = bytes;
+    }
   }
 
+  // H5Tset_size rejects a zero-byte string, so an all-empty char matrix is
+  // stored as one NUL per row, which strips back to zero characters.
+  size_t w = max_bytes > 0 ? max_bytes : 1;
+  char* buffer = (char*) mxCalloc(m > 0 ? m * w : 1, sizeof(char));
+
+  for (size_t i = 0; i < m; i++) {
+    for (size_t j = 0; j < n; j++) {
+      row[j] = chars[i + j * m];
+    }
+    // Anything past the encoded row is already NUL from mxCalloc.
+    bsp_utf8_encode(row, n, buffer + i * w);
+  }
+
+  mxFree(row);
+
+  *rows = m;
+  *width = w;
+  return buffer;
+}
+
+/*----------------------------------------------------------------------------
+ * cellstr -> variable-length dataset
+ *--------------------------------------------------------------------------*/
+
+static char* encode_char_vector(const mxArray* value, size_t index) {
+  if (!value || !mxIsChar(value)) {
+    mexErrMsgIdAndTxt("BinSparse:InvalidValue",
+                      "Cell element %zu is not a character vector", index + 1);
+  }
+  if (mxGetNumberOfDimensions(value) > 2 || mxGetM(value) > 1) {
+    mexErrMsgIdAndTxt("BinSparse:InvalidValue",
+                      "Cell element %zu must be a character row vector",
+                      index + 1);
+  }
+
+  size_t len = mxGetNumberOfElements(value);
+  const mxChar* chars = (const mxChar*) mxGetData(value);
+  for (size_t k = 0; k < len; k++) {
+    if (chars[k] == 0) {
+      mexErrMsgIdAndTxt("BinSparse:InvalidValue",
+                        "Cell element %zu contains a NUL character, which a "
+                        "variable-length HDF5 string cannot represent",
+                        index + 1);
+    }
+  }
+
+  size_t bytes = bsp_utf8_length(chars, len);
+  if (bytes == BSP_UTF_INVALID) {
+    mexErrMsgIdAndTxt("BinSparse:InvalidText",
+                      "Cell element %zu contains an unpaired UTF-16 surrogate",
+                      index + 1);
+  }
+
+  char* encoded = (char*) mxCalloc(bytes + 1, sizeof(char));
+  bsp_utf8_encode(chars, len, encoded);
+  encoded[bytes] = '\0';
+  return encoded;
+}
+
+static char** encode_cellstr(const mxArray* value, size_t* count) {
+  size_t m = mxGetNumberOfElements(value);
+  char** strings = (char**) mxCalloc(m > 0 ? m : 1, sizeof(char*));
+  for (size_t i = 0; i < m; i++) {
+    strings[i] = encode_char_vector(mxGetCell(value, i), i);
+  }
+  *count = m;
   return strings;
 }
 
@@ -94,12 +168,12 @@ static void free_strings(char** strings, size_t count) {
 
 void mexFunction(int nlhs, mxArray* plhs[], int nrhs, const mxArray* prhs[]) {
   (void) plhs;
-  lock_mex_module();
+  bsp_lock_mex_module();
 
-  if (nrhs != 3) {
+  if (nrhs < 3 || nrhs > 4) {
     mexErrMsgIdAndTxt("BinSparse:InvalidArgs",
                       "Usage: binsparse_write_string_dataset(filename, "
-                      "dataset_name, value)");
+                      "dataset_name, value [, compression_level])");
   }
 
   if (nlhs > 0) {
@@ -109,14 +183,32 @@ void mexFunction(int nlhs, mxArray* plhs[], int nrhs, const mxArray* prhs[]) {
 
   char* filename = get_required_string(prhs[0], "filename");
   char* dataset_name = get_required_string(prhs[1], "dataset_name");
+  int compression_level = get_compression_level(nrhs, prhs);
+
+  const mxArray* value = prhs[2];
+  bool is_cellstr = mxIsCell(value);
+  if ((!is_cellstr && !mxIsChar(value)) || mxGetNumberOfDimensions(value) > 2) {
+    mxFree(dataset_name);
+    mxFree(filename);
+    mexErrMsgIdAndTxt("BinSparse:InvalidValue",
+                      "Value must be a two-dimensional char matrix or a cell "
+                      "array of character vectors");
+  }
 
   size_t count = 0;
-  bool scalar_dataset = false;
-  char** strings = collect_strings(prhs[2], &count, &scalar_dataset);
+  size_t width = 0;
+  char* fixed_buffer = NULL;
+  char** strings = NULL;
+  if (is_cellstr) {
+    strings = encode_cellstr(value, &count);
+  } else {
+    fixed_buffer = encode_char_matrix(value, &count, &width);
+  }
 
   hid_t file = H5I_INVALID_HID;
   hid_t type = H5I_INVALID_HID;
   hid_t space = H5I_INVALID_HID;
+  hid_t properties = H5P_DEFAULT;
   hid_t dset = H5I_INVALID_HID;
   const char* error_id = NULL;
   const char* error_message = NULL;
@@ -143,27 +235,25 @@ void mexFunction(int nlhs, mxArray* plhs[], int nrhs, const mxArray* prhs[]) {
     goto cleanup;
   }
 
-  type = H5Tcopy(H5T_C_S1);
-  if (type == H5I_INVALID_HID || H5Tset_size(type, H5T_VARIABLE) < 0 ||
-      H5Tset_cset(type, H5T_CSET_UTF8) < 0) {
+  type = is_cellstr ? bsp_variable_string_type() : bsp_fixed_string_type(width);
+  if (type == H5I_INVALID_HID) {
     error_id = "BinSparse:HDF5Error";
     error_message = "Failed to create UTF-8 string datatype";
     goto cleanup;
   }
 
-  if (scalar_dataset) {
-    space = H5Screate(H5S_SCALAR);
-  } else {
-    hsize_t dims[1] = {(hsize_t) count};
-    space = H5Screate_simple(1, dims, NULL);
-  }
+  hsize_t dims[1] = {(hsize_t) count};
+  space = H5Screate_simple(1, dims, NULL);
   if (space == H5I_INVALID_HID) {
     error_id = "BinSparse:HDF5Error";
     error_message = "Failed to create string dataspace";
     goto cleanup;
   }
 
-  dset = H5Dcreate2(file, dataset_name, type, space, H5P_DEFAULT, H5P_DEFAULT,
+  properties = bsp_text_dataset_properties(
+      count, is_cellstr ? sizeof(char*) : width, compression_level);
+
+  dset = H5Dcreate2(file, dataset_name, type, space, H5P_DEFAULT, properties,
                     H5P_DEFAULT);
   if (dset == H5I_INVALID_HID) {
     error_id = "BinSparse:HDF5Error";
@@ -171,16 +261,21 @@ void mexFunction(int nlhs, mxArray* plhs[], int nrhs, const mxArray* prhs[]) {
     goto cleanup;
   }
 
-  if (H5Dwrite(dset, type, H5S_ALL, H5S_ALL, H5P_DEFAULT, strings) < 0) {
-    error_id = "BinSparse:HDF5Error";
-    error_message = "Failed to write string dataset";
-    goto cleanup;
+  if (count > 0) {
+    const void* data =
+        is_cellstr ? (const void*) strings : (const void*) fixed_buffer;
+    if (H5Dwrite(dset, type, H5S_ALL, H5S_ALL, H5P_DEFAULT, data) < 0) {
+      error_id = "BinSparse:HDF5Error";
+      error_message = "Failed to write string dataset";
+      goto cleanup;
+    }
   }
 
 cleanup:
   if (dset != H5I_INVALID_HID) {
     H5Dclose(dset);
   }
+  bsp_close_text_dataset_properties(properties);
   if (space != H5I_INVALID_HID) {
     H5Sclose(space);
   }
@@ -189,6 +284,9 @@ cleanup:
   }
   if (file != H5I_INVALID_HID) {
     H5Fclose(file);
+  }
+  if (fixed_buffer) {
+    mxFree(fixed_buffer);
   }
   free_strings(strings, count);
   mxFree(dataset_name);
