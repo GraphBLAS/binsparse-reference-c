@@ -99,6 +99,35 @@ else
     failed = failed + 1;
 end
 
+% Compression is chosen on the total size, not the element count, so a single
+% very wide row is compressed too.
+filename = fullfile(tmpdir, 'one_row.h5');
+one_row = [repmat('abcdefgh', 1, 20000) blanks(20000)];
+binsparse_write_string_dataset(filename, 'text', one_row, 9);
+info = dir(filename);
+if isequal(binsparse_read_string_dataset(filename, '/text'), one_row) && ...
+        info.bytes < numel(one_row) / 10
+    fprintf('  PASS  a single wide row compresses (%d bytes for %d characters)\n', ...
+            info.bytes, numel(one_row));
+    passed = passed + 1;
+else
+    fprintf('  FAIL  a single wide row did not compress (%d bytes for %d)\n', ...
+            info.bytes, numel(one_row));
+    failed = failed + 1;
+end
+
+% Below the threshold no chunk index is created, and the data still reads back.
+filename = fullfile(tmpdir, 'tiny.h5');
+tiny = ['ab'; 'cd'];
+binsparse_write_string_dataset(filename, 'text', tiny, 9);
+if isequal(binsparse_read_string_dataset(filename, '/text'), tiny)
+    fprintf('  PASS  a dataset below the compression threshold round-trips\n');
+    passed = passed + 1;
+else
+    fprintf('  FAIL  a dataset below the compression threshold changed\n');
+    failed = failed + 1;
+end
+
 fprintf('\n%d passed, %d failed\n', passed, failed);
 if failed > 0
     error('test_binsparse_string_dataset:Failed', ...

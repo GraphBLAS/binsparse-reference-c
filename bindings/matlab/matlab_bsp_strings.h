@@ -52,6 +52,9 @@
 /* Chunks are sized to about this many bytes when a text dataset is compressed. */
 #define BSP_TEXT_CHUNK_BYTES ((size_t) (1024 * 1024))
 
+/* Below this many bytes the chunk index costs more than the filter saves. */
+#define BSP_TEXT_MIN_COMPRESSED_BYTES ((size_t) 4096)
+
 /*----------------------------------------------------------------------------
  * UTF-16 (the encoding of a MATLAB mxChar) <-> UTF-8
  *--------------------------------------------------------------------------*/
@@ -260,13 +263,22 @@ static inline hid_t bsp_variable_string_type(void) {
 
 // Build a dataset creation property list that chunks and deflates a text
 // dataset of count elements of element_size bytes.  Returns H5P_DEFAULT when
-// compression is not requested or would not pay for itself.  Note that HDF5
-// keeps variable-length payloads on the global heap, where dataset filters do
-// not reach, so only a fixed-length dataset is really compressed.
+// compression is not requested or when the dataset is too small for a chunk
+// index to pay for itself.  The threshold is on the total size rather than on
+// the element count, so that one very wide row is still compressed.
+//
+// A fixed-length dataset compresses well: blank padding is highly redundant,
+// and SNAP/wiki-topcats pagenames goes from 372.6 MB to 19.2 MB.  A
+// variable-length one barely moves, because HDF5 keeps the strings themselves
+// on the global heap, which the filter pipeline does not reach; only the
+// 16-byte-per-element descriptor array is filtered.  Requesting compression is
+// still worthwhile there, since that descriptor array grows with the element
+// count, but the payload cannot be reached from here.
 static inline hid_t bsp_text_dataset_properties(size_t count,
                                                 size_t element_size,
                                                 int compression_level) {
-  if (compression_level <= 0 || count < 2 || element_size == 0) {
+  if (compression_level <= 0 || element_size == 0 ||
+      count * element_size < BSP_TEXT_MIN_COMPRESSED_BYTES) {
     return H5P_DEFAULT;
   }
 
