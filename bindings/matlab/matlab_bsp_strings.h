@@ -49,7 +49,8 @@
 
 #define BSP_UTF_INVALID ((size_t) -1)
 
-/* Chunks are sized to about this many bytes when a text dataset is compressed. */
+/* Chunks are sized to about this many bytes when a text dataset is compressed.
+ */
 #define BSP_TEXT_CHUNK_BYTES ((size_t) (1024 * 1024))
 
 /* Below this many bytes the chunk index costs more than the filter saves. */

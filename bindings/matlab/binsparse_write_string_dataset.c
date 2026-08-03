@@ -187,8 +187,7 @@ void mexFunction(int nlhs, mxArray* plhs[], int nrhs, const mxArray* prhs[]) {
 
   const mxArray* value = prhs[2];
   bool is_cellstr = mxIsCell(value);
-  if ((!is_cellstr && !mxIsChar(value)) ||
-      mxGetNumberOfDimensions(value) > 2) {
+  if ((!is_cellstr && !mxIsChar(value)) || mxGetNumberOfDimensions(value) > 2) {
     mxFree(dataset_name);
     mxFree(filename);
     mexErrMsgIdAndTxt("BinSparse:InvalidValue",

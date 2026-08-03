@@ -88,8 +88,8 @@ static mxArray* read_fixed_strings(hid_t dset, hid_t ftype, size_t count,
   for (size_t i = 0; i < count; i++) {
     const char* row = buffer + i * width;
     size_t len = width;
-    while (len > 0 && (row[len - 1] == '\0' ||
-                       (space_padded && row[len - 1] == ' '))) {
+    while (len > 0 &&
+           (row[len - 1] == '\0' || (space_padded && row[len - 1] == ' '))) {
       len--;
     }
     size_t n = bsp_utf16_length(row, len);
@@ -226,7 +226,8 @@ void mexFunction(int nlhs, mxArray* plhs[], int nrhs, const mxArray* prhs[]) {
   }
 
   space = H5Dget_space(dset);
-  hssize_t count = (space == H5I_INVALID_HID) ? -1 : string_dataset_count(space);
+  hssize_t count =
+      (space == H5I_INVALID_HID) ? -1 : string_dataset_count(space);
   if (count < 0) {
     error_id = "BinSparse:InvalidDataset";
     error_message = "String dataset must be scalar or one-dimensional";
