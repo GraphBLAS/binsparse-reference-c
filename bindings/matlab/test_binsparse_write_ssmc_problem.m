@@ -155,7 +155,7 @@ end
 
 function check_vector_shape(filename, group, expected)
     json = h5readatt(filename, ['/' group], 'binsparse');
-    pattern = sprintf('"shape"\s*:\s*\[\s*%d\s*\]', expected);
+    pattern = sprintf('"shape"\\s*:\\s*\\[\\s*%d\\s*\\]', expected);
     assert(~isempty(regexp(json, pattern, 'once')), ...
            'Group "%s" does not have a one-dimensional shape', group);
 end
