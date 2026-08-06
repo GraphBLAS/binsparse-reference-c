@@ -3,7 +3,7 @@
 # SPDX-License-Identifier: BSD-3-Clause
 
 add_executable(dvec_shape_test dvec_shape_test.c)
-target_link_libraries(dvec_shape_test binsparse)
+target_link_libraries(dvec_shape_test binsparse_static)
 
 add_test(
   NAME unit.dvec_shape

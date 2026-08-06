@@ -4,8 +4,8 @@
 
 @PACKAGE_INIT@
 
-include("${CMAKE_CURRENT_LIST_DIR}/binsparse-targets.cmake")
-check_required_components(binsparse)
+include("${CMAKE_CURRENT_LIST_DIR}/binsparse-targets_static.cmake")
+check_required_components(binsparse_static)
 
 # Include dependencies
 include(CMakeFindDependencyMacro)
