@@ -28,6 +28,18 @@ if numel(zero_values) ~= nnz(Zeros)
     error('Expected %d explicit zero values, got %d', nnz(Zeros), numel(zero_values));
 end
 
+assert(isa(mat.indices_1, 'uint8'));
+assert(isa(mat.pointers_to_1, 'uint8'));
+
+% ISO values are detected before full conversion arrays are allocated.
+iso = binsparse_from_ssmc(sparse([1 3], [2 4], [7 7], n, n), 'COO');
+assert(iso.is_iso && isequal(iso.values, 7));
+assert(isa(iso.indices_0, 'uint8') && isa(iso.indices_1, 'uint8'));
+
+% Explicit zeros preserve ISO only when every stored value is also zero.
+zero_iso = binsparse_from_ssmc(sparse(n, n), Zeros, 'CSC');
+assert(zero_iso.is_iso && isequal(zero_iso.values, 0));
+
 fprintf('Test passed.\n');
 
 end

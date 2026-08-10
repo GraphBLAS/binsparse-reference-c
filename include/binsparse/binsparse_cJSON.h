@@ -19,6 +19,8 @@
 extern "C" {
 #endif
 
+char* bsp_generate_json(bsp_matrix_t matrix, cJSON* user_json);
+
 bsp_error_t bsp_write_matrix_cjson(const char* fname, bsp_matrix_t matrix,
                                    const char* group, cJSON* user_json,
                                    int compression_level);

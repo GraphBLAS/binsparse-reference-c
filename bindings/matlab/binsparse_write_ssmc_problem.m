@@ -73,7 +73,20 @@ end
 
 % Primary matrix
 A = P.A;
-if issparse(A)
+primary_metadata = metadata_json(P, 'A');
+if issparse(A) && any(strcmp(format, {'COO', 'COOR'}))
+    if exist('binsparse_write_ssmc_coo', 'file') ~= 3
+        error('binsparse_write_ssmc_problem:MissingCOOWriter', ...
+              'COO output requires binsparse_write_ssmc_coo on the path');
+    end
+    if isfield(P, 'Zeros') && ~isempty(P.Zeros)
+        Zeros = P.Zeros;
+    else
+        Zeros = [];
+    end
+    binsparse_write_ssmc_coo(output_filename, A, Zeros, '', ...
+                             primary_metadata, compression_level);
+elseif issparse(A)
     if isfield(P, 'Zeros') && ~isempty(P.Zeros)
         Zeros = P.Zeros;
         mat = binsparse_from_ssmc(A, Zeros, format);
@@ -84,9 +97,10 @@ else
     mat = binsparse_from_ssmc(A, dense_format_for(A));
 end
 
-mat = binsparse_minimize_types(mat);
-primary_metadata = metadata_json(P, 'A');
-binsparse_write(output_filename, mat, '', primary_metadata, compression_level);
+if ~(issparse(A) && any(strcmp(format, {'COO', 'COOR'})))
+    mat = binsparse_minimize_types(mat);
+    binsparse_write(output_filename, mat, '', primary_metadata, compression_level);
+end
 
 % Handle aux struct
 if isfield(P, 'aux') && isstruct(P.aux)
@@ -132,7 +146,11 @@ function handle_aux_entry(name, value, output_filename, format, compression_leve
         value = double(value);
     end
 
-    if issparse(value)
+    if issparse(value) && any(strcmp(format, {'COO', 'COOR'}))
+        binsparse_write_ssmc_coo(output_filename, value, [], name, ...
+                                 entry_metadata_json(name), compression_level);
+        return;
+    elseif issparse(value)
         bsp = binsparse_from_ssmc(value, format);
     elseif isnumeric(value)
         bsp = binsparse_from_ssmc(value, dense_format_for(value));

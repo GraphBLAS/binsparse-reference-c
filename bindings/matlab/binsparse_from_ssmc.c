@@ -64,6 +64,46 @@ static bsp_type_t sparse_value_type(const matlab_csc_t* matrix) {
   return matrix->is_complex ? BSP_COMPLEX_FLOAT64 : BSP_FLOAT64;
 }
 
+static bsp_type_t index_type_for_extent(size_t extent) {
+  return bsp_pick_integer_type(extent == 0 ? 0 : extent - 1);
+}
+
+static bool sparse_values_are_iso(const matlab_csc_t* matrix, double* real,
+                                  double* imag) {
+  if (matrix->nnz == 0) {
+    return false;
+  }
+
+  *real = matrix->values[0];
+  *imag = matrix->imag_values ? matrix->imag_values[0] : 0.0;
+  for (size_t i = 1; i < matrix->nnz; i++) {
+    double current_imag = matrix->imag_values ? matrix->imag_values[i] : 0.0;
+    if (matrix->values[i] != *real || current_imag != *imag) {
+      return false;
+    }
+  }
+  return true;
+}
+
+static bool merged_values_are_iso(const matlab_csc_t* a,
+                                  const matlab_csc_t* z, double* real,
+                                  double* imag) {
+  if (a->nnz + z->nnz == 0) {
+    return false;
+  }
+
+  if (a->nnz == 0) {
+    *real = 0.0;
+    *imag = 0.0;
+    return true;
+  }
+
+  if (!sparse_values_are_iso(a, real, imag)) {
+    return false;
+  }
+  return z->nnz == 0 || (*real == 0.0 && *imag == 0.0);
+}
+
 static void write_sparse_value(const matlab_csc_t* matrix, mwIndex src,
                                bsp_matrix_t* out, uint64_t dst) {
   if (matrix->is_complex) {
@@ -86,6 +126,16 @@ static void write_explicit_zero(bsp_matrix_t* out, uint64_t dst) {
   }
 }
 
+static void write_iso_value(bsp_matrix_t* out, double real, double imag) {
+  if (out->values.type == BSP_COMPLEX_FLOAT64) {
+    double _Complex* out_values = (double _Complex*) out->values.data;
+    out_values[0] = real + imag * I;
+  } else {
+    double* out_values = (double*) out->values.data;
+    out_values[0] = real;
+  }
+}
+
 static void build_csc_merged(const matlab_csc_t* a, const matlab_csc_t* z,
                              bsp_matrix_t* out) {
   bsp_error_t error;
@@ -96,37 +146,45 @@ static void build_csc_merged(const matlab_csc_t* a, const matlab_csc_t* z,
   out->nnz = a->nnz + z->nnz;
   out->format = BSP_CSC;
   out->structure = BSP_GENERAL;
-  out->is_iso = false;
+  double iso_real = 0.0;
+  double iso_imag = 0.0;
+  out->is_iso = merged_values_are_iso(a, z, &iso_real, &iso_imag);
 
   error = construct_array_with_allocator(
-      &out->values, out->nnz, sparse_value_type(a), bsp_matlab_allocator);
+      &out->values, out->is_iso ? 1 : out->nnz, sparse_value_type(a),
+      bsp_matlab_allocator);
   if (error != BSP_SUCCESS) {
     mexErrMsgIdAndTxt("BinSparse:MemoryError",
                       "Failed to allocate values array");
   }
 
-  error = construct_array_with_allocator(&out->indices_1, out->nnz, BSP_UINT64,
-                                         bsp_matlab_allocator);
+  bsp_type_t row_index_type = index_type_for_extent(out->nrows);
+  error = construct_array_with_allocator(&out->indices_1, out->nnz,
+                                         row_index_type, bsp_matlab_allocator);
   if (error != BSP_SUCCESS) {
     mexErrMsgIdAndTxt("BinSparse:MemoryError",
                       "Failed to allocate indices array");
   }
 
+  bsp_type_t pointer_type = bsp_pick_integer_type(out->nnz);
   error = construct_array_with_allocator(&out->pointers_to_1, out->ncols + 1,
-                                         BSP_UINT64, bsp_matlab_allocator);
+                                         pointer_type, bsp_matlab_allocator);
   if (error != BSP_SUCCESS) {
     mexErrMsgIdAndTxt("BinSparse:MemoryError",
                       "Failed to allocate pointers array");
   }
 
-  uint64_t* out_colptr = (uint64_t*) out->pointers_to_1.data;
-  uint64_t* out_rowind = (uint64_t*) out->indices_1.data;
+  if (out->is_iso) {
+    write_iso_value(out, iso_real, iso_imag);
+  }
 
-  out_colptr[0] = 0;
+  uint64_t running = 0;
+  bsp_array_write(out->pointers_to_1, 0, running);
   for (mwIndex j = 0; j < a->ncols; j++) {
     mwIndex a_count = a->colptr[j + 1] - a->colptr[j];
     mwIndex z_count = z->colptr[j + 1] - z->colptr[j];
-    out_colptr[j + 1] = out_colptr[j] + a_count + z_count;
+    running += a_count + z_count;
+    bsp_array_write(out->pointers_to_1, j + 1, running);
   }
 
   for (mwIndex j = 0; j < a->ncols; j++) {
@@ -134,18 +192,22 @@ static void build_csc_merged(const matlab_csc_t* a, const matlab_csc_t* z,
     mwIndex a_end = a->colptr[j + 1];
     mwIndex z_ptr = z->colptr[j];
     mwIndex z_end = z->colptr[j + 1];
-    uint64_t out_ptr = out_colptr[j];
+    uint64_t out_ptr = (uint64_t) a->colptr[j] + (uint64_t) z->colptr[j];
 
     while (a_ptr < a_end || z_ptr < z_end) {
       if (z_ptr >= z_end ||
           (a_ptr < a_end && a->rowind[a_ptr] < z->rowind[z_ptr])) {
-        write_sparse_value(a, a_ptr, out, out_ptr);
-        out_rowind[out_ptr] = (uint64_t) a->rowind[a_ptr];
+        if (!out->is_iso) {
+          write_sparse_value(a, a_ptr, out, out_ptr);
+        }
+        bsp_array_write(out->indices_1, out_ptr, a->rowind[a_ptr]);
         a_ptr++;
       } else if (a_ptr >= a_end ||
                  (z_ptr < z_end && z->rowind[z_ptr] < a->rowind[a_ptr])) {
-        write_explicit_zero(out, out_ptr);
-        out_rowind[out_ptr] = (uint64_t) z->rowind[z_ptr];
+        if (!out->is_iso) {
+          write_explicit_zero(out, out_ptr);
+        }
+        bsp_array_write(out->indices_1, out_ptr, z->rowind[z_ptr]);
         z_ptr++;
       } else {
         mexErrMsgIdAndTxt("BinSparse:DuplicateIndex",
@@ -154,7 +216,8 @@ static void build_csc_merged(const matlab_csc_t* a, const matlab_csc_t* z,
       out_ptr++;
     }
 
-    if (out_ptr != out_colptr[j + 1]) {
+    if (out_ptr != (uint64_t) a->colptr[j + 1] +
+                       (uint64_t) z->colptr[j + 1]) {
       mexErrMsgIdAndTxt("BinSparse:InternalError",
                         "Merged column counts do not match");
     }
@@ -204,39 +267,47 @@ static void build_csc_from_a(const matlab_csc_t* a, bsp_matrix_t* out) {
   out->nnz = a->nnz;
   out->format = BSP_CSC;
   out->structure = BSP_GENERAL;
-  out->is_iso = false;
+  double iso_real = 0.0;
+  double iso_imag = 0.0;
+  out->is_iso = sparse_values_are_iso(a, &iso_real, &iso_imag);
 
   error = construct_array_with_allocator(
-      &out->values, out->nnz, sparse_value_type(a), bsp_matlab_allocator);
+      &out->values, out->is_iso ? 1 : out->nnz, sparse_value_type(a),
+      bsp_matlab_allocator);
   if (error != BSP_SUCCESS) {
     mexErrMsgIdAndTxt("BinSparse:MemoryError",
                       "Failed to allocate values array");
   }
 
-  error = construct_array_with_allocator(&out->indices_1, out->nnz, BSP_UINT64,
-                                         bsp_matlab_allocator);
+  bsp_type_t row_index_type = index_type_for_extent(out->nrows);
+  error = construct_array_with_allocator(&out->indices_1, out->nnz,
+                                         row_index_type, bsp_matlab_allocator);
   if (error != BSP_SUCCESS) {
     mexErrMsgIdAndTxt("BinSparse:MemoryError",
                       "Failed to allocate indices array");
   }
 
+  bsp_type_t pointer_type = bsp_pick_integer_type(out->nnz);
   error = construct_array_with_allocator(&out->pointers_to_1, out->ncols + 1,
-                                         BSP_UINT64, bsp_matlab_allocator);
+                                         pointer_type, bsp_matlab_allocator);
   if (error != BSP_SUCCESS) {
     mexErrMsgIdAndTxt("BinSparse:MemoryError",
                       "Failed to allocate pointers array");
   }
 
-  uint64_t* out_colptr = (uint64_t*) out->pointers_to_1.data;
-  uint64_t* out_rowind = (uint64_t*) out->indices_1.data;
+  if (out->is_iso) {
+    write_iso_value(out, iso_real, iso_imag);
+  }
 
   for (size_t i = 0; i < out->nnz; i++) {
-    write_sparse_value(a, i, out, (uint64_t) i);
-    out_rowind[i] = (uint64_t) a->rowind[i];
+    if (!out->is_iso) {
+      write_sparse_value(a, i, out, (uint64_t) i);
+    }
+    bsp_array_write(out->indices_1, i, a->rowind[i]);
   }
 
   for (size_t i = 0; i < out->ncols + 1; i++) {
-    out_colptr[i] = (uint64_t) a->colptr[i];
+    bsp_array_write(out->pointers_to_1, i, a->colptr[i]);
   }
 }
 

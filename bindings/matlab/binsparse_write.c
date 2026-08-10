@@ -78,8 +78,7 @@ void mexFunction(int nlhs, mxArray* plhs[], int nrhs, const mxArray* prhs[]) {
   }
 
   // Convert MATLAB struct to bsp_matrix_t
-  error = matlab_struct_to_bsp_matrix_allocator(prhs[1], &matrix,
-                                                bsp_matlab_allocator);
+  error = matlab_struct_to_bsp_matrix_view(prhs[1], &matrix);
   if (error != BSP_SUCCESS) {
     mxFree(filename);
     mexErrMsgIdAndTxt("BinSparse:ConversionError",

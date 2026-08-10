@@ -9,6 +9,7 @@ fprintf('=== Testing binsparse_write_ssmc_problem ===\n\n');
 
 required = {'binsparse_from_ssmc', 'binsparse_minimize_types', ...
             'binsparse_write', 'binsparse_read', ...
+            'binsparse_write_ssmc_coo', ...
             'binsparse_write_string_dataset', 'binsparse_write_ssmc_problem'};
 for i = 1:numel(required)
     if exist(required{i}, 'file') ~= 3 && exist(required{i}, 'file') ~= 2
@@ -68,6 +69,9 @@ binsparse_write_ssmc_problem(problem, out_file, format, compression_level);
 
 % Read primary
 primary_bsp = binsparse_read(out_file);
+assert(strcmp(primary_bsp.format, 'COO'));
+assert(issortedrows([double(primary_bsp.indices_0), ...
+                     double(primary_bsp.indices_1)]));
 primary_mat = bsp_to_matlab(primary_bsp);
 expected_primary = full(Problem.A);
 assert(matrices_equal(primary_mat, expected_primary), 'Primary matrix mismatch');
@@ -81,6 +85,7 @@ check_vector_shape(out_file, 'c', numel(Problem.aux.c));
 check_dense_group(out_file, 'D', Problem.aux.D);
 
 aux_sparse = binsparse_read(out_file, 'S');
+assert(strcmp(aux_sparse.format, 'COO'));
 aux_sparse_mat = bsp_to_matlab(aux_sparse);
 expected_sparse = full(Problem.aux.S);
 assert(matrices_equal(aux_sparse_mat, expected_sparse), 'Aux sparse matrix mismatch');
