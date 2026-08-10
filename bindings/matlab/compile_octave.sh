@@ -148,7 +148,7 @@ if [ "$CLEAN" = true ]; then
 fi
 
 # List of MEX files to compile
-MEX_FILES=("binsparse_read.c" "binsparse_write.c" "binsparse_from_ssmc.c" "binsparse_minimize_types.c" "binsparse_write_string_dataset.c" "binsparse_read_string_dataset.c")
+MEX_FILES=("binsparse_read.c" "binsparse_write.c" "binsparse_from_ssmc.c" "binsparse_minimize_types.c" "binsparse_write_ssmc_coo.c" "binsparse_write_string_dataset.c" "binsparse_read_string_dataset.c")
 
 print_info "Compiling MEX functions..."
 
@@ -166,7 +166,7 @@ for mex_file in "${MEX_FILES[@]}"; do
     LIB_PATH="$LIB_DIR/libbinsparse.a"
     CJSON_LIB_DIR="$LIB_DIR/_deps/cjson-build"
 
-    INCLUDE_FLAGS="-I\"$INCLUDE_DIR\""
+    INCLUDE_FLAGS="-I\"$INCLUDE_DIR\" -I\"$LIB_DIR/include\""
     if [ -n "$HDF5_INCLUDE_DIR" ]; then
         INCLUDE_FLAGS="$INCLUDE_FLAGS -I\"$HDF5_INCLUDE_DIR\""
     fi

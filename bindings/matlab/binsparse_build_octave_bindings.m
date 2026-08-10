@@ -120,6 +120,7 @@ function compile_octave_functions(paths, verbose)
     % List of MEX functions to compile
     mex_files = {'binsparse_read.c', 'binsparse_write.c', ...
         'binsparse_from_ssmc.c', 'binsparse_minimize_types.c', ...
+        'binsparse_write_ssmc_coo.c', ...
         'binsparse_write_string_dataset.c', ...
         'binsparse_read_string_dataset.c'};
 
@@ -136,12 +137,13 @@ function compile_octave_functions(paths, verbose)
         fprintf('  Compiling %s... ', mex_file);
 
         % Prepare mkoctfile command with library linking
-        include_flag = sprintf('-I%s', paths.include_dir);
+        lib_dir = fullfile(paths.binsparse_root, 'build');
+        include_flag = sprintf('-I%s -I%s', paths.include_dir, ...
+            fullfile(lib_dir, 'include'));
         if ~isempty(paths.hdf5_include_dir)
             include_flag = sprintf('%s -I%s', include_flag, ...
                 paths.hdf5_include_dir);
         end
-        lib_dir = fullfile(paths.binsparse_root, 'build');
         lib_path = fullfile(lib_dir, 'libbinsparse.a');
         cjson_lib_dir = fullfile(lib_dir, '_deps', 'cjson-build');
 

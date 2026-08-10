@@ -186,6 +186,7 @@ end
 | `binsparse_write.c` | MEX function for writing Binsparse matrix files |
 | `binsparse_from_ssmc.c` | MEX function converting SuiteSparse A+Zeros to a Binsparse struct |
 | `binsparse_minimize_types.c` | MEX function minimizing value/index types in a Binsparse struct |
+| `binsparse_write_ssmc_coo.c` | Direct memory-efficient MATLAB CSC to row-sorted COO writer |
 | `binsparse_write_string_dataset.c` | MEX function writing HDF5 UTF-8 string datasets |
 | `matlab_bsp_helpers.h` | Shared MATLAB/Binsparse conversion helpers for the MEX sources |
 | `binsparse_write_ssmc_problem.m` | Write a full SSMC Problem struct to one Binsparse file |
@@ -203,6 +204,7 @@ end
 | `test_binsparse_struct.m` | Test script for the struct helpers |
 | `test_binsparse_to_ssmc_problem.m` | Test script for Problem conversion |
 | `test_binsparse_write_ssmc_problem.m` | End-to-end test for the SSMC writer |
+| `test_binsparse_write_ssmc_coo.m` | Test direct row-sorted COO conversion and writing |
 | `test_binsparse_roundtrip_dir.m` | Round-trip every .h5 file in a directory |
 | `Contents.m` | Directory listing for MATLAB's `help` |
 | `README.md` | This documentation file |
