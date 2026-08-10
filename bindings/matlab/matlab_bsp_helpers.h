@@ -26,6 +26,20 @@ typedef struct {
 static const bsp_allocator_t bsp_matlab_allocator = {.malloc = mxMalloc,
                                                      .free = mxFree};
 
+// Arrays using this allocator borrow their data from a MATLAB input array.
+// They must never allocate or free through the Binsparse array API.  Returning
+// NULL from malloc makes accidental attempts to allocate through a view fail
+// instead of creating memory that the no-op free would leak.
+static inline void* bsp_matlab_view_malloc(size_t size) {
+  (void) size;
+  return NULL;
+}
+
+static inline void bsp_matlab_view_free(void* data) { (void) data; }
+
+static const bsp_allocator_t bsp_matlab_view_allocator = {
+    .malloc = bsp_matlab_view_malloc, .free = bsp_matlab_view_free};
+
 static inline int extract_matlab_csc(const mxArray* mx_matrix,
                                      matlab_csc_t* csc_matrix) {
   if (!mx_matrix || !csc_matrix) {
@@ -71,76 +85,91 @@ static inline int extract_matlab_csc(const mxArray* mx_matrix,
   return 0;
 }
 
-static inline bsp_error_t
-matlab_to_bsp_array_allocator(const mxArray* mx_array, bsp_array_t* array,
-                              bsp_allocator_t allocator) {
-  bool is_empty = mxIsEmpty(mx_array);
+static inline bsp_error_t matlab_bsp_array_type(const mxArray* mx_array,
+                                                bsp_type_t* bsp_type,
+                                                size_t* element_size) {
+  if (!mx_array || !bsp_type || !element_size || mxIsSparse(mx_array)) {
+    return BSP_ERROR_TYPE;
+  }
 
-  size_t size = mxGetNumberOfElements(mx_array);
   mxClassID class_id = mxGetClassID(mx_array);
   bool is_complex = mxIsComplex(mx_array);
 
-  bsp_type_t bsp_type;
-  size_t element_size;
-
   if (is_complex) {
     if (class_id == mxDOUBLE_CLASS) {
-      bsp_type = BSP_COMPLEX_FLOAT64;
-      element_size = sizeof(double _Complex);
+      *bsp_type = BSP_COMPLEX_FLOAT64;
+      *element_size = sizeof(double _Complex);
     } else if (class_id == mxSINGLE_CLASS) {
-      bsp_type = BSP_COMPLEX_FLOAT32;
-      element_size = sizeof(float _Complex);
+      *bsp_type = BSP_COMPLEX_FLOAT32;
+      *element_size = sizeof(float _Complex);
     } else {
-      return BSP_INVALID_TYPE;
+      return BSP_ERROR_TYPE;
     }
   } else {
     switch (class_id) {
     case mxDOUBLE_CLASS:
-      bsp_type = BSP_FLOAT64;
-      element_size = sizeof(double);
+      *bsp_type = BSP_FLOAT64;
+      *element_size = sizeof(double);
       break;
     case mxSINGLE_CLASS:
-      bsp_type = BSP_FLOAT32;
-      element_size = sizeof(float);
+      *bsp_type = BSP_FLOAT32;
+      *element_size = sizeof(float);
       break;
     case mxUINT64_CLASS:
-      bsp_type = BSP_UINT64;
-      element_size = sizeof(uint64_t);
+      *bsp_type = BSP_UINT64;
+      *element_size = sizeof(uint64_t);
       break;
     case mxUINT32_CLASS:
-      bsp_type = BSP_UINT32;
-      element_size = sizeof(uint32_t);
+      *bsp_type = BSP_UINT32;
+      *element_size = sizeof(uint32_t);
       break;
     case mxUINT16_CLASS:
-      bsp_type = BSP_UINT16;
-      element_size = sizeof(uint16_t);
+      *bsp_type = BSP_UINT16;
+      *element_size = sizeof(uint16_t);
       break;
     case mxUINT8_CLASS:
-      bsp_type = BSP_UINT8;
-      element_size = sizeof(uint8_t);
+      *bsp_type = BSP_UINT8;
+      *element_size = sizeof(uint8_t);
       break;
     case mxINT64_CLASS:
-      bsp_type = BSP_INT64;
-      element_size = sizeof(int64_t);
+      *bsp_type = BSP_INT64;
+      *element_size = sizeof(int64_t);
       break;
     case mxINT32_CLASS:
-      bsp_type = BSP_INT32;
-      element_size = sizeof(int32_t);
+      *bsp_type = BSP_INT32;
+      *element_size = sizeof(int32_t);
       break;
     case mxINT16_CLASS:
-      bsp_type = BSP_INT16;
-      element_size = sizeof(int16_t);
+      *bsp_type = BSP_INT16;
+      *element_size = sizeof(int16_t);
       break;
     case mxINT8_CLASS:
-      bsp_type = BSP_INT8;
-      element_size = sizeof(int8_t);
+      *bsp_type = BSP_INT8;
+      *element_size = sizeof(int8_t);
       break;
     default:
-      return BSP_INVALID_TYPE;
+      return BSP_ERROR_TYPE;
     }
   }
 
-  if (is_empty) {
+  return BSP_SUCCESS;
+}
+
+static inline bsp_error_t
+matlab_to_bsp_array_allocator(const mxArray* mx_array, bsp_array_t* array,
+                              bsp_allocator_t allocator) {
+  size_t size = mxGetNumberOfElements(mx_array);
+  bsp_type_t bsp_type;
+  size_t element_size;
+  bsp_error_t error =
+      matlab_bsp_array_type(mx_array, &bsp_type, &element_size);
+  if (error != BSP_SUCCESS) {
+    return error;
+  }
+  mxClassID class_id = mxGetClassID(mx_array);
+  bool is_complex = mxIsComplex(mx_array);
+
+  if (mxIsEmpty(mx_array)) {
     array->data = NULL;
     array->size = 0;
     array->type = bsp_type;
@@ -148,8 +177,7 @@ matlab_to_bsp_array_allocator(const mxArray* mx_array, bsp_array_t* array,
     return BSP_SUCCESS;
   }
 
-  bsp_error_t error =
-      bsp_construct_array_t_allocator(array, size, bsp_type, allocator);
+  error = bsp_construct_array_t_allocator(array, size, bsp_type, allocator);
   if (error != BSP_SUCCESS) {
     return error;
   }
@@ -179,8 +207,96 @@ matlab_to_bsp_array_allocator(const mxArray* mx_array, bsp_array_t* array,
   return BSP_SUCCESS;
 }
 
+// Construct a non-owning Binsparse view of a real MATLAB numeric array.
+// Complex MATLAB arrays use separate real and imaginary buffers with the MEX
+// API used by these bindings, so they retain the existing owned conversion to
+// C complex storage rather than exposing an invalid view.
+static inline bsp_error_t matlab_to_bsp_array_view(const mxArray* mx_array,
+                                                   bsp_array_t* array) {
+  bsp_type_t bsp_type;
+  size_t element_size;
+  bsp_error_t error =
+      matlab_bsp_array_type(mx_array, &bsp_type, &element_size);
+  (void) element_size;
+  if (error != BSP_SUCCESS) {
+    return error;
+  }
+
+  if (mxIsComplex(mx_array)) {
+    return matlab_to_bsp_array_allocator(mx_array, array,
+                                         bsp_matlab_allocator);
+  }
+
+  array->data = mxIsEmpty(mx_array) ? NULL : mxGetData(mx_array);
+  array->size = mxGetNumberOfElements(mx_array);
+  array->type = bsp_type;
+  array->allocator = bsp_matlab_view_allocator;
+  if (array->size > 0 && array->data == NULL) {
+    return BSP_ERROR_MEMORY;
+  }
+  return BSP_SUCCESS;
+}
+
+static inline bsp_error_t
+matlab_struct_to_bsp_matrix_metadata(const mxArray* mx_struct,
+                                     bsp_matrix_t* matrix) {
+  mxArray* nrows_field = mxGetField(mx_struct, 0, "nrows");
+  mxArray* ncols_field = mxGetField(mx_struct, 0, "ncols");
+  mxArray* nnz_field = mxGetField(mx_struct, 0, "nnz");
+  mxArray* is_iso_field = mxGetField(mx_struct, 0, "is_iso");
+
+  if (!nrows_field || !ncols_field || !nnz_field || !is_iso_field) {
+    return BSP_INVALID_STRUCTURE;
+  }
+
+  matrix->nrows = (size_t) mxGetScalar(nrows_field);
+  matrix->ncols = (size_t) mxGetScalar(ncols_field);
+  matrix->nnz = (size_t) mxGetScalar(nnz_field);
+  matrix->is_iso = mxIsLogicalScalarTrue(is_iso_field);
+
+  mxArray* format_field = mxGetField(mx_struct, 0, "format");
+  if (!format_field || !mxIsChar(format_field)) {
+    return BSP_INVALID_STRUCTURE;
+  }
+
+  char* format_str = mxArrayToString(format_field);
+  if (!format_str) {
+    return BSP_INVALID_STRUCTURE;
+  }
+
+  matrix->format = bsp_get_matrix_format(format_str);
+  mxFree(format_str);
+
+  if (matrix->format == BSP_INVALID_FORMAT) {
+    return BSP_INVALID_FORMAT;
+  }
+
+  mxArray* structure_field = mxGetField(mx_struct, 0, "structure");
+  if (!structure_field || !mxIsChar(structure_field)) {
+    return BSP_INVALID_STRUCTURE;
+  }
+
+  char* structure_str = mxArrayToString(structure_field);
+  if (!structure_str) {
+    return BSP_INVALID_STRUCTURE;
+  }
+
+  matrix->structure = bsp_get_structure(structure_str);
+  mxFree(structure_str);
+
+  if (matrix->structure == BSP_INVALID_STRUCTURE) {
+    matrix->structure = BSP_GENERAL;
+  }
+
+  return BSP_SUCCESS;
+}
+
 static inline bsp_error_t matlab_struct_to_bsp_matrix_allocator(
     const mxArray* mx_struct, bsp_matrix_t* matrix, bsp_allocator_t allocator) {
+  if (!mx_struct || !mxIsStruct(mx_struct) ||
+      mxGetNumberOfElements(mx_struct) != 1) {
+    return BSP_INVALID_STRUCTURE;
+  }
   bsp_construct_default_matrix_t_allocator(matrix, allocator);
 
   mxArray* values_field = mxGetField(mx_struct, 0, "values");
@@ -222,61 +338,56 @@ static inline bsp_error_t matlab_struct_to_bsp_matrix_allocator(
     return error;
   }
 
-  mxArray* nrows_field = mxGetField(mx_struct, 0, "nrows");
-  mxArray* ncols_field = mxGetField(mx_struct, 0, "ncols");
-  mxArray* nnz_field = mxGetField(mx_struct, 0, "nnz");
-  mxArray* is_iso_field = mxGetField(mx_struct, 0, "is_iso");
-
-  if (!nrows_field || !ncols_field || !nnz_field || !is_iso_field) {
+  error = matlab_struct_to_bsp_matrix_metadata(mx_struct, matrix);
+  if (error != BSP_SUCCESS) {
     bsp_destroy_matrix_t(matrix);
+  }
+  return error;
+}
+
+// Construct a matrix whose real arrays borrow the storage of the MATLAB BSP
+// struct.  The view is valid only while the MEX call's input remains alive and
+// must be treated as read-only.  Each array records its own ownership, allowing
+// a minimizer to replace selected views with newly allocated MATLAB-owned
+// arrays and then destroy the mixed-ownership matrix safely.
+static inline bsp_error_t
+matlab_struct_to_bsp_matrix_view(const mxArray* mx_struct,
+                                 bsp_matrix_t* matrix) {
+  if (!mx_struct || !mxIsStruct(mx_struct) ||
+      mxGetNumberOfElements(mx_struct) != 1) {
+    return BSP_INVALID_STRUCTURE;
+  }
+  bsp_construct_default_matrix_t_allocator(matrix,
+                                            bsp_matlab_view_allocator);
+
+  mxArray* values_field = mxGetField(mx_struct, 0, "values");
+  mxArray* indices_0_field = mxGetField(mx_struct, 0, "indices_0");
+  mxArray* indices_1_field = mxGetField(mx_struct, 0, "indices_1");
+  mxArray* pointers_to_1_field = mxGetField(mx_struct, 0, "pointers_to_1");
+
+  if (!values_field || !indices_0_field || !indices_1_field ||
+      !pointers_to_1_field) {
     return BSP_INVALID_STRUCTURE;
   }
 
-  matrix->nrows = (size_t) mxGetScalar(nrows_field);
-  matrix->ncols = (size_t) mxGetScalar(ncols_field);
-  matrix->nnz = (size_t) mxGetScalar(nnz_field);
-  matrix->is_iso = mxIsLogicalScalarTrue(is_iso_field);
-
-  mxArray* format_field = mxGetField(mx_struct, 0, "format");
-  if (!format_field || !mxIsChar(format_field)) {
+  bsp_error_t error = matlab_to_bsp_array_view(values_field, &matrix->values);
+  if (error == BSP_SUCCESS) {
+    error = matlab_to_bsp_array_view(indices_0_field, &matrix->indices_0);
+  }
+  if (error == BSP_SUCCESS) {
+    error = matlab_to_bsp_array_view(indices_1_field, &matrix->indices_1);
+  }
+  if (error == BSP_SUCCESS) {
+    error =
+        matlab_to_bsp_array_view(pointers_to_1_field, &matrix->pointers_to_1);
+  }
+  if (error == BSP_SUCCESS) {
+    error = matlab_struct_to_bsp_matrix_metadata(mx_struct, matrix);
+  }
+  if (error != BSP_SUCCESS) {
     bsp_destroy_matrix_t(matrix);
-    return BSP_INVALID_STRUCTURE;
   }
-
-  char* format_str = mxArrayToString(format_field);
-  if (!format_str) {
-    bsp_destroy_matrix_t(matrix);
-    return BSP_INVALID_STRUCTURE;
-  }
-
-  matrix->format = bsp_get_matrix_format(format_str);
-  mxFree(format_str);
-
-  if (matrix->format == BSP_INVALID_FORMAT) {
-    bsp_destroy_matrix_t(matrix);
-    return BSP_INVALID_FORMAT;
-  }
-
-  mxArray* structure_field = mxGetField(mx_struct, 0, "structure");
-  if (!structure_field || !mxIsChar(structure_field)) {
-    bsp_destroy_matrix_t(matrix);
-    return BSP_INVALID_STRUCTURE;
-  }
-
-  char* structure_str = mxArrayToString(structure_field);
-  if (!structure_str) {
-    bsp_destroy_matrix_t(matrix);
-    return BSP_INVALID_STRUCTURE;
-  }
-
-  matrix->structure = bsp_get_structure(structure_str);
-  mxFree(structure_str);
-
-  if (matrix->structure == BSP_INVALID_STRUCTURE) {
-    matrix->structure = BSP_GENERAL;
-  }
-
-  return BSP_SUCCESS;
+  return error;
 }
 
 static inline bsp_error_t

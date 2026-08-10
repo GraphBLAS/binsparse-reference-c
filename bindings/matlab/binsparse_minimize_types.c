@@ -429,8 +429,7 @@ void mexFunction(int nlhs, mxArray* plhs[], int nrhs, const mxArray* prhs[]) {
   }
 
   bsp_matrix_t matrix;
-  bsp_error_t error = matlab_struct_to_bsp_matrix_allocator(
-      prhs[0], &matrix, bsp_matlab_allocator);
+  bsp_error_t error = matlab_struct_to_bsp_matrix_view(prhs[0], &matrix);
   if (error != BSP_SUCCESS) {
     mexErrMsgIdAndTxt("BinSparse:ConversionError",
                       "Failed to convert MATLAB struct to matrix: %s",

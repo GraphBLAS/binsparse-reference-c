@@ -24,6 +24,7 @@
 %   test_binsparse_write            - write and round-trip tests for binsparse_write
 %   test_binsparse_from_ssmc        - basic test for binsparse_from_ssmc
 %   test_binsparse_minimize_roundtrip - SSMC conversion + type minimization test
+%   test_binsparse_matrix_views      - non-owning matrix view ownership tests
 %   test_binsparse_struct           - tests for the Binsparse struct helpers
 %   test_binsparse_to_ssmc_problem  - tests for Binsparse Problem conversion
 %   test_binsparse_write_ssmc_problem - end-to-end SSMC writer test

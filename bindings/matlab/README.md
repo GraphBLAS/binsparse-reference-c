@@ -199,6 +199,7 @@ end
 | `test_binsparse_write.m` | Test script for write functionality |
 | `test_binsparse_from_ssmc.m` | Test script for SSMC conversion |
 | `test_binsparse_minimize_roundtrip.m` | Test script for type minimization |
+| `test_binsparse_matrix_views.m` | Test non-owning matrix view ownership and cleanup |
 | `test_binsparse_struct.m` | Test script for the struct helpers |
 | `test_binsparse_to_ssmc_problem.m` | Test script for Problem conversion |
 | `test_binsparse_write_ssmc_problem.m` | End-to-end test for the SSMC writer |
