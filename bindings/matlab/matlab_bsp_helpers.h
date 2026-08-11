@@ -35,7 +35,9 @@ static inline void* bsp_matlab_view_malloc(size_t size) {
   return NULL;
 }
 
-static inline void bsp_matlab_view_free(void* data) { (void) data; }
+static inline void bsp_matlab_view_free(void* data) {
+  (void) data;
+}
 
 static const bsp_allocator_t bsp_matlab_view_allocator = {
     .malloc = bsp_matlab_view_malloc, .free = bsp_matlab_view_free};
@@ -161,8 +163,7 @@ matlab_to_bsp_array_allocator(const mxArray* mx_array, bsp_array_t* array,
   size_t size = mxGetNumberOfElements(mx_array);
   bsp_type_t bsp_type;
   size_t element_size;
-  bsp_error_t error =
-      matlab_bsp_array_type(mx_array, &bsp_type, &element_size);
+  bsp_error_t error = matlab_bsp_array_type(mx_array, &bsp_type, &element_size);
   if (error != BSP_SUCCESS) {
     return error;
   }
@@ -215,16 +216,14 @@ static inline bsp_error_t matlab_to_bsp_array_view(const mxArray* mx_array,
                                                    bsp_array_t* array) {
   bsp_type_t bsp_type;
   size_t element_size;
-  bsp_error_t error =
-      matlab_bsp_array_type(mx_array, &bsp_type, &element_size);
+  bsp_error_t error = matlab_bsp_array_type(mx_array, &bsp_type, &element_size);
   (void) element_size;
   if (error != BSP_SUCCESS) {
     return error;
   }
 
   if (mxIsComplex(mx_array)) {
-    return matlab_to_bsp_array_allocator(mx_array, array,
-                                         bsp_matlab_allocator);
+    return matlab_to_bsp_array_allocator(mx_array, array, bsp_matlab_allocator);
   }
 
   array->data = mxIsEmpty(mx_array) ? NULL : mxGetData(mx_array);
@@ -357,8 +356,7 @@ matlab_struct_to_bsp_matrix_view(const mxArray* mx_struct,
       mxGetNumberOfElements(mx_struct) != 1) {
     return BSP_INVALID_STRUCTURE;
   }
-  bsp_construct_default_matrix_t_allocator(matrix,
-                                            bsp_matlab_view_allocator);
+  bsp_construct_default_matrix_t_allocator(matrix, bsp_matlab_view_allocator);
 
   mxArray* values_field = mxGetField(mx_struct, 0, "values");
   mxArray* indices_0_field = mxGetField(mx_struct, 0, "indices_0");
