@@ -143,12 +143,12 @@ count = checked_size(bsp.nnz, 'nnz');
 
 switch format
     case 'DVEC'
-        values = matrix_values(bsp, count);
+        [values, iso] = matrix_values(bsp, count);
         if n ~= 1 || count ~= m
             error('BinSparse:InvalidMatrix', ...
                   'DVEC dimensions do not match the stored value count');
         end
-        matrix = reshape(values, [m, 1]);
+        matrix = reshape(expand_iso(values, iso, count), [m, 1]);
         Zeros = sparse(m, n);
         return;
 
@@ -158,8 +158,8 @@ switch format
             error('BinSparse:InvalidMatrix', ...
                   'DMATR dimensions do not match the stored value count');
         end
-        values = matrix_values(bsp, count);
-        matrix = reshape(values, [n, m]).';
+        [values, iso] = matrix_values(bsp, count);
+        matrix = reshape(expand_iso(values, iso, count), [n, m]).';
         Zeros = sparse(m, n);
         return;
 
@@ -169,24 +169,50 @@ switch format
             error('BinSparse:InvalidMatrix', ...
                   'DMATC dimensions do not match the stored value count');
         end
-        values = matrix_values(bsp, count);
-        matrix = reshape(values, [m, n]);
+        [values, iso] = matrix_values(bsp, count);
+        matrix = reshape(expand_iso(values, iso, count), [m, n]);
         Zeros = sparse(m, n);
         return;
 end
 
 [rows, cols] = sparse_indices(bsp, format, m, n, count);
-values = matrix_values(bsp, count);
-[rows, cols, values] = expand_structure(bsp, rows, cols, values, m, n);
+[values, iso] = matrix_values(bsp, count);
+[rows, cols, values, iso] = ...
+    expand_structure(bsp, rows, cols, values, iso, m, n);
 
-is_zero = (real(values) == 0) & (imag(values) == 0);
-if split_zeros
-    matrix = sparse(rows(~is_zero), cols(~is_zero), ...
-                    values(~is_zero), m, n);
-    Zeros = sparse(rows(is_zero), cols(is_zero), 1, m, n);
-else
+% An ISO matrix carries a single stored value, and sparse() expands a scalar
+% over the index vectors, so its values are never materialized at nnz length.
+% The entries are then either all zero or all nonzero, which also removes the
+% need for a mask and for masked copies of the index vectors.
+if iso
+    if split_zeros && values == 0
+        matrix = sparse(m, n);
+        Zeros = sparse(rows, cols, 1, m, n);
+    else
+        matrix = sparse(rows, cols, values, m, n);
+        Zeros = sparse(m, n);
+    end
+    return;
+end
+
+if ~split_zeros
     matrix = sparse(rows, cols, values, m, n);
     Zeros = sparse(m, n);
+    return;
+end
+
+% MATLAB's == compares both parts of a complex value, so this needs no
+% separate imag() test; taking one would allocate an nnz-length array of
+% zeros for the common case of real values.
+is_zero = (values == 0);
+if ~any(is_zero)
+    matrix = sparse(rows, cols, values, m, n);
+    Zeros = sparse(m, n);
+else
+    keep = ~is_zero;
+    matrix = sparse(rows(keep), cols(keep), values(keep), m, n);
+    clear keep
+    Zeros = sparse(rows(is_zero), cols(is_zero), 1, m, n);
 end
 end
 
@@ -247,8 +273,13 @@ switch format
 end
 end
 
-function values = matrix_values(bsp, count)
+function [values, iso] = matrix_values(bsp, count)
+% Returns the stored values and whether they are still in ISO form, that is a
+% single value standing for all count entries.  The caller expands it only
+% where an nnz-length array is genuinely required; the sparse constructors
+% take the scalar directly.
 values = bsp.values(:);
+iso = false;
 if logical(bsp.is_iso)
     if count == 0
         if numel(values) > 1
@@ -260,7 +291,7 @@ if logical(bsp.is_iso)
         error('BinSparse:InvalidMatrix', ...
               'An ISO matrix must contain exactly one value');
     else
-        values = repmat(values, count, 1);
+        iso = true;
     end
 elseif numel(values) ~= count
     error('BinSparse:InvalidMatrix', ...
@@ -269,7 +300,14 @@ end
 values = exact_double(values);
 end
 
-function [rows, cols, values] = expand_structure(bsp, rows, cols, values, m, n)
+function values = expand_iso(values, iso, count)
+if iso
+    values = repmat(values, count, 1);
+end
+end
+
+function [rows, cols, values, iso] = ...
+    expand_structure(bsp, rows, cols, values, iso, m, n)
 structure = 'general';
 if isfield(bsp, 'structure') && ~isempty(bsp.structure)
     structure = lower(char(bsp.structure));
@@ -293,19 +331,33 @@ if (is_lower && any(rows < cols)) || (is_upper && any(rows > cols))
           'Stored entries do not match the declared matrix triangle');
 end
 
-off_diagonal = (rows ~= cols);
-mirror_rows = cols(off_diagonal);
-mirror_cols = rows(off_diagonal);
-mirror_values = values(off_diagonal);
 if starts_with(structure, 'hermitian_')
-    mirror_values = conj(mirror_values);
+    mirror = @conj;
 elseif starts_with(structure, 'skew_symmetric_')
-    mirror_values = -mirror_values;
-elseif ~starts_with(structure, 'symmetric_')
+    mirror = @uminus;
+elseif starts_with(structure, 'symmetric_')
+    mirror = @(v) v;
+else
     error('BinSparse:UnsupportedStructure', ...
           'Unsupported Binsparse matrix structure: %s', structure);
 end
 
+off_diagonal = (rows ~= cols);
+mirror_rows = cols(off_diagonal);
+mirror_cols = rows(off_diagonal);
+
+% Mirroring an ISO matrix leaves it ISO whenever it leaves the single stored
+% value alone, which covers every symmetric matrix and the real hermitian and
+% all-zero skew-symmetric ones.  Only the rest have to be expanded here.
+if iso && isequaln(mirror(values), values)
+    rows = [rows; mirror_rows];
+    cols = [cols; mirror_cols];
+    return;
+end
+
+values = expand_iso(values, iso, numel(rows));
+iso = false;
+mirror_values = mirror(values(off_diagonal));
 rows = [rows; mirror_rows];
 cols = [cols; mirror_cols];
 values = [values; mirror_values];
@@ -359,14 +411,32 @@ function indices = checked_indices(indices, expected, limit, name)
 if ~isnumeric(indices) || ~isreal(indices)
     error('BinSparse:InvalidMatrix', '%s must be real numeric data', name);
 end
-indices = double(indices(:));
 if ~isempty(expected) && numel(indices) ~= expected
     error('BinSparse:InvalidMatrix', ...
           '%s length does not match nnz', name);
 end
-if any(~isfinite(indices)) || any(indices < 0) || ...
-        any(fix(indices) ~= indices) || any(indices >= limit)
-    error('BinSparse:InvalidMatrix', '%s contains an invalid index', name);
+
+if isinteger(indices)
+    % A Binsparse index array is normally stored as an integer type, where
+    % the finiteness and integrality tests are vacuous and the range tests
+    % reduce to min and max.  Running them here, before the widening to
+    % double, keeps the check from building a second nnz-length temporary
+    % just to hold fix(indices).
+    if ~isempty(indices)
+        if double(max(indices(:))) >= limit || ...
+                (intmin(class(indices)) < 0 && double(min(indices(:))) < 0)
+            error('BinSparse:InvalidMatrix', ...
+                  '%s contains an invalid index', name);
+        end
+    end
+    indices = double(indices(:));
+else
+    indices = double(indices(:));
+    if any(~isfinite(indices)) || any(indices < 0) || ...
+            any(fix(indices) ~= indices) || any(indices >= limit)
+        error('BinSparse:InvalidMatrix', ...
+              '%s contains an invalid index', name);
+    end
 end
 end
 
@@ -393,15 +463,33 @@ expanded = expanded(:);
 end
 
 function require_ordered_pairs(first, second, format)
-if numel(first) < 2
+% Scanned in blocks, so the check costs a fixed few megabytes rather than
+% several nnz-length temporaries.  Consecutive blocks overlap by one entry so
+% that no adjacent pair straddles a block boundary unchecked.
+count = numel(first);
+if count < 2
     return;
 end
-bad = diff(first) < 0 | ...
-      (diff(first) == 0 & diff(second) <= 0);
-if any(bad)
-    error('BinSparse:InvalidMatrix', ...
-          '%s indices are not sorted and unique', format);
+lo = 1;
+while lo < count
+    hi = min(count, lo + scan_block_size());
+    step = diff(first(lo:hi));
+    bad = step < 0;
+    tied = (step == 0);
+    clear step
+    if any(tied)
+        bad = bad | (tied & diff(second(lo:hi)) <= 0);
+    end
+    if any(bad)
+        error('BinSparse:InvalidMatrix', ...
+              '%s indices are not sorted and unique', format);
+    end
+    lo = hi;
 end
+end
+
+function n = scan_block_size()
+n = 4194304;
 end
 
 function require_segment_order(indices, pointers, format)
@@ -423,8 +511,20 @@ end
 end
 
 function require_strictly_increasing(values, label)
-if numel(values) > 1 && any(diff(values) <= 0)
-    error('BinSparse:InvalidMatrix', '%s are not sorted and unique', label);
+% Blocked for the same reason as require_ordered_pairs: a CVEC index array is
+% nnz long, so diff() over the whole of it is not affordable at scale.
+count = numel(values);
+if count < 2
+    return;
+end
+lo = 1;
+while lo < count
+    hi = min(count, lo + scan_block_size());
+    if any(diff(values(lo:hi)) <= 0)
+        error('BinSparse:InvalidMatrix', ...
+              '%s are not sorted and unique', label);
+    end
+    lo = hi;
 end
 end
 

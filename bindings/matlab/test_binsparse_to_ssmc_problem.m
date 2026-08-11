@@ -33,6 +33,38 @@ Problem = binsparse_to_ssmc_problem(raw);
 assert(nnz(Problem.A) == 0);
 assert(isequal(Problem.Zeros, sparse(rows + 1, cols + 1, 1, 3, 3)));
 
+% An ISO matrix keeps its single stored value all the way to sparse(), which
+% expands it, so these check that the expansion still lands on every entry and
+% that mirroring drops the ISO form exactly when it changes the value.
+raw = struct('metadata', metadata, ...
+    'A', make_matrix(4, rows, cols, [], 3, 3, 'COOR', true, 'general'));
+Problem = binsparse_to_ssmc_problem(raw);
+assert(isequal(Problem.A, sparse(rows + 1, cols + 1, 4, 3, 3)));
+assert(~isfield(Problem, 'Zeros'), 'a nonzero ISO matrix has no Zeros');
+
+iso_symmetric = make_matrix(7, [0; 1; 1], [0; 0; 1], ...
+    [], 2, 2, 'COO', true, 'symmetric_lower');
+raw = struct('metadata', metadata, 'A', iso_symmetric);
+Problem = binsparse_to_ssmc_problem(raw);
+assert(isequal(Problem.A, sparse(7 * ones(2, 2))));
+
+iso_skew = make_matrix(5, 1, 0, [], 2, 2, 'COO', true, ...
+    'skew_symmetric_lower');
+raw = struct('metadata', metadata, 'A', iso_skew);
+Problem = binsparse_to_ssmc_problem(raw);
+assert(isequal(Problem.A, sparse([0 -5; 5 0])));
+
+iso_hermitian = make_matrix(2 + 3i, 1, 0, [], 2, 2, 'COO', true, ...
+    'hermitian_lower');
+raw = struct('metadata', metadata, 'A', iso_hermitian);
+Problem = binsparse_to_ssmc_problem(raw);
+assert(isequal(Problem.A, sparse([0 2-3i; 2+3i 0])));
+
+raw = struct('metadata', metadata, 'A', formats{1}, ...
+    'b', make_matrix(9, [], [], [], 3, 1, 'DVEC', true, 'general'));
+Problem = binsparse_to_ssmc_problem(raw);
+assert(isequal(Problem.b, [9; 9; 9]), 'a dense ISO vector must expand');
+
 lower = make_matrix([1; 2; 0; 3], [0; 1; 1; 2], [0; 0; 1; 2], ...
     [], 3, 3, 'COO', false, 'symmetric_lower');
 raw = struct('metadata', metadata, 'A', lower);
