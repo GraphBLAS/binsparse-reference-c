@@ -87,7 +87,7 @@ static inline size_t bsp_type_size(bsp_type_t type) {
   } else if (type == BSP_COMPLEX_FLOAT64) {
     return sizeof(double _Complex);
   } else {
-    assert(false);
+    assert(false);  // FIXME: assert(false) cannot appear in a production library
   }
 }
 

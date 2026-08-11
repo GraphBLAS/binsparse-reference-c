@@ -2,7 +2,7 @@
 #
 # SPDX-License-Identifier: BSD-3-Clause
 
-target_sources(binsparse PRIVATE
+target_sources(binsparse_static PRIVATE
   read_matrix.c
   read_tensor.c
   write_matrix.c

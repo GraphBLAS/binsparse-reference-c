@@ -4,6 +4,10 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
+
+// FIXME: cannot use assert in production if it has any side effects when deleted
+// with -NDEBUG
+
 #pragma once
 
 #include <assert.h>
@@ -30,7 +34,7 @@ bsp_convert_matrix_allocator(bsp_matrix_t matrix, bsp_matrix_format_t format,
                              bsp_allocator_t allocator) {
   // Throw an error if matrix already in desired format.
   if (matrix.format == format) {
-    assert(false);
+    assert(false);  // FIXME: this does not throw an error when binsparse compiled for prodction
   }
 
   if (format == BSP_COOR) {
@@ -275,7 +279,7 @@ bsp_convert_matrix_allocator(bsp_matrix_t matrix, bsp_matrix_format_t format,
       free(indices);
       return result;
     } else {
-      assert(false);
+      assert(false);    // FIXME remove assert(...)
     }
   } else {
     // Convert to any another format.
@@ -493,7 +497,7 @@ bsp_convert_matrix_allocator(bsp_matrix_t matrix, bsp_matrix_format_t format,
         free(indices);
         return result;
       } else {
-        assert(false);
+        assert(false);  // FIXME remove assert(...) in production
       }
     }
   }

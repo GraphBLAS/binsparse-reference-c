@@ -4,6 +4,11 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
+// FIXME asserts are empty if the library is compiled for Release.
+// use a different macro.
+
+// FIXME this test segfaults if binsparse is compiled with Release flags (-O3)
+
 #include <assert.h>
 #include <binsparse/binsparse_all.h>
 #include <cJSON/cJSON.h>
