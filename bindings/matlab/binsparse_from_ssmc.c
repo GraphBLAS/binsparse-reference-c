@@ -85,9 +85,8 @@ static bool sparse_values_are_iso(const matlab_csc_t* matrix, double* real,
   return true;
 }
 
-static bool merged_values_are_iso(const matlab_csc_t* a,
-                                  const matlab_csc_t* z, double* real,
-                                  double* imag) {
+static bool merged_values_are_iso(const matlab_csc_t* a, const matlab_csc_t* z,
+                                  double* real, double* imag) {
   if (a->nnz + z->nnz == 0) {
     return false;
   }
@@ -216,8 +215,7 @@ static void build_csc_merged(const matlab_csc_t* a, const matlab_csc_t* z,
       out_ptr++;
     }
 
-    if (out_ptr != (uint64_t) a->colptr[j + 1] +
-                       (uint64_t) z->colptr[j + 1]) {
+    if (out_ptr != (uint64_t) a->colptr[j + 1] + (uint64_t) z->colptr[j + 1]) {
       mexErrMsgIdAndTxt("BinSparse:InternalError",
                         "Merged column counts do not match");
     }

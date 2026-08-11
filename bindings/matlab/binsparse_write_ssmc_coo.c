@@ -79,19 +79,16 @@ static bool value_fits_float32(double real, double imag, bool is_complex) {
 
 static value_analysis_t analyze_values(const matlab_csc_t* a,
                                        const matlab_csc_t* z) {
-  value_analysis_t analysis = {.is_iso = a->nnz + z->nnz > 0,
-                               .fits_float32 = true,
-                               .iso_real = a->nnz > 0 ? a->values[0] : 0.0,
-                               .iso_imag =
-                                   a->nnz > 0 && a->imag_values
-                                       ? a->imag_values[0]
-                                       : 0.0};
+  value_analysis_t analysis = {
+      .is_iso = a->nnz + z->nnz > 0,
+      .fits_float32 = true,
+      .iso_real = a->nnz > 0 ? a->values[0] : 0.0,
+      .iso_imag = a->nnz > 0 && a->imag_values ? a->imag_values[0] : 0.0};
 
   for (size_t i = 0; i < a->nnz; i++) {
     double real = a->values[i];
     double imag = a->imag_values ? a->imag_values[i] : 0.0;
-    if (i > 0 &&
-        (real != analysis.iso_real || imag != analysis.iso_imag)) {
+    if (i > 0 && (real != analysis.iso_real || imag != analysis.iso_imag)) {
       analysis.is_iso = false;
     }
     if (!value_fits_float32(real, imag, a->is_complex)) {
@@ -99,8 +96,7 @@ static value_analysis_t analyze_values(const matlab_csc_t* a,
     }
   }
 
-  if (z->nnz > 0 &&
-      (analysis.iso_real != 0.0 || analysis.iso_imag != 0.0)) {
+  if (z->nnz > 0 && (analysis.iso_real != 0.0 || analysis.iso_imag != 0.0)) {
     analysis.is_iso = false;
   }
   return analysis;
@@ -109,8 +105,7 @@ static value_analysis_t analyze_values(const matlab_csc_t* a,
 static bsp_type_t output_value_type(const matlab_csc_t* a,
                                     value_analysis_t analysis) {
   if (a->is_complex) {
-    return analysis.fits_float32 ? BSP_COMPLEX_FLOAT32
-                                 : BSP_COMPLEX_FLOAT64;
+    return analysis.fits_float32 ? BSP_COMPLEX_FLOAT32 : BSP_COMPLEX_FLOAT64;
   }
   return analysis.fits_float32 ? BSP_FLOAT32 : BSP_FLOAT64;
 }
@@ -125,8 +120,7 @@ static void write_output_value(bsp_array_t values, size_t index, double real,
     ((double*) values.data)[index] = real;
     break;
   case BSP_COMPLEX_FLOAT32:
-    ((float _Complex*) values.data)[index] =
-        (float) real + (float) imag * I;
+    ((float _Complex*) values.data)[index] = (float) real + (float) imag * I;
     break;
   case BSP_COMPLEX_FLOAT64:
     ((double _Complex*) values.data)[index] = real + imag * I;
@@ -206,9 +200,9 @@ static bsp_error_t write_generated_rows(hid_t parent, const uint64_t* row_ends,
     }
   }
 
-  hid_t dataset = H5Dcreate2(parent, "indices_0",
-                             bsp_get_hdf5_standard_type(index_type), file_space,
-                             H5P_DEFAULT, properties, H5P_DEFAULT);
+  hid_t dataset =
+      H5Dcreate2(parent, "indices_0", bsp_get_hdf5_standard_type(index_type),
+                 file_space, H5P_DEFAULT, properties, H5P_DEFAULT);
   H5Pclose(properties);
   if (dataset == H5I_INVALID_HID) {
     H5Sclose(file_space);
@@ -291,9 +285,8 @@ static bsp_error_t write_descriptor(hid_t parent, bsp_matrix_t descriptor,
 }
 
 static bsp_error_t write_coo_file(const char* filename, const char* group,
-                                  bsp_matrix_t matrix,
-                                  const uint64_t* row_ends, const char* json,
-                                  int compression) {
+                                  bsp_matrix_t matrix, const uint64_t* row_ends,
+                                  const char* json, int compression) {
   hid_t file = H5I_INVALID_HID;
   hid_t parent = H5I_INVALID_HID;
   bool have_group = group && group[0] != '\0';
@@ -367,14 +360,12 @@ void mexFunction(int nlhs, mxArray* plhs[], int nrhs, const mxArray* prhs[]) {
     mexErrMsgIdAndTxt("BinSparse:InvalidMatrix",
                       "A must be a sparse double matrix");
   }
-  if (mx_z &&
-      (!mxIsSparse(mx_z) || mxIsComplex(mx_z) ||
-       (!mxIsDouble(mx_z) && !mxIsLogical(mx_z)))) {
+  if (mx_z && (!mxIsSparse(mx_z) || mxIsComplex(mx_z) ||
+               (!mxIsDouble(mx_z) && !mxIsLogical(mx_z)))) {
     mexErrMsgIdAndTxt("BinSparse:InvalidZeros",
                       "Zeros must be a real sparse double or logical matrix");
   }
-  if (mx_z &&
-      (mxGetM(mx_a) != mxGetM(mx_z) || mxGetN(mx_a) != mxGetN(mx_z))) {
+  if (mx_z && (mxGetM(mx_a) != mxGetM(mx_z) || mxGetN(mx_a) != mxGetN(mx_z))) {
     mexErrMsgIdAndTxt("BinSparse:DimensionMismatch",
                       "A and Zeros must have matching dimensions");
   }
@@ -394,8 +385,7 @@ void mexFunction(int nlhs, mxArray* plhs[], int nrhs, const mxArray* prhs[]) {
   uint64_t* positions =
       a.nrows > 0 ? (uint64_t*) mxCalloc(a.nrows, sizeof(uint64_t)) : NULL;
   if (a.nrows > 0 && !positions) {
-    mexErrMsgIdAndTxt("BinSparse:MemoryError",
-                      "Failed to allocate row counts");
+    mexErrMsgIdAndTxt("BinSparse:MemoryError", "Failed to allocate row counts");
   }
   for (size_t p = 0; p < a.nnz; p++)
     positions[a.rowind[p]]++;
@@ -424,13 +414,13 @@ void mexFunction(int nlhs, mxArray* plhs[], int nrhs, const mxArray* prhs[]) {
   output.structure = BSP_GENERAL;
 
   bsp_type_t value_type = output_value_type(&a, analysis);
-  bsp_error_t error = bsp_construct_array_t_allocator(
-      &output.values, output.is_iso ? 1 : nnz, value_type,
-      bsp_matlab_allocator);
+  bsp_error_t error =
+      bsp_construct_array_t_allocator(&output.values, output.is_iso ? 1 : nnz,
+                                      value_type, bsp_matlab_allocator);
   if (error == BSP_SUCCESS) {
-    error = bsp_construct_array_t_allocator(
-        &output.indices_1, nnz, index_type_for_extent(a.ncols),
-        bsp_matlab_allocator);
+    error = bsp_construct_array_t_allocator(&output.indices_1, nnz,
+                                            index_type_for_extent(a.ncols),
+                                            bsp_matlab_allocator);
   }
   if (error != BSP_SUCCESS) {
     bsp_destroy_matrix_t(&output);
@@ -454,10 +444,8 @@ void mexFunction(int nlhs, mxArray* plhs[], int nrhs, const mxArray* prhs[]) {
     mwIndex zp = z.colptr ? z.colptr[column] : 0;
     mwIndex zend = z.colptr ? z.colptr[column + 1] : 0;
     while (ap < aend || zp < zend) {
-      bool take_a = zp >= zend ||
-                    (ap < aend && a.rowind[ap] < z.rowind[zp]);
-      bool take_z = ap >= aend ||
-                    (zp < zend && z.rowind[zp] < a.rowind[ap]);
+      bool take_a = zp >= zend || (ap < aend && a.rowind[ap] < z.rowind[zp]);
+      bool take_z = ap >= aend || (zp < zend && z.rowind[zp] < a.rowind[ap]);
       if (!take_a && !take_z) {
         conversion_error = "Duplicate indices between A and Zeros";
         break;
